@@ -1,0 +1,329 @@
+#!/bin/sh
+# Filename:      terminalserver
+# Purpose:       Program to do something
+# Authors:       grml-team (grml.org), (c) Michael Gebetsroither <gebi@grml.org>
+# Bug-Reports:   see http://grml.org/bugs/
+# License:       This file is licensed under the GPL v2.
+# Latest change: Sat Aug 06 14:14:40 CEST 2005
+################################################################################
+
+
+###
+### __INCLUDES
+###
+. /etc/grml/sh-lib
+#. /etc/grml/sysexits-sh
+
+
+
+###
+### __VARIABLES
+###
+
+verbose_=0
+
+# this file holds all variable definitions
+SHARED_PROG_VARS_="/usr/share/grml-terminalserver/shared_prog_vars"
+isExistent $SHARED_PROG_VARS_ die
+. $SHARED_PROG_VARS_
+
+
+###
+### __FUNCTIONS
+###
+
+function printUsage
+{
+  cat <<EOT
+Usage: "$PROG_NAME__" [OPTIONS] <command>
+
+$PROG_NAME__ is the config program for the terminalserver
+comming with grml.
+
+COMMANDS:
+   help             This help text
+   start <service>  Start services
+   stop <service>   Stop services
+   clean            Stop all + remove config and boot files from services
+   <default>        interactive
+
+SERVICES:
+  tftp        Tftp daemon
+  dhcp        Dhcp daemon
+  nfs         All necessary nfs daemons
+  <>          ALL services
+  
+OPTIONS:
+   -v         verbose (show what is going on, v++)
+   -h         this help text
+
+EOT
+}
+
+
+# DHCP SERVICE {{{
+function createDhcpConf
+{
+  execute "mv -fb \"$DHCPD_CONFIG_FILE_\" \"$DHCPD_CONFIG_FILE_.old\"" eprint &>/dev/null
+
+  execute "source $TEMPLATE_CONFIG_DIR_/dhcpd_config" die
+}
+
+function removeDhcpConf
+{
+  rm -f "$DHCPD_CONFIG_FILE_"
+}
+
+
+function stopDhcp
+{
+  start-stop-daemon --stop --quiet --pidfile "$DHCPD_PID_"
+  rm -f $DHCPD_PID_
+  rm -f /var/lib/dhcp3/dhcpd.leases* 2>/dev/null    #FIXME
+  touch /var/lib/dhcp3/dhcpd.leases
+}
+function startDhcp
+{
+  local conf_file_="$DHCPD_CONFIG_FILE_"
+  
+  test -f $DHCPD_BIN_ || die "could not find dhcpd \"$DHCPD_BIN_\""
+  start-stop-daemon --start --quiet --pidfile "$DHCPD_PID_" \
+    --exec "$DHCPD_BIN_" -- -cf "$conf_file_" -q "$INTERFACE_" || warn "problems starting dhcpd"
+}
+function runDhcp
+{
+  isExistent "$DHCPD_CONFIG_FILE_" || \
+    warn "no config for dhcpd: \"$DHCPD_CONFIG_FILE_\" => not starting dhcpd" || return 1
+
+  stopDhcp
+  sleep 1
+  startDhcp
+}
+# }}}
+
+# TFTP SERVICE {{{
+function removeTftpConf
+{
+  rm -rf $TFTPD_DATA_DIR_/*
+}
+function createTftpConf
+{
+  removeTftpConf
+  
+  execute "mkdir $TFTPD_DATA_DIR_/pxelinux.cfg" die
+  execute "install -m 644 /usr/lib/syslinux/pxelinux.0 $TFTPD_DATA_DIR_" die
+  execute "install -m 644 $PATH_/minirt26.gz $TFTPD_DATA_DIR_" die
+  execute "install -m 644 $KERNEL_IMAGE_ $TFTPD_DATA_DIR_/linux26" die
+  execute "install -m 644 $MEMTEST_IMAGE_ $TFTPD_DATA_DIR_/memtest" die
+  execute "install -m 644 $PXE_BOOT_MSG_ $TFTPD_DATA_DIR_" die
+  execute "install -m 644 $PXE_BOOT_LOGO_ $TFTPD_DATA_DIR_" die
+
+  execute "source $TEMPLATE_CONFIG_DIR_/grub-pxelinux_config" die
+}
+
+function stopTftp
+{
+  start-stop-daemon --stop --quiet --name "${TFTPD_BIN_##*/}"
+}
+function startTftp
+{
+  test -f $TFTPD_BIN_ || die "could not find \"$TFTPD_BIN_\""
+  start-stop-daemon --start --quiet --exec "$TFTPD_BIN_" -- -l -a "$IP_" -s "$TFTPD_DATA_DIR_" || \
+    warn "problems starting tftpd server"
+}
+function runTftp
+{
+  stopTftp
+  sleep 1
+  startTftp
+}
+# }}}
+
+
+# NFS  {{{
+function startNfs
+{
+  /etc/init.d/portmap start
+  /etc/init.d/nfs-common start
+  # FIXME /etc/init.d/nfs-kernel-server start
+  $USR_SHARE_/nfs-kernel-server start
+
+  # FIXME Silly "/etc/init.d/nfs-kernel-server start"
+  # FIXME #246904 (init script does not start if no exports in /etc/exports)
+  execute "exportfs -o ro,no_root_squash,async,nohide $NETWORK_/$NETMASK_:$MOUNT_POINT_" warn
+  #execute "echo -e \"\n$MOUNT_POINT_   $NETWORK_/$NETMASK_(ro,no_root_squash,async)\" >> /etc/exports" warn
+}
+function stopNfs
+{
+  execute "exportfs -u -o ro,no_root_squash,async,nohide $NETWORK_/$NETMASK_:$MOUNT_POINT_" warn
+  if [[ `exportfs |wc -l` > 0 ]]; then
+    dprint "There are other exports, not stopping NFS serivces"
+  else
+    /etc/init.d/nfs-kernel-server stop >/dev/null 2>&1
+    /etc/init.d/nfs-common stop >/dev/null 2>&1
+    /etc/init.d/portmap stop >/dev/null 2>&1
+  fi
+}
+# }}}
+
+function allreadyConfigured
+{
+  isExistent "$CONF_FILE_" dprint || return 1
+  return 0
+}
+
+function createConfig
+{
+  # FIXME
+  execute "sed -i 's/^ALL/\#ALL/' /etc/hosts.deny" warn
+  execute "sed -i 's/^ALL : ALL@ALL : DENY/ALL : ALL@ALL : ALLOW/' /etc/hosts.allow" warn
+
+  createTftpConf
+  createDhcpConf
+}
+
+function actionStart
+{
+  createConfig
+  
+  echo -n "Starting tftpd..."
+  runTftp
+  echo "done"
+  echo -n "Starting dhcpd..."
+  runDhcp
+  echo "done"
+  echo -n "Starting nfs..."
+  startNfs
+  echo "done"
+}
+
+function actionStop
+{
+  stopTftp
+  stopDhcp
+  stopNfs
+  notice "Terminal-server stopped"
+}
+
+function actionClean
+{
+  actionStop
+  removeTftpConf
+  removeDhcpConf
+  stopNfs
+}
+
+# SERVICES {{{
+function serviceStart
+{
+  local service_="$1"   # service to start, if nothing => all
+
+  case "$service_" in
+    "") actionStart ;;
+    tftp) runTftp ;;
+    dhcp) runDhcp ;;
+    nfs) startNfs ;;
+    *) warn "Service $service_ not available" ;;
+  esac
+}
+
+function serviceStop
+{
+  local service_="$1"   # service to stop, if nothing => all
+
+  case "$service_" in
+    "") actionStop ;;
+    tftp) stopTftp ;;
+    dhcp) stopDhcp ;;
+    nfs) stopNfs ;;
+    *) warn "Service $service_ not available" ;;
+  esac
+}
+# }}}
+
+###
+### __MAIN
+###
+
+while getopts "i:hv" opt; do
+  case "$opt" in
+    h) printUsage; exit ;;
+    v) let verbose_=$verbose_+1 ;;
+    ?) printUsage; exit 64 ;;
+  esac
+done
+shift $(($OPTIND - 1))  # set ARGV to the first not parsed commandline parameter
+setVerbose $verbose_
+
+case "$1" in
+  help)   printUsage; exit 0 ;;
+esac
+
+checkRoot die "You have to be root to use this program"
+disableSyslog
+
+isExistent $DEFAULT_CONFIG_ die
+. $DEFAULT_CONFIG_
+. $CONFIG_
+# used config vars:
+# MOUNT_POINT_
+# KERNEL_IMAGE_
+# MEMTEST_IMAGE_
+# PXE_BOOT_MSG_
+# PXE_BOOT_LOGO_
+if [[ $MOUNT_POINT_ == "" || $KERNEL_IMAGE_ == "" || $MEMTEST_IMAGE_ == "" || \
+  $PXE_BOOT_MSG_ == "" || $PXE_BOOT_MSG_ == "" ]]; then
+  warn "MOUNT_POINT_=\"$MOUNT_POINT_\" \
+KERNEL_IMAGE_=\"$KERNEL_IMAGE_\" \
+MEMTEST_IMAGE_=\"$MEMTEST_IMAGE_\"
+PXE_BOOT_MSG_=\"$PXE_BOOT_MSG_\"
+PXE_BOOT_LOGO_=\"$PXE_BOOT_LOGO_\""
+  die "False configuration, please update $CONFIG_"
+fi
+  
+case "$1" in
+  clean) actionClean; exit 0 ;;
+esac
+
+
+while true; do
+  isExistent "$CONF_FILE_" warn "sorry configfile \"$CONF_FILE_\" not found"
+  if [ $? -eq 1 ]; then
+    $CONFIG_PROG_ && continue
+    $DIALOG_ --clear --backtitle "$BACK_TITLE_" --title "Question" --yesno \
+      "grml-terminalserver-config returned an error, do you want to quit now?" 5 75 && exit 1
+  else
+    break
+  fi  
+done
+source $CONF_FILE_
+
+# check for necessary files
+check_necessary_files_='no'
+if [ "$1" == 'start' ]; then
+  case "$2" in
+    tftp|"") check_necessary_files_='yes' ;;
+  esac
+fi
+if [ $check_necessary_files_ == 'yes' ]; then
+  # test for files absolutly necessary for grml-terminalserver and created from -config
+  problem_=0
+  for i in $PATH_/minirt26.gz; do
+    isExistent $i warn || problem_=1
+  done
+  if [ $problem_ -eq 1 ]; then
+    die 'Some necessary files are missing, please rerun grml-terminalserver-config, or copy the files manually'
+  fi
+fi
+
+
+case "$1" in
+  start) serviceStart "$2" ;;
+  stop) serviceStop "$2" ;;
+  "")  actionStart ;;
+  *)  printUsage ;;
+esac
+
+# END OF FILE
+################################################################################
+# vim:foldmethod=marker

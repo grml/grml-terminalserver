@@ -1,0 +1,10 @@
+#!/static/ash
+# creates the custom dir layout to load modules and execute discover
+
+if [ -e /mylib -o -e /myusr ]; then
+  mv /lib /lib~
+  mv /usr /usr~
+  mv /mylib /lib
+  mv /myusr /usr
+fi
+

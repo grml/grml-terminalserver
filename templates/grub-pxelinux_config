@@ -1,0 +1,129 @@
+#!/bin/sh i like colors :)
+#
+# the following variables are available in the template:
+#
+# $INTERFACE_     (interface for the terminalserver)
+# $IP_            (ip for the terminalserver to bind)
+# $NETMASK_       (network mask)
+# $GW_            (gateway)
+# $NAMESERVERS_   (nameservers for the nodes)
+# $IPRANGE_FROM_  (user configured iprange, first ip)
+# $IPRANGE_TO_    (user configured iprange, last ip)
+# $NETWORK_       (first ip in this subnet)
+# $OPTIONS_       (options for grml-terminalserver)
+# $BOOT_ARGS_     (boot arguments for the nodes)
+#
+# NOTE:
+# templates are shellscript fragments and will be sourced from the
+# terminalserver
+#
+# GLOBAL_README_END
+
+
+# default boot arguments used for both grub and pxelinux
+default_boot_args_="ramdisk_size=16384 root=/dev/ram0 rw \
+init=/etc/init nfsdir=$IP_:$MOUNT_POINT_ nodhcp noprompt noeject \
+apm=power-off nomce"
+
+# special boot arguments required by grub
+grub_def_boot_args_="/linux26 $default_boot_args_"
+
+# special boot arguments required by pxelinux
+pxe_def_boot_args_="$default_boot_args_ initrd=minirt26.gz"
+
+# default arguments for framebuffer console
+def_fb_args_="video=vesafb:ypan,1024x768-16@60"
+no_fb_args_="video=ofonly"
+
+###
+## create grub config
+###
+
+cat >"$TFTPD_DATA_DIR_/menu.lst" <<EOT
+default=0
+timeout=10
+title GRML
+  root (nd)
+  kernel $grub_def_boot_args_ $def_fb_args_ $BOOT_ARGS_
+  initrd /minirt26.gz
+
+title GRML no framebuffer
+  root (nd)
+  kernel $grub_def_boot_args_ $no_fb_args_ $BOOT_ARGS_
+
+title GRML small
+  root (nd)
+  kernel $grub_def_boot_args_ small $def_fb_args_ $BOOT_ARGS_
+  initrd /minirt26.gz
+
+title GRML small nofb
+  root (nd)
+  kernel $grub_def_boot_args_ small $no_fb_args_ $BOOT_ARGS_
+  initrd /minirt26.gz
+
+title GRML debuginit
+  root (nd)
+  kernel $grub_def_boot_args_ debuginitrd $def_fb_args_ $BOOT_ARGS_
+  initrd /minirt26.gz
+
+title GRML debuginit nofb
+  root (nd)
+  kernel $grub_def_boot_args_ debuginitrd $no_fb_args_ $BOOT_ARGS_
+  initrd /minirt26.gz
+
+title GRML rescue
+  root (nd)
+  kernel $grub_def_boot_args_ $no_fb_args_
+  initrd /minirt26.gz
+
+title memtest
+  root (nd)
+  kernel /memtest
+
+title Reload config
+  configfile (nd)/menu.lst
+EOT
+
+ret_=$?
+
+
+###
+## create pxelinux config
+###
+
+cat >"$TFTPD_DATA_DIR_/pxelinux.cfg/default" <<EOT
+DEFAULT linux26
+APPEND $pxe_def_boot_args_ $def_fb_args_ $BOOT_ARGS_
+TIMEOUT 100
+PROMPT 1
+DISPLAY boot.msg
+F1 boot.msg
+LABEL grml
+KERNEL linux26
+APPEND $pxe_def_boot_args_ $def_fb_args_ $BOOT_ARGS_
+LABEL grmlnofb
+KERNEL linux26
+APPEND $pxe_def_boot_args_ video=nofb $BOOT_ARGS_
+LABEL small
+KERNEL linux26
+APPEND $pxe_def_boot_args_ small $def_fb_args_ $BOOT_ARGS_
+LABEL smallnofb
+KERNEL linux26
+APPEND $pxe_def_boot_args_ small video=nofb $BOOT_ARGS_
+LABEL debuginit
+KERNEL linux26
+APPEND $pxe_def_boot_args_ debuginit $def_fb_args_ $BOOT_ARGS_
+LABEL debuginit
+KERNEL linux26
+APPEND $pxe_def_boot_args_ debuginit video=nofb $BOOT_ARGS_
+LABEL resuce
+KERNEL linux26
+APPEND $pxe_def_boot_args_ video=nofb
+LABEL memtest
+KERNEL memtest
+APPEND initrd=
+
+EOT
+
+let ret_=$ret_+$?
+return $ret_

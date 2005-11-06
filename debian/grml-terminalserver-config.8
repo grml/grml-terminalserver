@@ -1,0 +1,69 @@
+.\"                                      Hey, EMACS: -*- nroff -*-
+.\" First parameter, NAME, should be all caps
+.\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
+.\" other parameters are allowed: see man(7), man(1)
+.TH GRML-TERMINALSERVER-CONFIG 8 "March 20, 2005"
+.\" Please adjust this date whenever revising the manpage.
+.\"
+.\" Some roff macros, for reference:
+.\" .nh        disable hyphenation
+.\" .hy        enable hyphenation
+.\" .ad l      left justify
+.\" .ad b      justify to both left and right margins
+.\" .nf        disable filling
+.\" .fi        enable filling
+.\" .br        insert line break
+.\" .sp <n>    insert n+1 empty lines
+.\" for manpage-specific macros, see man(7)
+.SH NAME
+grml-terminalserver-config \- Config program for terminalserver coming with GRML
+.SH SYNOPSIS
+.B grml-terminalserver-config
+.RI [ options ] " <command>
+.br
+.SH DESCRIPTION
+This manual page documents briefly the
+.B grml-terminalserver-config
+.PP
+.\" TeX users may be more comfortable with the \fB<whatever>\fP and
+.\" \fI<whatever>\fP escape sequences to invode bold face and italics, 
+.\" respectively.
+\fBgrml-terminalserver-config\fP is a program that
+provides the configuration script for the terminalserver coming with GRML.
+.SH OPTIONS
+These programs follow the long option style without dashes and 
+short options starting with one dash (`-').
+A summary of options is included below.
+.TP
+.B <default>
+Interactive configuration of the terminalserver (same as option interactive).
+.TP
+.B interactive
+Interactive configuring the terminalserver
+.TP
+.B grubConf
+Configure grub and make boot-image (for non-PXE NICs)
+.TP
+.B grubConfWrite
+Configure grub & write image to floppy disk
+.TP
+.B grubWrite
+Write compiled grub-image to floppy disk
+.TP
+.B grubMultiWrite
+batchwrite grub-image to floppy disk (exiting with strg+c)
+.TP
+.B clean
+Remove all configfiles created during user configuration
+.TP
+.B \-h, help
+Show summary of options.
+.TP
+.B \-v
+Show what is going on (more v => more output).
+.SH SEE ALSO
+.BR grml-terminalserver (8)
+.SH AUTHOR
+grml-terminalserver-config was written by Michael Gebetsroither <gebi@grml.org>.
+.PP
+This manual page was written by Michael Gebetsroither <gebi@grml.org>.

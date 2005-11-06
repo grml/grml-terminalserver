@@ -1,0 +1,20 @@
+#!/bin/sh i like colors :)
+#
+# the following variables are available in the template:
+#
+# $INTERFACE_     (interface for the terminalserver)
+# $IP_            (ip for the terminalserver to bind)
+# $NETMASK_       (network mask)
+# $GW_            (gateway)
+# $NAMESERVERS_   (nameservers for the nodes)
+# $IPRANGE_FROM_  (user configured iprange, first ip)
+# $IPRANGE_TO_    (user configured iprange, last ip)
+# $NETWORK_       (first ip in this subnet)
+# $OPTIONS_       (options for grml-terminalserver)
+# $BOOT_ARGS_     (boot arguments for the nodes)
+#
+# NOTE:
+# templates are shellscript fragments and will be sourced from the
+# terminalserver
+#
+# GLOBAL_README_END

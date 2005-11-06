@@ -1,0 +1,12 @@
+#!/static/ash
+# recreate the old dir structures
+
+if [ -e /mylib -o -e /myusr ]; then
+  return 0
+else
+  mv /lib /mylib
+  mv /usr /myusr
+  mv /lib~ /lib
+  mv /usr~ /usr
+fi
+

@@ -1,0 +1,51 @@
+# attention you have to really know what you are doing
+# this options are for debugging purpuose only (to test
+# grml-terminalserver on plain debian sid) or to run the
+# grml-terminalserver on a grml hd install.
+#
+# this is a shellscript fragment and will be sourced from both
+# grml-terminalserver AND grml-terminalserver-config
+
+
+# should be used if paths within the modules.dep do not refere to
+# the current root (if you want to use a module dir of an other
+# linux)
+# if you want to use /mnt/other-linux/lib/modules then:
+#   MODULES_PATH_=/mnt/other-linux/lib/modules
+#   MODULES_PATH_ROOT_DIFF_=/mnt/other-linux
+# default: <none>
+#MODULES_PATH_ROOT_DIFF_=""
+
+# path to the kernel modules you would want to use to create
+# the initrd (basedir eg. like /lib/modules)
+# default: /lib/modules
+#MODULES_PATH_=""
+
+# `uname -r` would give it to you, or THIS config file
+# default: `uname -r`
+#KERNEL_VERSION_=""
+
+# this is the path where the grml image/cdrom is placed (mounted)
+# default: /cdrom
+#MOUNT_POINT_=""
+
+# path + name of the linux kernel you would want to boot
+# default: /cdrom/boot/isolinux/linux26
+#KERNEL_IMAGE_=""
+
+# this is the initrd the grml-terminalserver-config edits
+# if the file is not found, default will be used
+# default: /cdrom/boot/isolinux/minirt26.gz
+#ORIGINAL_INITRD_=""
+
+# path + name of the memtest image
+# default: /cdrom/boot/isolinux/memtest
+#MEMTEST_IMAGE_=""
+
+# path to pxelinux boot message
+# default: /cdrom/boot/isolinux/boot.msg
+#PXE_BOOT_MSG_=""
+
+# path to pxelinux boot logo
+# default: /cdrom/boot/isolinux/logo.16
+#PXE_BOOT_LOGO_=""

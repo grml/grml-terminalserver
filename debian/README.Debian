@@ -1,0 +1,18 @@
+grml-terminalserver for Debian
+------------------------------
+
+This version of grml-terminalserver is tested and developed on debian sid (it works now ;).
+Please adjust the config in /etc/grml/terminalserver/config
+
+Example setup on debian:
+1. mount your grml cd or the iso image to /cdrom
+2. mount /cdrom/GRML/GRML to /mnt/tmp
+3. adjust the following variables:
+MODULES_PATH_ROOT_DIFF_="/mnt/tmp"
+MODULES_PATH_="/mnt/tmp/lib/modules"
+4. set the kernel version to the kernel you would want to use
+    choose one from: ls -l /lib/modules |awk '/-grml/{print $8}'
+eg. KERNEL_VERSION_="2.6.12-grml"
+
+
+ -- Michael Gebetsroither <gebi@grml.org>, Sun, 20 Mar 2005 19:39:26 +0100

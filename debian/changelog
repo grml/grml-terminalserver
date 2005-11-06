@@ -1,0 +1,174 @@
+grml-terminalserver (0.66) unstable; urgency=low
+
+  * fixed partition defaults in option dialog from grml2hd
+  * few minor typo fixes in the dialogs
+
+ -- Michael Gebetsroither <michael.geb@gmx.at>  Sat, 22 Oct 2005 03:07:39 +0200
+
+grml-terminalserver (0.65) unstable; urgency=low
+
+  * fixed variable definition (added local to most variables)
+  * fixed loopdevice handling with mount -o loop
+  * fixed modcalc and grml-terminalserver-config module code
+  * fixed fix of modcal dependencie calculating code
+  * fixed modules path problems
+  * fixed a few small bugs
+  * fixed a small "bug" if there is no grml-image (clean up correctly)
+
+ -- Michael Gebetsroither <michael.geb@gmx.at>  Mon, 17 Oct 2005 12:54:43 +0200
+
+grml-terminalserver (0.64) unstable; urgency=low
+
+  * cleaned up boot profiles (grub/pxelinux)
+  * unified variables between grml-terminalserver and
+    grml-terminalserver-config (one single file for constants)
+  * cleand up tftpd start prozess
+  * added $DHCPD_CONFIG_FILE in grml-terminalserver
+  * removed hardcoded path /cdrom
+  * variable cleanup
+  * added template engine, templates are in /usr/share/.../templates/
+  * fixed netmask handling
+  * kicked netmask in favour of ipcalc for network range calculation
+  * fixed typo in checks against false configuration
+  * fixed mount problems (permission denied)
+
+ -- Michael Gebetsroither <michael.geb@gmx.at>  Sun, 14 Aug 2005 21:58:10 +0200
+
+grml-terminalserver (0.63) unstable; urgency=low
+
+  * simplified configuration handling (default vars) UPDATE YOUR CONFIG
+  * added gcc-3.3 to the dependencies (grub won't compile with gcc-4.0)
+  * added checks against false configuration
+
+ -- Michael Gebetsroither <michael.geb@gmx.at>  Thu,  4 Aug 2005 22:37:04 +0200
+
+grml-terminalserver (0.62) unstable; urgency=low
+
+  * moved discover to -data package 
+
+ -- Michael Gebetsroither <michael.geb@gmx.at>  Thu,  4 Aug 2005 20:06:04 +0200
+
+grml-terminalserver (0.61) unstable; urgency=low
+
+  * splitted up package in grml-terminalserver and grml-terminalserver-data 
+
+ -- Michael Gebetsroither <michael.geb@gmx.at>  Sun, 31 Jul 2005 00:32:05 +0200
+
+grml-terminalserver (0.60) unstable; urgency=low
+
+  * fixed reboot/halt problems 
+
+ -- Michael Gebetsroither <michael.geb@gmx.at>  Mon,  9 May 2005 18:04:01 +0200
+
+grml-terminalserver (0.59) unstable; urgency=low
+
+  * fixed a few small manpage issues
+  * rewrote complete commandline argument processing
+  * manpage update
+
+ -- Michael Gebetsroither <michael.geb@gmx.at>  Sun,  8 May 2005 22:19:44 +0200
+
+grml-terminalserver (0.58) unstable; urgency=low
+
+  * fixed a few typos
+  * make it release ready ;)
+  * added grml-terminalserver-config clean, to remove all created config files 
+
+ -- Michael Gebetsroither <michael.geb@gmx.at>  Sun,  8 May 2005 21:09:49 +0200
+
+grml-terminalserver (0.57) unstable; urgency=low
+
+  * added discover-nic command to the initrd
+  * added alias debuginit to the bootmenu
+
+ -- Michael Gebetsroither <michael.geb@gmx.at>  Tue,  3 May 2005 13:18:01 +0200
+
+grml-terminalserver (0.56) unstable; urgency=low
+
+  * fixed NON-PXE booting with grub (right boot params)
+  * added memtest to bootoptions
+  * updatet linuxrc with upstream
+  * fixed default ramdisk size
+  * fixed problem with hosts.allow/hosts.deny
+
+ -- Michael Gebetsroither <michael.geb@gmx.at>  Sun,  1 May 2005 19:33:43 +0200
+
+grml-terminalserver (0.55) unstable; urgency=low
+
+  * first "working" version, it boots up => it's perfect :D (linus)
+
+ -- Michael Gebetsroither <michael.geb@gmx.at>  Wed, 27 Apr 2005 00:59:32 +0200
+
+grml-terminalserver (0.54) unstable; urgency=low
+
+  * new test release 
+
+ -- Michael Gebetsroither <michael.geb@gmx.at>  Mon, 25 Apr 2005 12:30:13 +0200
+
+grml-terminalserver (0.53) unstable; urgency=low
+
+  * fixed unnecessary file backup
+  * DEBUG UPDATE
+  * tried another initrd/linuxrc combination
+  * added config file, to run it on plain debian sid also
+  * added executables cdir/rdir into the initrd
+  * cdir to create a dir layout to run discover and modprobe
+  * rdir to put the old files in place
+
+ -- Michael Gebetsroither <michael.geb@gmx.at>  Sun, 24 Apr 2005 16:14:40 +0200
+
+grml-terminalserver (0.52) unstable; urgency=low
+
+  * added libuclibc0 to the dependencies
+  * added discover-data to the dependencies
+  * integrate functions to build a "generic" netboot initrd, now it should be
+    a _real_ terminalserver ;)
+  * big changes in grml-terminalserver-config + linuxrc 
+
+ -- Michael Gebetsroither <gebi@grml.org>  Tue, 12 Apr 2005 13:56:32 +0200
+
+grml-terminalserver (0.51) unstable; urgency=low
+
+  * added sh-lib to the dependencies
+  * added syslinux to the dependencies
+  * reworked grml-terminalserver-config get options section (not zsh
+    compatibel)
+  * made paths grml compatibel
+
+ -- Michael Gebetsroither <gebi@grml.org>  Sat,  9 Apr 2005 19:55:08 +0200
+
+grml-terminalserver (0.5) unstable; urgency=low
+
+  * added manpages 
+  * fixed a bug in grml-terminalserver-config (getting the options)
+
+ -- Michael Gebetsroither <gebi@grml.org>  Sun,  3 Apr 2005 12:41:15 +0200
+
+grml-terminalserver (0.4) unstable; urgency=low
+
+  * fixed a few lintian warnings (changed section to net, removed /usr/bin) 
+
+ -- Michael Gebetsroither <gebi@grml.org>  Sat,  2 Apr 2005 22:35:34 +0200
+
+grml-terminalserver (0.3) unstable; urgency=low
+
+  * fixed #246904 from nfs-kernel-server (own init skript)
+  * replaced a few parameters with global variables
+
+ -- Michael Gebetsroither <gebi@grml.org>  Sat,  2 Apr 2005 20:46:49 +0200
+
+grml-terminalserver (0.2) unstable; urgency=low
+
+  * fixed a few path's in the skript (get it working)
+
+ -- Michael Gebetsroither <gebi@grml.org>  Thu, 31 Mar 2005 15:24:18 +0200
+
+grml-terminalserver (0.1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Michael Gebetsroither <gebi@grml.org>  Sun, 20 Mar 2005 19:39:26 +0100
+
+Local variables:
+mode: debian-changelog
+End:

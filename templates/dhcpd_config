@@ -1,0 +1,51 @@
+#!/bin/sh i like colors :)
+#
+# the following variables are available in the template:
+#
+# $INTERFACE_     (interface for the terminalserver)
+# $IP_            (ip for the terminalserver to bind)
+# $NETMASK_       (network mask)
+# $GW_            (gateway)
+# $NAMESERVERS_   (nameservers for the nodes)
+# $IPRANGE_FROM_  (user configured iprange, first ip)
+# $IPRANGE_TO_    (user configured iprange, last ip)
+# $NETWORK_       (first ip in this subnet)
+# $OPTIONS_       (options for grml-terminalserver)
+# $BOOT_ARGS_     (boot arguments for the nodes)
+#
+# NOTE:
+# templates are shellscript fragments and will be sourced from the
+# terminalserver
+#
+# GLOBAL_README_END
+
+#
+# this is the template to create the config file for the dhcpd server
+#
+
+date_=`execute date warn`
+
+cat >"$DHCPD_CONFIG_FILE_" <<EOT
+# ${DHCPD_CONFIG_FILE_##/*/} for GRML terminalserver
+# created on $date_
+
+# global settings
+allow booting;
+allow bootp;
+#option option-150 code 150 = text ;
+#option T150 code 150 = string;
+default-lease-time 600;
+max-lease-time 7200;
+
+subnet ${IP_%.*}.0 netmask $NETMASK_ {
+  next-server $IP_;
+  if substring (option vendor-class-identifier, 0, 9) = "Etherboot" { filename "etherboot.nbi"; }
+  else { filename "pxelinux.0"; }
+#  option subnet-mask $NETMASK_;
+  range $IPRANGE_FROM_ $IPRANGE_TO_;
+#  option T150 "/menu.lst";
+#  option option-150 "(nd)/menu.lst";
+}
+
+EOT
+

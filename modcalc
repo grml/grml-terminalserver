@@ -1,0 +1,66 @@
+#!/bin/sh
+# "modtest"
+#
+# 
+# written by Michael Gebetsroither (michael.geb@gmx.at)
+#
+# 11.04.2005    - initial release (Michael Gebetsroither)
+#
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, look at
+# http://www.gnu.org/licenses/gpl.txt, or write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+# MA  02111-1307, USA.
+
+TMP=`mktemp`
+
+MODULES_=$(awk '/ethernet/{print $3}' /lib/discover/pci.lst |sort |uniq |xargs)
+MODULES_DEP_="$1"
+
+if [[ "$1" == "" ]]; then
+  echo "you have to give me the path to your modules.dep" >&2
+  exit 1
+fi
+
+#for i in $MODULES_; do
+#  awk -F: '{if($1~/'"$i"'/) {print $1}}' /lib/modules/$KERNEL_VERSION_/modules.dep
+#done > $TMP
+
+for i in $MODULES_; do
+  #awk -F: '{if($1~/'"$i"'/) {print $2}}' /lib/modules/$KERNEL_VERSION_/modules.dep
+  tmp_=`awk -F: '{if($1~/'"$i".ko'/) {print $0}}' $MODULES_DEP_`
+  echo "1-${tmp_%%:*}"
+  echo "${tmp_#*:}" |xargs -n1 echo |sed 's/://'
+done \
+| sort | uniq | while read module relax; do
+  if [ -n "$module" ]; then
+    #echo "cp $module" "INITRD/modules/net/00_${module##*/}"
+    echo -n "$module" >> $TMP
+    echo -n "$relax" >> $TMP
+    echo >> $TMP
+  fi
+done
+
+#for i in $MODULES_; do
+#  tmp_=`awk -F: '{if($1~/'"$i".ko'/) {print $0}}' /lib/modules/$KERNEL_VERSION_/modules.dep`
+#  echo first-match-$i--${tmp_%%:*}
+#  echo ${tmp_#*:} |xargs -n1 echo
+#  tmp_=''
+#done \
+#|while read module relax; do
+#  echo "module=\"$module\"  relax=\"$relax\""
+#done
+
+cat $TMP |sort |uniq
+rm $TMP

@@ -1,0 +1,9 @@
+  * fix problem with nvidia NICs (forcedeath)
+  * maybe dump discover + libuclibc in favour of hwinfo + libc (space?)
+  * udhcp client "timeout" ( --background + in linuxrc 10s warten bis IP kommt, wenn schon ip vorhanden sofort weitermachen).
+  * resolv.conf should be copied from the initrd
+  * update linuxrc from grml
+  * DON'T delete /var/lib/tftpdboot on a !grml-system
+  * config vars to use external services (dhcp, tftp, nfs)
+  * make pxelinux configurable (to use another pxe-boot-manager) (MAYBE)
+  * ...

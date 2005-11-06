@@ -1,0 +1,614 @@
+#!/bin/sh
+# Filename:      terminalserver-config
+# Purpose:       Program to do something
+# Authors:       grml-team (grml.org), (c) Michael Gebetsroither <gebi@grml.org>
+# Bug-Reports:   see http://grml.org/bugs/
+# License:       This file is licensed under the GPL v2.
+# Latest change: Sun May 08 22:21:32 CEST 2005 [gebi]
+################################################################################
+
+
+###
+### __INCLUDES
+###
+. /etc/grml/sh-lib
+#. /etc/grml/sysexits-sh
+
+
+
+###
+### __VARIABLES
+###
+
+verbose_=0
+
+# this file holds all variable definitions
+SHARED_PROG_VARS_="/usr/share/grml-terminalserver/shared_prog_vars"
+isExistent $SHARED_PROG_VARS_ die
+. $SHARED_PROG_VARS_
+
+# variables used in the config file for grml-terminalserver
+INTERFACE_=""
+IP_=""
+NETMASK_=""
+GW_=""
+NAMESERVERS_=""
+IPRANGE_FROM_=""
+IPRANGE_TO_=""
+NETWORK_=""
+OPTIONS_=""
+BOOT_ARGS_=""
+ 
+
+###
+### __FUNCTIONS
+###
+
+function printUsage
+{
+  cat <<EOT
+Usage: "$PROG_NAME__" [OPTIONS] <command>
+
+$PROG_NAME__ is the config program for the terminalserver
+comming with grml.
+
+COMMANDS:
+   help             This text
+   interactive      Interactive Configuration of the grml-terminalserver
+   grubConf         Configure grub and make boot-image (for non-PXE NICs)
+   grubConfWrite    Configure grub and write image to floppy disk
+   grubWrite        Write compiled grub-image to floppy disk
+   grubMultiWrite   batchwrite grub-image to floppy disk
+   initrd           Only create the initrd
+   clean            Remove all configfiles created during user configuration
+   <default>        interactive
+
+OPTIONS:
+   -v             verbose (show what is going on, v++)
+   -h             this help text
+
+EOT
+}
+
+
+function writeConfig
+{
+  local date_=""
+
+  if [ -f $CONF_FILE_ ]; then
+    mv -fb $CONF_FILE_ ${CONF_FILE_}-old
+  fi
+
+  date_=`date`
+  cat <<EOT > $CONF_FILE_
+# GRML TERMINAL-SERVER CONFIG
+# created on "$date_"
+INTERFACE_="$INTERFACE_"
+IP_="$IP_"
+NETMASK_="$NETMASK_"
+GW_="$GW_"
+NAMESERVERS_="$NAMESERVERS_"
+IPRANGE_FROM_="$IPRANGE_FROM_"
+IPRANGE_TO_="$IPRANGE_TO_"
+NETWORK_="$NETWORK_"
+OPTIONS_="$OPTIONS_"
+BOOT_ARGS_="$BOOT_ARGS_"
+
+EOT
+  notice "config successfully safed to \"$CONF_FILE_\""
+}
+
+
+# AUTOMATIC CONFIGURATION  {{{
+function checkParamArg
+{
+  local param_name="$1"
+  local arg="$2"
+
+  #eval "echo $`echo $test`"
+  echo $arg |grep "^[-|+]" &>/dev/null || return
+
+  die "Argument from $param_name looks like another parameter \"$arg\"" 1
+}
+
+function actionAutoconf
+{
+  checkParamArg "-i" "$interface_"
+}
+# }}}
+
+
+# INITRD {{{
+
+function actionMkInitrd
+{
+  echo "Creating initrd: $PATH_/minirt26.gz"
+  isExistent "$PATH_/minirt26.gz" && echo "$PATH_/minirt26.gz does allready exist, skipping initrd creation" && return 0
+  mkInitrd
+  echo 'done'
+}
+
+function mkInitrd
+{
+  TMP_DIR_=`mktemp -td terminalserver_initrd.XXXXXX`
+  local i=''
+  local tmp_loopname=''
+
+  # copying original initrd into $INITRD
+  execute "rm -r $INITRD_" 2>/dev/null
+  execute "cp $ORIGINAL_INITRD_ $TMP_DIR_/minirt26.gz" warn || return 1
+  execute "mkdir -p $INITRD_" warn || return 1
+  execute "mkdir -p $PATH_/mini-root.orig" warn || return 1
+  execute "gunzip $TMP_DIR_/minirt26.gz" warn || return 1
+  tmp_loopname=`findNextFreeLoop die`
+  execute "mount -o loop=$tmp_loopname $TMP_DIR_/minirt26 $PATH_/mini-root.orig " warn || return 1
+  execute "cp -a $PATH_/mini-root.orig/* $INITRD_" warn || return 1
+  execute "umount $PATH_/mini-root.orig" warn || return 1
+  losetup -d $tmp_loopname &>/dev/null
+  tmp_loopname=''
+  execute "rmdir $PATH_/mini-root.orig" warn || return 1
+  execute "rm $TMP_DIR_/minirt26" warn || return 1
+
+  # implanting my initrd changes into the original initrd
+  
+  # copy programs, check if there are allready links with this name to busybox
+  for i in $USR_SHARE_/discover* $USR_SHARE_/udhcpc $USR_SHARE_/udhcp-config.sh $USR_SHARE_/cdir $USR_SHARE_/rdir /usr/bin/ldd ;do
+    tmp_name_="${i##*/}"
+    isNotExistent "$INITRD_/static/$tmp_name_" eprint || execute "rm $INITRD_/static/$tmp_name_"
+    cp $i "$INITRD_/static/$tmp_name_"
+  done
+  cp $USR_SHARE_/linuxrc $INITRD_/
+  mkdir -p $INITRD_/mylib
+  mkdir -p $INITRD_/myusr/i386-uclibc-linux/lib
+  for i in libdl libc libuClibc ld-uClibc; do
+    cp -a $UCLIBC_PATH_/$i*.so* $INITRD_/myusr/i386-uclibc-linux/lib
+  done
+
+  # copy data files for discover (discover-data)
+  mkdir -p $INITRD_/mylib/discover
+  cp /lib/discover/list.xml /lib/discover/pci-*.xml $INITRD_/mylib/discover/
+
+
+  #
+  # which modules should i put into the ramdisk
+  #
+
+  # get cards detected by discover
+  isNotExistent $CARDS_DETECTED_BY_DISCOVER && awk '/ethernet/{print $3}' /lib/discover/pci.lst |sort |uniq > $CARDS_DETECTED_BY_DISCOVER
+
+  local modules="`cat $CARDS_DETECTED_BY_DISCOVER |xargs` af_packet"
+  local modules_dep=""
+
+  # get paths of modules + paths of all dependet modules
+  echo -n "" >"$TMP_"
+  for i in $modules; do
+    tmp_=`awk -F: '{if($1~/'"$i".ko'/) {print $0}}' $MODULES_PATH_/$KERNEL_VERSION_/modules.dep`
+    echo "${tmp_%%:*}"
+    # FIXME ugly sed hack :(
+    echo "${tmp_#*:}" |xargs -n1 echo |sed 's/://'
+  done \
+  | sort | uniq | while read module relax; do
+    if [ -n "$module" ]; then
+      echo "$module" >> $TMP_
+    fi
+  done
+
+  # copy modules + dependend modules into ramdisk
+  local mod_path_="$INITRD_/mylib/modules/$KERNEL_VERSION_"
+  local tmp_dst_path_="$mod_path_/kernel"
+  mkdir -p $tmp_dst_path_
+  cat $TMP_ |sort |uniq |while read module; do
+    local tmp_path=${module#*/kernel/}
+    tmp_path=$tmp_dst_path_/${tmp_path%/*.ko}
+    local module_path=$tmp_path/${module##/*/}
+
+    isNotExistent "$tmp_path" dprint && mkdir -p "$tmp_path"
+    isNotExistent "$module_path" dprint && cp "$MODULES_PATH_ROOT_DIFF_/$module" "$module_path"
+  done
+
+  # copying additional modules
+  for i in fs/nfs/nfs.ko net/sunrpc/sunrpc.ko fs/lockd/lockd.ko net/packet/af_packet.ko; do
+    local tmp_path="$tmp_dst_path_/${i%/*}"
+    mkdir -p $tmp_path
+    cp $MODULES_PATH_/$KERNEL_VERSION_/kernel/$i "$tmp_path"
+  done
+
+  # generate modules.dep
+  cp $MODULES_PATH_/$KERNEL_VERSION_/modules.dep $mod_path_
+  #grep "^\/lib\/modules\/$KERNEL_VERSION_\/kernel\/" $MODULES_PATH_/$KERNEL_VERSION_/modules.dep |\
+  #  sed "s/\/lib\/modules\/$KERNEL_VERSION_\/kernel\//\/modules\//g" > $mod_path_/modules.dep
+
+  # put everything into the new initrd
+  local tmp_size=`du -s $INITRD_ |awk '{print $1}'`   # in kB
+  let tmp_size=$tmp_size+1000
+  if (( $tmp_size >= 16000 )); then
+    warn "Your initrd is $tmp_size kByte large => TOO BIG (should be 16000kByte)"
+    warn "Please remove a few modules from $CARDS_DETECTED_BY_DISCOVER or edit $INITRD_ manually"
+    return 1
+  fi
+
+  execute "dd if=/dev/zero of=$TMP_DIR_/minirt26 bs=${tmp_size}k count=1 &>/dev/null" warn || \
+    warn "could not create filesystem image"
+
+  tmp_loopname=`findNextFreeLoop die`
+  execute "losetup $tmp_loopname $TMP_DIR_/minirt26" die
+  execute "mke2fs -L \"GRML NETINIT\" -b 1024 -N 8192 -O none -F -q -m 0 $tmp_loopname" warn
+
+  execute "mkdir $PATH_/minirt26_mountp" warn
+  execute "mount $tmp_loopname $PATH_/minirt26_mountp" warn
+  execute "cp -a $INITRD_/* $PATH_/minirt26_mountp" warn
+  execute "umount $PATH_/minirt26_mountp" warn
+  execute "losetup -d $tmp_loopname &>/dev/null" warn
+  execute "rmdir $PATH_/minirt26_mountp" warn
+  execute "gzip -9 $TMP_DIR_/minirt26" warn
+  execute "rm -r $INITRD_" warn
+  execute "mv $TMP_DIR_/minirt26.gz $PATH_"
+  execute "rm -fr $TMP_DIR_"
+}
+# }}}
+
+
+# INTERACTIVE CONFIGURATION  {{{
+
+function actionInteractive
+{
+  local i=""
+
+  dprint "running in interactive mode"
+  
+  local card_title_="Choose network device connected to client network"
+  local card_message_="Available network devices:"
+  local iprange_title_="IP Address range for clients"
+local iprange_message_="
+Please enter the desired IP-Range of addresses that should be allocated by clients, separated by a single space.
+
+Example:
+          192.168.0.101 192.168.0.200
+
+for addresses from 192.168.0.101 to (and including) 192.168.0.200.
+
+"
+  local runconfig_title_="Networkcard config"
+  local runconfig_message_="Would you like to configure your interfaces now?"
+  local grub_title_="Grub configuration"
+  local grub_message_="Do you have any NON-PXE network cards you would like to boot from?"
+  
+  # on witch interfaces should we listen
+  local netdevices_="$(cat /proc/net/dev | awk -F: '/eth.:|tr.:/{print $1}')"
+  local device_list_=""
+  for INTERFACE_ in $netdevices_; do device_list_="$device_list_ ${INTERFACE_} Networkcard_${INTERFACE_##eth}"; done
+    echo -n "" >"$TMP_"
+    $DIALOG_ --backtitle "$BACK_TITLE_" --title "$card_title_" --menu "$card_message_" \
+      0 0 18 $device_list_ 2>"$TMP_" || warn "could not get network-interface"
+  INTERFACE_="$(<$TMP_)" ; echo -n "" >"$TMP_"
+
+  while true; do
+    IP_=`netGetIp "$INTERFACE_" warn`
+    NETMASK_=`netGetNetmask "$INTERFACE_" warn`
+    netValidIp "$IP_" warn && break
+    $DIALOG_ --backtitle "$BACK_TITLE_" --title "$runconfig_title_" --yesno "$runconfig_message_" 18 45 && \
+      netcardconfig || die "Could not get interface" $?
+  done
+
+  IPRANGE_FROM_=`execute "ipcalc -n $IP_/$NETMASK_" warn |awk '/HostMin/{print $2}'`
+  IPRANGE_TO_=`execute "ipcalc -n $IP_/$NETMASK_" warn |awk '/HostMax/{print $2}'`
+  NETWORK_=$IPRANGE_FROM_
+  local iprange_=""
+  while [ -z "$IPRANGE_FROM_" -o -z "$IPRANGE_TO_" -o -z "$iprange_" ]; do
+    iprange_="$IPRANGE_FROM_ $IPRANGE_TO_"
+    echo -n "" >"$TMP_"
+    $DIALOG_ --clear --backtitle "$BACK_TITLE_" --title "$iprange_title_ ($INTERFACE_=$IP_/$NETMASK_)" \
+      --inputbox "$iprange_message_" 18 75 "$iprange_" 2>"$TMP_" || die "problems getting network range" $?
+
+    iprange_="$(<$TMP_)"
+    IPRANGE_FROM_="${iprange_%% *}"
+    IPRANGE_TO_="${iprange_##* }"
+
+    for i in "$IPRANGE_FROM_" "$IPRANGE_TO_"; do
+      netValidIp "$i" warn || iprange_=""
+    done
+  done
+
+  NAMESERVERS_=`netGetNameservers warn`
+  GW_=`netGetDefaultGateway warn`
+
+
+  # grub
+  echo -n "" >"$TMP_"
+  local grub_write_="YES"
+  $DIALOG_ --clear --backtitle "$BACK_TITLE_" --title "$grub_title_" --yesno "$grub_message_" 5 75 && \
+    grubConfig || grub_write_="NO"
+ 
+
+  # get options
+  #local OPT_IPTABLES_="yes"
+  #local OPT_SSH_="yes"
+  #local OPT_DISTCC_="yes"
+  #local OPT_SQUID_=""
+  
+  local OPTIONS_TITLE_="Options"
+  local OPTIONS_MESSAGE_="Please give the appropriate options you want the clients to use:
+
+grml2hd   - Make a non-interactive remote installation
+
+
+ 
+"
+#  local OPTIONS_MESSAGE_="Please give the appropriate options you want the clients to use:
+#
+#iptables  - Only the server should be able to access the clients
+#ssh       - A ssh-key will be created on the server and distributed to the clients
+#distcc    - You want to use the clients as compile-farm (ssh options recommned)
+#
+#"
+
+  local OPT_IPTABLES_DESC_="Start iptables on the clients"
+  local OPT_SSH_DESC_="Start ssh on the clients"
+  local OPT_DISTCC_DESC_="Start distcc on the clients"
+  local OPT_GRML2HD_DESC_="Remote install grml on the network clients"
+  # dialog options (enable if implemented)
+  #iptables "$OPT_IPTABLES_DESC_" off \
+  #ssh "$OPT_SSH_DESC_" off \
+  #distcc "$OPT_DISTCC_DESC_" off \
+  echo -n "" >"$TMP_"
+  $DIALOG_ --clear --separate-output --backtitle "$BACK_TITLE_" --title "$OPTIONS_TITLE_" --checklist "$OPTIONS_MESSAGE_" 25 80 10 \
+  grml2hd "$OPT_GRML2HD_DESC_" off \
+    2>$TMP_ || die "could not get terminalserver options" $?
+  while read tmp_option_; do
+    OPTIONS_="$OPTIONS_ $tmp_option_"
+  done <$TMP_
+
+  # parse options
+  for i in $OPTIONS_; do
+    case "$i" in
+      grml2hd)  optGrml2Hd || return 1 ;;
+    esac
+  done
+
+  echo -n "" >"$TMP_"
+  local OPTIONS_BOOTARG_MESSAGE_="Here you can add additional boot arguments for the clients seperated by spaces:
+
+Quite usefull examples:
+
+ssh=<pw>              - Start ssh server and set password of user grml to pw
+services=<1,2,3>      - Execute /etc/init.d/{1,2,3} start
+console=ttyS0,9600n8  - Initialise seriell console
+
+ 
+"
+  $DIALOG_ --clear --no-collapse --backtitle "$BACK_TITLE_" --title "$OPTIONS_TITLE_" --inputbox "$OPTIONS_BOOTARG_MESSAGE_" 0 0\
+    2>$TMP_ || die "problems getting additional boot arguments"
+  BOOT_ARGS_="$BOOT_ARGS_ $(<$TMP_)"
+
+  writeConfig
+  if [ $grub_write_ == "YES" ]; then
+    grubWrite
+  fi
+  actionMkInitrd
+  notice "GRML terminalserver successfully configured"
+}
+# }}}
+
+# OPTIONS GETTING DIALOG {{{
+function optGrml2Hd
+{
+  local GRML2HD_TITLE_='Grml2hd options dialog'
+  local tmp_=''
+  local options_='BOOT_IMAGE=grml2hd'
+  
+  # get partition to install grml2hd on
+  OPTIONS_PARTITION_MSG_='Please give me the target partition where to install grml'
+  PARTITION_TITLE_='Partition selection'
+  echo -n "" >"$TMP_"
+  $DIALOG_ --clear --backtitle "$BACK_TITLE_" --title "$PARTITION_TITLE_" --inputbox \
+    "$OPTIONS_PARTITION_MSG_" 0 75 '/dev/hda1' 2>$TMP_ || die "problems getting partition"
+  tmp_="partition=$(<$TMP_)"
+  options_="$options_ $tmp_"
+  
+  # get filesystem type
+  OPTION_FS_TYPE_='Please give me the filesystem type'
+  FS_TITLE_='Filesystem selection'
+  echo -n "" >"$TMP_"
+  $DIALOG_ --clear --backtitle "$BACK_TITLE_" --title "$FS_TITLE_" --inputbox \
+  "$OPTION_FS_TYPE_" 0 75 'ext3' 2>$TMP_ || die "problems getting filesystem type"
+  tmp_="filesystem=$(<$TMP_)"
+  options_="$options_ $tmp_"
+    
+  # get where to save mbr
+  OPTION_MBR_='Please give me the location where to save the mbr'
+  MBR_TITLE_='Select location of mbr'
+  echo -n "" >"$TMP_"
+  $DIALOG_ --clear --backtitle "$BACK_TITLE_" --title "$MBR_TITLE_" --inputbox \
+    "$OPTION_MBR_" 0 75 '/dev/hda' 2>$TMP_ || die "problems getting location where to write mbr"
+  tmp_="mbr=$(<$TMP_)"
+  options_="$options_ $tmp_"
+
+  # get first user
+  OPTION_USER_='Who should be the first user on the system'
+  USER_TITLE_='User selection'
+  echo -n "" >"$TMP_"
+  $DIALOG_ --clear --backtitle "$BACK_TITLE_" --title "$USER_TITLE_" --inputbox \
+    "$OPTION_USER_" 0 75 'grml' 2>$TMP_ || die "problems getting first user of system"
+  tmp_="user=$(<$TMP_)"
+  options_="$options_ $tmp_"
+
+  BOOT_ARGS_="$options_"
+}
+#}}}
+
+# GRUB CONFIG  {{{
+function grubConfig
+{
+  local tmp_=`mktemp -td terminalserver_grub.XXXXXX` || warn "could not create tmp file for grubConfig"
+  if [ -z "$tmp_" ]; then return 1; fi
+
+  grubConfigWork $tmp_
+  local ret_=$?
+  execute "rm -rf $tmp_" warn
+
+  return $ret_
+}
+
+function grubConfigWork
+{
+  local tmp_="$1"
+
+  local grub_title_="Grub configuration"
+  local grub_nic_message_="
+Give me the types of network cards you would want to boot from.
+If you networkcard is allready listed press <OK>!
+
+WARNING: DON't add all NIC's, grub could possibly stop working!!"
+  local nics_=""
+
+  while read module_ desc_ mode_; do
+    nics_="$nics_ $module_ $desc_ $mode_"
+  done < $GRUB_NIC_CONF_
+
+  echo -n "" >$TMP_
+  local cmd_line_=""
+  $DIALOG_ --clear --separate-output --backtitle "$BACK_TITLE_" --title "$grub_title_" --checklist \
+    "$grub_nic_message_" 10 70 0 $nics_ 2>$TMP_
+  local ret_=$?
+  if [[ $ret_ -ne 0 || `wc -l <$TMP_` -eq 0 ]]; then
+    echo $ret_
+    warn "you should give me your specified NICs but didn't => DEFAULT will be used"
+    awk '/ on$/{print $1}' $GRUB_NIC_CONF_ >$TMP_
+  fi
+  while read module_; do
+    cmd_line_="$cmd_line_ --enable-$module_"
+  done < $TMP_
+
+  echo "\"$cmd_line_\""
+
+  execute "tar xzf $GRUB_SOURCE_ -C $tmp_" warn || return 1
+  execute "cd $tmp_/grub*" warn || return 1
+cat >preset-menu <<EOT
+# Set up the serial terminal, first of all.
+#serial --unit=0 --speed=19200
+#terminal --timeout=0 serial
+    
+# Initialize the network.
+#dhcp --with-configfile
+#bootp --with-configfile
+dhcp
+default 0
+timeout 0
+title Load config from Tftp server
+  configfile (nd)/menu.lst
+EOT
+  #execute "./configure --enable-diskless --enable-preset-menu=./preset-menu $cmd_line_" warn || read
+  execute "./configure --enable-preset-menu=./preset-menu $cmd_line_" warn || read
+  execute "make -j2 CC=gcc-3.3" warn || read #return 1
+
+  local st1_="stage1/stage1"
+  local st2_="stage2/stage2"
+  isExistent $st1_ warn || return 1
+  isExistent $st2_ warn || return 1
+
+  execute "mv -fb $PATH_/grub.img $PATH_/grub.img.old"
+  execute "cat $st1_ $st2_ > $PATH_/grub.img" warn || return 1
+  return 0
+}
+
+function grubWrite
+{
+  local grub_title_="Grub configuration"
+  $DIALOG_ --clear --backtitle "$BACK_TITLE_" --title "$grub_title_" --yesno \
+    "Do you want to write your grub image to /dev/fd0" 5 75 || return 1
+
+  execute "dd if=$PATH_/grub.img of=/dev/fd0" warn || return 0
+  return 1
+}
+
+function grubMultiWrite
+{
+  local target_=${1:-'/dev/fd0'}
+  
+  isExistent "$PATH_/grub.img" die "you must give me an image or run \"$PROG_NAME__ grubconf\""
+  isExistent "$target_" die "$target_ is not a valied"
+  while true; do
+    echo -n "Please insert disk into $target_ and press <ENTER> (STRG-C for end)"
+    read
+    dd if=$PATH_/grub.img of="$target_"
+  done
+}
+# }}}
+
+
+function removeTmpFiles
+{
+  execute "rm -f $TMP_" warn
+}
+
+function actionClean
+{
+  for i in dhcpd.conf grub.img minirt26.gz; do
+    execute "rm -f $PATH_/$i*"
+  done
+
+  for i in $CARDS_DETECTED_BY_DISCOVER $CONF_FILE_; do
+    execute "rm -f $i"
+  done
+
+}
+
+
+###
+### __MAIN
+###
+
+while getopts "i:hv" opt; do
+  case "$opt" in
+    i) interface_=$OPTARG ;;
+    h) printUsage; exit ;;
+    v) let verbose_=$verbose_+1 ;;
+    ?) printUsage; exit 64 ;;
+  esac
+done
+shift $(($OPTIND - 1))  # set ARGV to the first not parsed commandline parameter
+setVerbose $verbose_
+
+case "$1" in
+  help)   printUsage; exit 0 ;;
+esac
+  
+checkRoot die 'You have to be root to use this program'
+disableSyslog
+
+execute "mkdir -p $PATH_" die
+
+TMP_=`mktemp -t grml-terminalserver-config.XXXXXX` || die "Could not create tmpfile" $?
+setExitFunction 'removeTmpFiles'
+
+
+. $DEFAULT_CONFIG_
+. $CONFIG_
+# used config vars:
+# MODULES_PATH_
+# MODULES_PATH_ROOT_DIFF_
+# KERNEL_VERSION_
+# ORIGINAL_INITRD_
+if [[ $MODULES_PATH_ == "" || $KERNEL_VERSION_ == "" || $ORIGINAL_INITRD_ == "" ]]; then
+  warn "MODULES_PATH_=\"$MODULES_PATH_\" \
+KERNEL_VERSION_=\"$KERNEL_VERSION_\" \
+ORIGINAL_INITRD_=\"$ORIGINAL_INITRD_\""
+  die "False configuration, please update $CONFIG_"
+fi
+    
+
+case "$1" in
+  interactive)  actionInteractive ;;
+  grubConf)   grubConfig ;;
+  grubConfWrite)  grubConfig && grubWrite ;;
+  grubWrite)    grubWrite ;;
+  grubMultiWrite)   grubMultiWrite "$2" ;;
+  initrd) actionMkInitrd ;;
+  clean)  actionClean ;;
+  *)    actionInteractive ;;
+esac
+
+removeTmpFiles
+# END OF FILE
+################################################################################
+# vim:foldmethod=marker

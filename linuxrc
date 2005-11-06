@@ -1,0 +1,921 @@
+#!/static/sh
+# Filename: /linuxrc
+# Purpose:  minirt for kernel 2.6
+# Authors:  (c) Klaus Knopper <knoppix@knopper.net>, (c) Michael Prokop <mika@grml.org>
+# Latest change: Die Apr 19 11:44:14 CEST 2005 [mika]
+#######################################################################################
+
+# hardcoded configurable options
+# Default maximum size of dynamic ramdisk in kilobytes
+RAMSIZE=1000000
+# End of options
+
+# Don't allow interrupt signals
+trap "" 1 2 3 15
+
+# Misc functions
+INSMOD="insmod"
+[ -x /modules/insmod ] && INSMOD="/modules/insmod"
+
+RMMOD="rmmod"
+[ -x /modules/rmmod ] && RMMOD="/modules/rmmod"
+
+# Builin filesystems
+#BUILTIN_FS="iso9660 ext2 ext3 reiserfs vfat reiser4"
+BUILTIN_FS="iso9660 ext2 vfat"
+
+mountit(){
+# Usage: mountit src dst "options"
+# Uses builtin mount of ash.grml
+  for fs in $BUILTIN_FS; do
+  test -b $1 && mount -t $fs $3 $1 $2 >/dev/null 2>&1 && return 0
+  done
+  return 1
+}
+
+FOUND_SCSI=""
+FOUND_GRML=""
+INTERACTIVE=""
+
+# Clean input/output
+exec >/dev/console </dev/console 2>&1
+
+# Mount /proc and /dev/pts
+mount -t proc /proc /proc
+
+# Disable kernel messages while probing modules in autodetect mode
+echo "0" > /proc/sys/kernel/printk
+
+mount -t devpts /dev/pts /dev/pts
+# Kernel 2.6
+mount -t sysfs /sys /sys >/dev/null 2>&1
+
+# Read boot command line with builtin cat command (shell read function fails in Kernel 2.4.19-rc1)
+CMDLINE="$(cat /proc/cmdline)"
+
+# Simple shell grep
+stringinfile(){
+  case "$(cat $2)" in *$1*) return 0;; esac
+  return 1
+}
+
+# same for strings
+stringinstring(){
+  case "$2" in *$1*) return 0;; esac
+  return 1
+}
+
+# Reread boot command line; echo last parameter's argument or return false.
+getbootparam(){
+  stringinstring " $1=" "$CMDLINE" || return 1
+  result="${CMDLINE##*$1=}"
+  result="${result%%[   ]*}"
+  echo "$result"
+  return 0
+}
+
+# Check boot commandline for specified option
+checkbootparam(){
+  stringinstring " $1" "$CMDLINE"
+  return "$?"
+}
+
+if checkbootparam "nocolor" ; then
+  echo "Disabling colors in bootsequence as requested on commandline."
+  # Reset fb color mode
+  RESET="]R"
+  # ANSI COLORS
+  # Erase to end of line
+  CRE="[K"
+  # Clear and reset Screen
+  CLEAR="c"
+else
+  # Reset fb color mode
+  RESET="]R"
+  # ANSI COLORS
+  # Erase to end of line
+  CRE="[K"
+  # Clear and reset Screen
+  CLEAR="c"
+  # Normal color
+  NORMAL="[0;39m"
+  # RED: Failure or error message
+  RED="[1;31m"
+  # GREEN: Success message
+  GREEN="[1;32m"
+  # YELLOW: Descriptions
+  YELLOW="[1;33m"
+  # BLUE: System mesages
+  BLUE="[1;34m"
+  # MAGENTA: Found devices or drivers
+  MAGENTA="[1;35m"
+  # CYAN: Questions
+  CYAN="[1;36m"
+  # BOLD WHITE: Hint
+  WHITE="[1;37m"
+fi
+
+# helper functions {{{
+#log_success_msg () {
+#  echo " * $@"
+#}
+
+log_failure_msg () {
+  echo " ${RED}*${NORMAL} $@"
+}
+
+#log_warning_msg () {
+# echo " ${BLUE}*${NORMAL} $@"
+#}
+
+# int log_begin_message (char *message)
+log_begin_msg () {
+  echo -n " ${GREEN}*${NORMAL} $@"
+}
+
+# int log_end_message (int exitstatus)
+SUCCESS=" ${BLUE}[ ${GREEN}ok ${BLUE}]${NORMAL}"
+FAILED=" ${NORMAL}[${RED}fail${NORMAL}]"
+# }}}
+
+# Clear screen with colormode reset
+# echo "$CLEAR$RESET"
+# echo "$CLEAR"
+# Just go to the top of the screen
+# echo -n "[H[J"
+echo ""
+# Be verbose
+#echo "${WHITE}Welcome to ${CYAN}G${YELLOW}R${WHITE}M${RED}L${WHITE}!${NORMAL}"
+#echo ""
+#echo ""
+
+echo "${WHITE}Welcome to"
+echo ""
+echo "${RED}   ____ ____  __  __ _     "
+echo "${RED}  / ___|  _ \|  \/  | |    "
+echo "${RED} | |  _| |_) | |\/| | |    "
+echo "${RED} | |_| |  _ <| |  | | |___ "
+echo "${RED}  \____|_| \_\_|  |_|_____|"
+echo ""
+echo "${WHITE}grml.org - Linux for users of texttools and sysadmins."
+echo "${NORMAL}"
+
+# We only need the builtin commands and /static at this point
+PATH=/static
+export PATH
+
+umask 022
+
+# Check if we are in interactive startup mode
+case "$CMDLINE" in *BOOT_IMAGE=expert\ *) INTERACTIVE="yes"; :>/interactive; ;; esac
+case "$CMDLINE" in *modules-disk*) INTERACTIVE="yes"; ;; esac
+#case "$CMDLINE" in *BOOT_IMAGE=debug\ *|*\ debug\ *) DEBUG="yes"; ;; esac
+case "$CMDLINE" in *debug*) DEBUG="yes"; ;; esac
+# Does the user want to skip scsi detection?
+NOSCSI=""
+case "$CMDLINE" in *noscsi*|*nobootscsi*) NOSCSI="yes"; ;; esac
+case "$CMDLINE" in *nousb*|*nobootusb*) NOUSB="yes"; ;; esac
+case "$CMDLINE" in *nofirewire*|*nobootfirewire*) NOFIREWIRE="yes"; ;; esac
+NOCD=""
+case "$CMDLINE" in *fromhd*) NOCD="yes"; ;; esac
+case "$CMDLINE" in *fromdvd*) FROMDVD="yes"; ;; esac
+case "$CMDLINE" in *idecd*|*atapicd*) IDECD="yes"; ;; esac
+case "$CMDLINE" in *noideraid*) NOIDERAID="yes"; ;; esac
+USB2="ehci-hcd.ko"
+case "$CMDLINE" in *nousb2*) USB2=""; ;; esac
+
+GRML_DIR="GRML"
+GRML_NAME="GRML"
+case "$CMDLINE" in *grml_dir=*) GRML_DIR="$grml_dir"; ;; esac
+case "$CMDLINE" in *grml_name=*) GRML_NAME="$grml_name"; ;; esac
+
+# WARNING: In Kernel 2.4.27, CD-Roms cease to work if both, ide-scsi and ide-cd, are loaded. :-(
+#if test -n "$IDECD"; then
+# Use ide-cd for ATAPI-only CD-Rom(s)
+#$INSMOD /modules/scsi/ide-cd.ko >/dev/null 2>&1
+#$INSMOD /modules/scsi/ide-cd.ko
+#else
+# Check for IDE-SCSI capable CD-Rom(s) first
+#$INSMOD /modules/scsi/ide-scsi.ko >/dev/null 2>&1 
+#$INSMOD /modules/scsi/ide-scsi.ko
+#fi
+
+# Run a shell if in debug mode
+# echo "${BLUE}Dropping you to a busybox shell for debugging.${NORMAL}"
+stage=1
+rundebugshell(){
+  if [ -n "$DEBUG" ]; then
+  echo "${CRE}${BLUE}Starting intermediate shell stage $stage as requested by \"debug\" option.${NORMAL}"
+  echo "${CRE}${BLUE}Just exit the shell to continue boot process...${NORMAL}"
+  [ -x /static/sh ] && /static/sh || /bin/bash
+fi
+}
+
+# Mount module disk
+mountmodules(){
+TYPE="$1"; shift
+echo -n "${CRE}Please insert ${TYPE} modules disk and hit Return."
+read a
+echo -n "${CRE}Mounting ${TYPE} modules disk... "
+# We always mount over /modules/scsi (because it's there ;-)
+if mountit /dev/fd0 /modules/scsi "-o ro"; then
+echo "${GREEN}OK.${NORMAL}"
+return 0
+fi
+echo "${RED}NOT FOUND.${NORMAL}"
+return 1
+}
+
+# Unmount module disk
+umountmodules(){
+TYPE="$1"; shift
+echo -n "${CRE}Unmounting ${TYPE} modules disk... "
+umount /modules/scsi 2>/dev/null
+echo "${GREEN}DONE.${NORMAL}"
+}
+
+# Ask user for modules
+askmodules(){
+TYPE="$1"; shift
+echo "${TYPE} modules available:${WHITE}"
+c=""; for m in "$@"; do
+if test -f "/modules/scsi/$m"; then
+test -z "$c"  && { echo -n "	$m"; c="1"; } || { echo "		$m"; c=""; }
+fi
+done
+[ -n "$c" ] && echo ""
+echo "Load ${TYPE} Modules?"
+echo "[Enter full filename(s) (space-separated), Return for autoprobe, n for none] "
+echo -n "insmod module(s)> "
+read MODULES
+case "$MODULES" in n|N) MODULES=""; ;; y|"")  MODULES="$*"; ;; esac
+}
+
+# Try to load the given modules (full path or current directory)
+loadmodules(){
+TYPE="$1"; shift
+test -n "$INTERACTIVE" && echo "6" > /proc/sys/kernel/printk
+for i in "$@"; do
+echo -n "${CRE}Probing ${TYPE}... ${WHITE}$i${NORMAL}"
+if test -f /modules/scsi/$i && $INSMOD -f /modules/scsi/$i >/dev/null 2>&1
+then
+# case "$i" in *ataraid*) ;; *) echo "${CRE} ${GREEN}Found ${TYPE} device(s) handled by ${MAGENTA}$i${GREEN}.${NORMAL}" ;; esac
+case "$TYPE" in scsi|SCSI) FOUND_SCSI="yes"; ;; esac
+fi
+done
+test -n "$INTERACTIVE" && echo "0" > /proc/sys/kernel/printk
+echo -n "${CRE}"
+}
+
+# Check for SCSI, use modules on bootfloppy first
+# Trying to do kind of /proc/pci hardware detection
+PROCPCI="`cat /proc/pci 2>/dev/null`"
+#ISA_SCSI="aha1740.ko aha1542.ko aha152x.ko pas16.ko psi240i.ko qlogicfas.ko qlogicfc.ko seagate.ko t128.ko u14-34f.ko wd7000.ko"
+ISA_SCSI="aha1740.o aha1542.o aha152x.o pas16.o psi240i.o qlogicfas.o qlogicfc.o seagate.o t128.o u14-34f.o wd7000.o"
+SCSI_PROBE="$ISA_SCSI"
+case "$PROCPCI" in *[Aa][Ii][Cc]-*|*[Aa][Hh][Aa]-*) SCSI_PROBE="$SCSI_PROBE aic7xxx.o" ;; esac
+case "$PROCPCI" in *[Bb][Uu][Ss][Ll][Oo][Gg][Ii][Cc]*) SCSI_PROBE="$SCSI_PROBE BusLogic.ko" ;; esac
+case "$PROCPCI" in *53[Cc]8*) SCSI_PROBE="$SCSI_PROBE ncr53c8xx.o" ;; esac
+#case "$PROCPCI" in *53[Cc]9*) SCSI_PROBE="$SCSI_PROBE NCR53C9x.ko" ;; esac
+case "$PROCPCI" in *53[Cc]406*) SCSI_PROBE="$SCSI_PROBE NCR53c406a.ko" ;; esac
+case "$PROCPCI" in *[Ii][Nn][Ii][Tt][Ii][Oo]\ *|*[Ii][Nn][Ii]-[Aa]100[Uu]2[Ww]*) SCSI_PROBE="$SCSI_PROBE initio.ko" ;; esac
+case "$PROCPCI" in *[Mm][Pp][Tt]*[Ss][Cc][Ss][Ii]*) SCSI_PROBE="$SCSI_PROBE mptscsih.ko" ;; esac
+case "$PROCPCI" in *[Aa][Dd][Vv][Aa][Nn][Cc][Ee][Dd]\ [Ss][Yy][Ss]*) SCSI_PROBE="$SCSI_PROBE advansys.ko" ;; esac
+case "$PROCPCI" in *[Aa][Tt][Pp]8|*[Aa][Ee][Cc]6*) SCSI_PROBE="$SCSI_PROBE atp870u.ko" ;; esac
+case "$PROCPCI" in *[Dd][Tt][Cc]*) SCSI_PROBE="$SCSI_PROBE dtc.ko" ;; esac
+case "$PROCPCI" in *[Ee][Aa][Tt][Aa]*) SCSI_PROBE="$SCSI_PROBE eata.ko" ;; esac
+case "$PROCPCI" in *[Ff]*[Dd][Oo][Mm][Aa][Ii][Nn]*) SCSI_PROBE="$SCSI_PROBE fdomain.ko" ;; esac
+case "$PROCPCI" in *[Gg][Dd][Tt]\ *) SCSI_PROBE="$SCSI_PROBE gdth.ko" ;; esac
+case "$PROCPCI" in *[Mm][Ee][Gg][Aa][Rr][Aa][Ii][Dd]*) SCSI_PROBE="$SCSI_PROBE megaraid.ko" ;; esac
+#case "$PROCPCI" in *[Pp][Cc][Ii]-22*) SCSI_PROBE="$SCSI_PROBE pci2220i.ko" ;; esac
+#case "$PROCPCI" in *[Pp][Cc][Ii]-2000*) SCSI_PROBE="$SCSI_PROBE pci2000.ko" ;; esac
+case "$PROCPCI" in *[Qq][Ll][Oo][Gg][Ii][Cc]*) SCSI_PROBE="$SCSI_PROBE qlogicisp.ko" ;; esac
+case "$PROCPCI" in *53[Cc]974*) SCSI_PROBE="$SCSI_PROBE tmscsim.ko" ;; esac
+case "$PROCPCI" in *[Uu][Ll][Tt][Rr][Aa][Ss][Tt][Oo][Rr]*) SCSI_PROBE="$SCSI_PROBE ultrastor.ko" ;; esac
+case "$PROCPCI" in *3[Ww][Aa][Rr][Ee]*) SCSI_PROBE="$SCSI_PROBE 3w-xxxx.ko" ;; esac
+# modules/scsi/3w-9xxx.ko
+# modules/scsi/a100u2w.ko
+# modules/scsi/aic7xxx_old_CAUTION.ko
+
+if test -n "$INTERACTIVE"; then
+# Let the user select interactively
+askmodules SCSI $(cd /modules/scsi; echo *.ko)
+else
+# these are the autoprobe-safe modules
+MODULES="$SCSI_PROBE"
+fi
+
+test -z "$NOSCSI" && test -n "$MODULES" && loadmodules SCSI $MODULES
+# End of SCSI check
+
+## test -z "$NOSCSI" && \
+if checkbootparam scsi ; then
+  MODULE="$(getbootparam 'scsi' 2>/dev/null)"
+  if test "$MODULE" = "probe" ; then
+    echo "Bootoption scsi=probe found. Trying to autoprobe SCSI modules:" && \
+    loadmodules SCSI $MODULES
+  else
+    [ -n "$MODULE" ] || echo "${RED}Neither a specific module nor option probe for SCSI module given. Skipping.${NORMAL}"
+    [ -n "$MODULE" ] && echo "Trying to load module ${WHITE}${MODULE}${NORMAL}." && \
+    /modules/insmod "/modules/scsi/${MODULE}.ko"
+  fi
+fi
+#
+#if checkbootparam module ; then
+#  MODULE="$(getbootparam 'module' 2>/dev/null)"
+#  # ehci-hcd ieee1394 ohci1394 ohci-hcd sbp2 uhci-hcd usbcore usb-storage
+#  [ -n "$MODULE" ] && echo "${BLUE}Trying to load module ${MAGENTA}${MODULE}${BLUE}.${NORMAL}" && \
+#  /modules/insmod "/modules/div/${MODULE}.ko"
+#fi
+
+#test -z "$NOSCSI" &&  \
+#/static/discover --disable-bus all --enable-bus scsi --type bridge --normalize-whitespace --data-path=linux/module/name --data-version=`uname -r` | grep -v '^ $' | uniq
+#echo "pci:"
+#/static/discover --disable-bus all --enable-bus pci --type bridge --normalize-whitespace --data-path=linux/module/name --data-version=`uname -r` | grep -v '^ $' | uniq
+#echo "End of Debugging SCSI"
+#
+#echo "Commands are:"
+#echo "
+#/static/discover --disable-bus all --enable-bus scsi --type bridge --normalize-whitespace --data-path=linux/module/name --data-version=\`uname -r\` | grep -v '^ $' | uniq
+#/static/discover --disable-bus all --enable-bus pci --type bridge --normalize-whitespace --data-path=linux/module/name --data-version=\`uname -r\` | grep -v '^ $' | uniq
+#"
+#echo "Starting ash:"
+#/static/ash
+#echo "End of starting ash"
+
+# Check for IDE-Raid devices
+if test -z "$NOIDERAID"; then
+( cd /modules/scsi; { $INSMOD ataraid.ko >/dev/null 2>&1 && $INSMOD silraid.ko >/dev/null 2>&1 ; } || $INSMOD medley.ko >/dev/null 2>&1 || $INSMOD pdcraid.ko >/dev/null 2>&1 )
+fi
+# End of IDE-Raid check
+
+# Check for USB, use modules on bootfloppy first
+if test -z "$NOUSB"; then
+echo -n "${CRE}Checking for for USB..."
+if test -f /modules/div/usbcore.ko; then
+$INSMOD /modules/div/usbcore.ko >/dev/null 2>&1
+FOUNDUSB=""
+
+for i in $USB2 usb-uhci.ko usb-ohci.ko; do
+test -f /modules/div/$i && $INSMOD /modules/div/$i >/dev/null 2>&1 && FOUNDUSB="yes"
+done
+if test -n "$FOUNDUSB"; then
+test -f /modules/div/usb-storage.ko && $INSMOD /modules/div/usb-storage.ko >/dev/null 2>&1
+else
+# For an unknown reason, unloading usbcore hangs smetimes
+# rmmod usbcore >/dev/null 2>&1
+true
+fi
+fi
+echo -n "${CRE}"
+fi
+# End of USB check
+
+# Check for Firewire, use modules on bootfloppy first
+if test -z "$NOFIREWIRE"; then
+echo -n "${CRE}Checking for Firewire..."
+if test -f /modules/div/ieee1394.ko; then
+echo -n "${CRE}Loading ieee1394..."
+$INSMOD /modules/div/ieee1394.ko >/dev/null 2>&1
+FOUNDFIREWIRE=""
+for i in ohci1394.ko; do
+echo -n "${CRE}Loading $i..."
+test -f /modules/div/$i && $INSMOD /modules/div/$i >/dev/null 2>&1 && FOUNDFIREWIRE="yes"
+done
+if test -n "$FOUNDFIREWIRE"; then
+echo -n "${CRE}Loading sbp2.ko..."
+test -f /modules/scsi/sbp2.ko && $INSMOD /modules/scsi/sbp2.ko sbp2_serialize_io=1 >/dev/null 2>&1
+else
+# For an unknown reason, unloading ieee1394 hangs smetimes
+# echo -n "${CRE}${BLUE}Unloading ieee1394...${NORMAL}"
+# rmmod ieee1394 >/dev/null 2>&1
+true
+fi
+fi
+echo -n "${CRE}"
+fi
+# End of FIREWIRE check
+
+# Unfortunately, hotpluggable devices tend to need some time in order to register
+if test -n "$FOUNDUSB" -o -n "$FOUNDFIREWIRE"; then
+log_begin_msg "Scanning for USB/Firewire devices."
+if test -n "$FOUNDFIREWIRE"; then
+# Wait for driver to register
+sleep 2
+# Kernel 2.6 does this automatically
+#case "$(cat /proc/version 2>/dev/null)" in *version\ 2.6.*) ;; *) for host in 0 1 2 3 4 5 6 7; do for channel in 0 1; do for id in 0 1 2 3 4 5 6 7; do echo "scsi add-single-device $host $channel $id 0" >/proc/scsi/scsi 2>/dev/null; done; done; done ;; esac
+fi
+# sleep 6
+echo "  $SUCCESS"
+fi
+
+# Check for misc modules in expert mode
+if test -n "$INTERACTIVE"; then
+another=""; answer=""
+while test "$answer" != "n" -a "$answer" != "N"; do
+echo -n "${CYAN}Do you want to load additional modules from$another floppy disk? [${WHITE}Y${CYAN}/n] ${NORMAL}"
+another=" another"
+read answer
+case "$answer" in n*|N*) break; ;; esac
+if mountmodules new; then
+askmodules new $(cd /modules/scsi; echo *.ko)
+test -n "$MODULES" && loadmodules new $MODULES
+umountmodules current
+fi
+done
+fi
+# All interactively requested modules should be loaded now.
+
+# Check for ide-scsi supported CD-Roms et al.
+test -f /proc/scsi/scsi && FOUND_SCSI="yes"
+
+# Disable kernel messages again
+echo "0" > /proc/sys/kernel/printk
+
+# We now enable DMA right here, for faster reading/writing from/to IDE devices
+# in FROMHD or TORAM mode
+case "$CMDLINE" in *\ nodma*) ;; *)
+for d in $(cd /proc/ide 2>/dev/null && echo hd[a-z]); do
+if test -d /proc/ide/$d; then
+MODEL="$(cat /proc/ide/$d/model 2>/dev/null)"
+test -z "$MODEL" && MODEL="[GENERIC IDE DEVICE]"
+log_begin_msg "Enabling DMA acceleration for: ${MAGENTA}$d 	${YELLOW}[${MODEL}]${NORMAL}"
+echo "using_dma:1" >/proc/ide/$d/settings && echo ""
+fi
+done
+;;
+esac
+
+stage=2
+rundebugshell
+echo "before NFS"
+for i in $cmdline; do case "$i" in nfsdir=*|NFSDIR=*) eval $i;; esac; done
+[ -n "$nfsdir" ] && NFS="$nfsdir"
+echo "nfsdir=$NFS"
+# NFS
+if [ -n "$NFS" ]; then
+  tmp_="$(getbootparam nfsdir)"
+  echo -n "checkbootparam nfsdir   "
+  checkbootparam "nfsdir" && echo "OK" || echo "FAILED"
+  echo "getbootparam nfsdir=\"$tmp_\""
+
+  # put the mylibs into /lib for discover and udhcpc
+  cdir
+
+  # starting hw-detection for network card
+  echo "Starting hw-detection"
+  kernel_version_=`uname -r`
+  modules_to_load=$(/static/discover --disable-bus all --enable-bus pci --type network --normalize-whitespace --data-path=linux/module/name --data-version=$kernel_version_ | grep -v '^ $' | uniq)
+  echo "trying to load the following network modules:  \"$modules_to_load\""
+  
+  # FIXME modprobe is buggy from busybox
+  modules_to_load=`echo $modules_to_load | xargs`
+  modLoad()
+  {
+    for mod in $@ ; do
+      tmp_="`modprobe -vn $mod`"
+      if [ $? -ne 0 ]; then
+        continue
+      fi
+      eval "$tmp_"
+    done
+  }
+  modLoad "$modules_to_load"
+
+  # loading additional modules
+  modLoad sunrpc lockd af_packet nfs
+
+  /static/udhcpc --foreground --quit --script=/static/udhcp-config.sh
+  #echo "press <enter> to start a system shell and configure your system"
+  #sh
+
+  # recreate the old dir structures
+  rdir
+  #rm -rf /myusr /mylib
+
+  log_begin_msg "${RED}Debug: NFS = ${NFS}${NORMAL}"
+  log_begin_msg -n "${CRE}${BLUE}Looking for GRML in: ${MAGENTA}$NFS${NORMAL}   "
+  if mount -t nfs "$NFS" -o "async,ro,nolock" /cdrom #>/dev/null 2>&1
+    then
+    if test -f /cdrom/$GRML_DIR/$GRML_NAME
+      then
+      log_begin_msg -n "${CRE} ${GREEN}Accessing grml CDROM at ${MAGENTA}$NFS${GREEN}...${NORMAL}"
+      FOUND_GRML="$NFS"
+      break
+    fi
+  fi
+fi
+echo "after NFS"
+
+
+# Now that the right SCSI driver is (hopefully) loaded, try to find CD-ROM
+if test -z $NFS ; then
+  DEVICES="/dev/hd?"
+  test -n "$FOUND_SCSI" -a -z "$NOCD" && DEVICES="/dev/scd? /dev/scd?? $DEVICES"
+  # New: Also try parallel port CD-Roms [for Mike].
+  DEVICES="$DEVICES /dev/pcd?"
+  # New: also check HD partitions for a GRML/GRML image
+  test -n "$FOUND_SCSI" -a -z "$NOSCSI" && DEVICES="$DEVICES /dev/sd?[1-9] /dev/sd?[1-9][0-9]"
+  DEVICES="$DEVICES /dev/hd?[1-9] /dev/hd?[1-9][0-9]"
+  case "$CMDLINE" in *fromhd=/dev/*) DEVICES="$fromhd"; ;; esac
+  for i in $DEVICES
+  do
+  log_begin_msg "${CRE} ${GREEN}*${NORMAL} Looking for CD-ROM in:    ${MAGENTA}$i${NORMAL}"
+  if mountit $i /cdrom "-o ro" >/dev/null 2>&1
+    then
+    echo "  $SUCCESS"
+    if test -f /cdrom/$GRML_DIR/$GRML_NAME
+      then
+      log_begin_msg "Accessing grml CD-ROM at: ${MAGENTA}$i${NORMAL}" ; echo "  $SUCCESS"
+      FOUND_GRML="$i"
+      break
+    fi
+    umount /cdrom
+  fi
+  done
+fi
+
+# Harddisk-installed script part version has been removed
+# (GRML can be booted directly from HD now).
+
+mount_grml()
+{
+  if test -n "$FOUND_GRML" -a -f $1/$GRML_DIR/$GRML_NAME; then
+    # DEBUG
+    # echo "6" > /proc/sys/kernel/printk
+    # cloop:
+    #$INSMOD -f /modules/cloop.ko file=$1/$GRML_DIR/$GRML_NAME
+    #mountit /dev/cloop /GRML "-o ro" || FOUND_GRML=""
+    # squashfs:
+    #losetup /dev/loop0 $1/$GRML_DIR/$GRML_NAME
+    mount -t squashfs $1/$GRML_DIR/$GRML_NAME /GRML -o loop,ro || FOUND_GRML=""
+  fi
+
+#    COMP=""
+#    case $(dd if=$1/$KNOPPIX_DIR/$KNOPPIX_NAME bs=4 count=1 2>/dev/null) in
+#      "#!/b") COMP=cloop
+#              $INSMOD /modules/cloop.o file=$1/$KNOPPIX_DIR/$KNOPPIX_NAME
+#              mountit /dev/cloop /KNOPPIX "-o ro" || FOUND_KNOPPIX=""
+#              ;;
+#      "hsqs") COMP=squashfs
+#              mount -t squashfs $1/$KNOPPIX_DIR/$KNOPPIX_NAME /KNOPPIX -o loop,ro || FOUND_KNOPPIX=""
+#              #losetup /dev/loop0 $1/$KNOPPIX_DIR/$KNOPPIX_NAME
+#              #mount -t squashfs /dev/loop0 /KNOPPIX -o loop,ro || FOUND_KNOPPIX=""
+#              ;;
+#    esac
+}
+
+remount_grml()
+{
+  if test -f $TARGET/$GRML_DIR/$GRML_NAME; then
+    umount /GRML # unmount it
+    # echo "$RMMOD cloop" | /static/sh # release CD - ash crashes with parts of libc in memory -- FF
+    umount $SOURCE  # unmount CD
+    [ -n "$SOURCE2" ] && umount $SOURCE2  # umount possible loop-device
+    mount_grml $TARGET
+  else
+    echo "${CRE} ${RED}Warning: Changing to $TARGET failed.${NORMAL}"
+    return 1
+  fi
+  
+  return 0
+}
+
+boot_from()
+{
+  # preparations
+  /bin/mkdir $TARGET
+
+  SOURCE_DEV=$(echo $CMDLINE | /usr/bin/tr ' ' '\n' | /bin/sed -n '/bootfrom=/s/.*=//p' | /usr/bin/tail -1)
+  
+  LOOP_DEV=$(echo $SOURCE_DEV | /usr/bin/gawk -F/ '{ print $1 "/" $2 "/" $3 }')
+  ISO_PATH=$(echo $SOURCE_DEV | /bin/sed "s|$LOOP_DEV||g" )
+  case "$ISO_PATH" in /*.[iI][sS][oO]) ;; *) ISO_PATH="" ;; esac
+  LOOP_SOURCE=""
+  
+  # load filesystems
+  # /GRML/sbin/modprobe reiserfs
+  /GRML/sbin/modprobe reiser4
+  /GRML/sbin/modprobe ntfs    # BE CAREFUL! - Only mount it read only! - FF
+ 
+  if [ -n "$ISO_PATH" ]
+  then
+     LOOP_SOURCE="$TARGET.loop"
+     LOOP_SOURCE2="$LOOP_SOURCE"
+     TARGET_DEV="$LOOP_SOURCE$ISO_PATH"
+     /bin/mkdir $LOOP_SOURCE
+     /GRML/sbin/modprobe loop
+
+     /bin/mount -o ro $LOOP_DEV $LOOP_SOURCE || LOOP_SOURCE=""
+     /bin/mount -n -o loop $LOOP_SOURCE2$ISO_PATH $TARGET
+  else
+     TARGET_DEV="$SOURCE_DEV"
+    /bin/mount -n -o ro $SOURCE_DEV $TARGET
+  fi
+  if [ $? -ne 0 ]
+  then
+     [ -n "$LOOP_SOURCE" ] && /bin/umount $LOOP_SOURCE
+     echo -n "${CRE} ${RED}Accessing grml CD-ROM failed. ${MAGENTA}$TARGET_DEV${RED} is not mountable.${NORMAL}"
+     sleep 2
+     return 1
+  fi
+  
+  if [ -f $TARGET/$GRML_DIR/$GRML_NAME ]
+  then
+    log_begin_msg "Accessing grml CD-ROM at ${MAGENTA}$TARGET_DEV${NORMAL}." ; echo $SUCCESS
+  else
+    echo -n "${CRE} ${RED}Accessing grml CD-ROM failed. Could not find $GRML_DIR/$GRML_NAME on ${MAGENTA}$TARGET_DEV${RED}.${NORMAL}"
+    [ -n "$LOOP_SOURCE" ] && /bin/umount $LOOP_SOURCE
+    umount $TARGET
+    sleep 2
+    return 1
+  fi
+  # remount the CD 
+  remount_grml
+}
+
+copy_to()
+{
+  # preparations
+  /bin/mkdir $TARGET
+  COPY="$SOURCE/$GRML_DIR"
+
+  # look if we copy to hd or to ram
+  SIZE="$(/usr/bin/du -s $COPY | /usr/bin/gawk '{print int($1*1.1)}')"
+  test -n "$SIZE" || SIZE="800000"
+  
+  case "$1" in 
+    ram)
+      TARGET_DEV="/dev/shm"
+      TARGET_DEV_DESC="ramdisk"
+      FOUNDSPACE="$(/usr/bin/gawk '/MemTotal/{print $2}' /proc/meminfo)"
+      /bin/mount -n -t tmpfs -o size=${SIZE}k $TARGET_DEV $TARGET
+    ;;
+    hd)
+      TARGET_DEV=$(echo $CMDLINE | /usr/bin/tr ' ' '\n' | /bin/sed -n '/tohd=/s/.*=//p' | /usr/bin/tail -1)
+      TARGET_DEV_DESC="$TARGET_DEV"
+      # load filesystems
+      # /GRML/sbin/modprobe reiserfs
+      # /GRML/sbin/modprobe jbd
+      # /GRML/sbin/modprobe ext3
+      /GRML/sbin/modprobe reiser4
+      BUILTIN_FS="iso9660 ext3 ext2 reiserfs reiser4 vfat"
+      # we need to use mountit to prevent NTFS to be mounted!
+      if mountit $TARGET_DEV $TARGET "-o rw"
+      then
+        :
+      else
+        echo -n "${CRE} ${RED}Copying grml CD-ROM failed. ${MAGENTA}$TARGET_DEV_DESC${RED} is not mountable.${NORMAL}"
+	sleep 2
+        return 1
+      fi
+      # check for enough free space
+      USED_SPACE=0
+      [ -f $TARGET/$GRML_DIR/$GRML_NAME ] && USED_SPACE=$(/usr/bin/du -s $TARGET/$GRML_DIR/$GRML_NAME | /usr/bin/gawk '{ print $1 }')
+      FOUNDSPACE="$(/bin/df -k $TARGET | /usr/bin/tail -1 | /usr/bin/gawk '{ print $4+int('$USED_SPACE') }')"
+   ;;
+   *)
+     return 1
+   ;;
+  esac
+ 
+  # sanity check
+
+  if [ $FOUNDSPACE -lt $SIZE ]
+  then
+    echo -n "${CRE} ${RED}Copying grml CD-ROM failed. Not enough free space on ${MAGENTA}${TARGET_DEV_DESC}${RED}. Found: ${MAGENTA}${FOUNDSPACE}k${RED} Need: ${MAGENTA}${SIZE}k${RED} ${NORMAL}"
+    sleep 2
+    umount $TARGET
+    return 1
+  fi
+ 
+  # do the real copy
+  
+  echo "${CRE} ${GREEN}Copying grml CD-ROM to ${MAGENTA}$TARGET_DEV_DESC${GREEN}... Please be patient. ${NORMAL}"
+  if [ -z "$use_cp" -a -x /usr/bin/rsync ]
+  then 
+    # first cp the small files
+    /usr/bin/rsync -a --exclude="$GRML_DIR/$GRML_NAME" $COPY $TARGET # Copy grml to $TARGET
+    # then the big file with nice progress meter
+    [ -f $TARGET/$GRML_DIR/$GRML_NAME ] && /bin/rm -f $TARGET/$GRML_DIR/$GRML_NAME
+    /usr/bin/rsync -a --progress --include="$GRML_DIR/$GRML_NAME" --include="$GRML_DIR/" --exclude="*" $COPY $TARGET # Copy grml to $TARGET
+    #/usr/bin/rsync -avP $COPY $TARGET # Copy grml to $TARGET
+  else
+    /bin/cp -a -f $COPY $TARGET # Copy grml to $TARGET
+  fi
+  if [ $? -ne 0 ]
+  then
+    echo -n "${CRE} ${RED}Copying grml CD-ROM failed. ${MAGENTA}$TARGET_DEV_DESC${RED} possibly has not enough space left.${NORMAL}"
+    sleep 2
+    return 1
+  fi
+  # remount r/o
+  /bin/mount -n -o remount,ro $TARGET_DEV $TARGET
+  remount_grml
+}
+
+mount_grml /cdrom
+
+COPYTO=""
+BOOTFROM=""
+DO_REMOUNT=""
+REAL_TARGET=""
+UNIONFS=""
+
+case "$CMDLINE" in *toram*) DO_REMOUNT="yes"; COPYTO="ram"; ;; esac
+case "$CMDLINE" in *tohd=*) DO_REMOUNT="yes"; COPYTO="hd"; ;; esac
+case "$CMDLINE" in *bootfrom=*) DO_REMOUNT="yes"; BOOTFROM="yes" ;; esac
+ 
+# Remount later after copying/isoloading/driverloading?
+# pre-test if everything succeeded
+if  test -n "$DO_REMOUNT" -a -n "$FOUND_GRML"
+then
+  # copy library cache 
+  cat /GRML/etc/ld.so.cache > /etc/ld.so.cache 
+  echo "" 
+
+  SOURCE="/cdrom"
+  TARGET="/cdrom2"
+ 
+  # first test for possible hdboot/fromiso (which can be combined with toram / tohd)
+  if [ -n "$BOOTFROM" ]
+  then
+    boot_from
+    if [ $? -eq 0 ]
+    then
+      # set new source / target paths
+      REAL_TARGET="$TARGET"
+      SOURCE2="$LOOP_SOURCE"
+      SOURCE="/cdrom2"
+      TARGET="/cdrom3"
+    fi
+  fi
+  if [ -n "$COPYTO" ]
+  then
+    copy_to $COPYTO && REAL_TARGET="$TARGET"
+  fi
+fi
+ 
+# Final test if everything succeeded.
+if test -n "$FOUND_GRML"
+then
+# copy library cache
+cat /GRML/etc/ld.so.cache > /etc/ld.so.cache
+
+UNIONFS=""
+$INSMOD /modules/unionfs.ko 2>/dev/null && UNIONFS="yes"
+
+# Enable kernel messages
+echo "6" > /proc/sys/kernel/printk
+
+# Set paths
+log_begin_msg "Setting paths"
+PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/X11R6/bin:."
+export PATH
+
+# Debian weirdness
+/GRML/bin/cp -a /GRML/etc/alternatives /etc/ 2>/dev/null
+
+# Replace /sbin
+/GRML/bin/rm -f /sbin
+/GRML/bin/ln -sf /GRML/sbin /sbin
+
+# From here, we should have all essential commands available.
+hash -r
+
+# Did we remount the source media ? 
+if  test -n "$REAL_TARGET"; 
+then
+   /bin/mount -n --move $REAL_TARGET /cdrom # move it back and go on to normal boot 
+fi
+
+# Clean up /etc/mtab (and - just in case - make a nice entry for looped ISO)
+egrep " /GRML | /cdrom " /proc/mounts 2>/dev/null | sed 's|/dev/loop0 /cdrom \(.*\) 0 0|'$LOOP_SOURCE$ISO_PATH' /cdrom/ \1,loop=/dev/loop0 0 0|g' >> /etc/mtab
+
+# Clean up /
+rm -rf /modules /static
+echo "                       $SUCCESS"
+
+# New in Kernel 2.4.x: tempfs with variable ramdisk size.
+# We check for available memory anyways and limit the ramdisks
+# to a reasonable size.
+FOUNDMEM="$(awk '/MemTotal/{print $2}' /proc/meminfo)"
+TOTALMEM="$(awk 'BEGIN{m=0};/MemFree|Cached/{m+=$2};END{print m}' /proc/meminfo)"
+ 
+# Be verbose
+log_begin_msg "Total memory found: $FOUNDMEM kB" ; echo "       $SUCCESS"
+
+# Now we need to use a little intuition for finding a ramdisk size
+# that keeps us from running out of space, but still doesn't crash the
+# machine due to lack of Ram
+
+# Minimum size of additional ram partitions
+MINSIZE=20000
+# At least this much memory minus 30% should remain when home and var are full.
+MINLEFT=16000
+# Maximum ramdisk size
+MAXSIZE="$(expr $TOTALMEM - $MINLEFT)"
+# Default ramdisk size for ramdisk
+RAMSIZE="$(expr $TOTALMEM / 5)"
+RAMSIZE="$(expr $RAMSIZE \* 4)"
+
+# FIXME
+RAMSIZE="$(expr $RAMSIZE - 17400)"
+
+# Create additional dynamic ramdisk.
+test -z "$RAMSIZE" -o "$RAMSIZE" -lt "$MINSIZE" && RAMSIZE="$MINSIZE"
+mkdir -p /ramdisk
+# tmpfs/varsize version, can use swap
+log_begin_msg "Creating /ramdisk (dynamic size=${RAMSIZE}k) on shared memory"
+# We need /bin/mount here for the -o size= option
+/bin/mount -t tmpfs -o "size=${RAMSIZE}k" /ramdisk /ramdisk  && echo "$SUCCESS"
+mkdir -p /ramdisk/tmp /ramdisk/home/grml && chmod 1777 /ramdisk/tmp && chown grml.grml /ramdisk/home/grml && ln -snf /ramdisk/home /home && mv /tmp /tmp.old && ln -s /ramdisk/tmp /tmp && rm -rf /tmp.old
+#/bin/mount -t tmpfs -o "size=${RAMSIZE}k" /ramdisk /ramdisk && mkdir -p /ramdisk/home /ramdisk/var && ln -s /ramdisk/home /ramdisk/var /
+
+stage=3
+rundebugshell
+# unionfs
+log_begin_msg "Creating unionfs and symlinks on ramdisk"
+mkdir -p /UNIONFS
+if test -n "$UNIONFS" && /bin/mount -t unionfs -o noatime,dirs=/ramdisk=rw:/GRML=ro /UNIONFS /UNIONFS; then
+ # We now have unionfs, copy some data from the initial ramdisk first
+ cp -a /etc/fstab /etc/auto.mnt /etc/filesystems /etc/mtab /UNIONFS/etc/
+ for i in bin boot etc sbin var lib opt root usr; do # Move directories to unionfs
+  if test -d /$i; then
+   mv /$i /$i.old && \
+   /GRML/lib/ld-linux.so.2 --library-path /GRML/lib /GRML/bin/ln -snf /UNIONFS/$i /$i && \
+   rm -rf /$i.old
+  else
+   ln -snf /UNIONFS/$i /$i
+  fi
+ done
+ #echo "${GREEN}done${NORMAL}"
+ echo "                 $SUCCESS"
+ log_begin_msg "Merging read-only system with read-writeable /ramdisk."
+ for i in $(cd /UNIONFS; echo *); do # Create links for new stuff on /UNIONFS
+   test "$i" = "home" -o "$i" = "tmp" && continue
+   test -L "/$i" || test -d "/$i" || test -f "/$i" || ln -snf "/UNIONFS/$i" /$i
+ done && echo "   $SUCCESS" || echo "   $FAILED"
+else
+ log_failure_msg "ERROR: CANNOT UNITE READ-ONLY MEDIA AND INITIAL RAMDISK!" ; echo "$FAILED"
+ NOUNIONFS="yes"
+ /GRML/sbin/halt -f -n
+fi
+
+chown grml.grml /home/grml
+chmod 1777 /var/tmp
+# Create empty utmp and wtmp
+:> /var/run/utmp
+:> /var/run/wtmp
+
+## Make SURE that these are files, not links!
+rm -rf /etc/ftpusers /etc/passwd /etc/shadow /etc/group \
+       /etc/ppp /etc/isdn /etc/ssh /etc/ioctl.save \
+       /etc/inittab /etc/network /etc/sudoers \
+       /etc/init /etc/localtime /etc/dhcpc /etc/pnm2ppa.conf 2>/dev/null
+cp -a /GRML/etc/ftpusers /GRML/etc/passwd /GRML/etc/shadow /GRML/etc/group \
+      /GRML/etc/ppp /GRML/etc/isdn /GRML/etc/ssh \
+      /GRML/etc/inittab /GRML/etc/network /GRML/etc/sudoers \
+      /GRML/sbin/init /GRML/etc/dhcpc /etc/ 2>/dev/null
+
+# Extremely important, init crashes on shutdown if this is only a link
+:> /etc/ioctl.save
+:> /etc/pnm2ppa.conf
+# Must exist for samba to work
+[ -d /var/lib/samba ] && :> /var/lib/samba/unexpected.tdb
+# Diet libc bug workaround
+# cp -f /GRML/etc/localtime /etc/localtime
+# echo "${BLUE}Done.${NORMAL}"
+
+# Now tell kernel where the real modprobe lives
+echo "/sbin/modprobe" > /proc/sys/kernel/modprobe
+
+# Change root device from /dev/fd0 to /dev/ram0
+echo "0x100" > /proc/sys/kernel/real-root-dev
+
+# umount /sys (remount in grml-autoconfig)
+umount /sys
+
+stage=4
+rundebugshell
+# Give control to the init process.
+log_begin_msg "Starting init process."
+rm -f /linuxrc
+exit 0
+
+else
+echo "${CRE}${RED}Can't find grml filesystem, sorry.${NORMAL}"
+echo "${RED}Dropping you to the busybox shell.${NORMAL}"
+echo "${RED}Press reset button to quit.${NORMAL}"
+echo ""
+#echo "Additional builtin commands avaliable:"
+#echo "	cat        mount     umount"
+#echo "	insmod     rmmod     lsmod"
+#echo ""
+PS1="grml# "
+export PS1
+echo "6" > /proc/sys/kernel/printk
+# Allow signals
+trap 1 2 3 15
+exec /static/sh
+fi
