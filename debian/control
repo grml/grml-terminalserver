@@ -7,7 +7,7 @@ Standards-Version: 3.6.2
 
 Package: grml-terminalserver
 Architecture: all
-Depends: sh-lib (>=1.02.03), grml-terminalserver-data (>=0.62), dialog, dhcp3-server, tftpd-hpa, syslinux, libuclibc0, discover-data, gcc-3.3, ipcalc
+Depends: grml-shlib (>=1.02.03), grml-terminalserver-data (>=0.62), dialog, dhcp3-server, tftpd-hpa, syslinux, libuclibc0, discover-data, gcc-3.3, ipcalc
 Description: terminalserver for grml
  This software should netboot grml on other computers over the
  network. Also this terminalserver should work with NON-PXE

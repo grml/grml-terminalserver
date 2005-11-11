@@ -1,3 +1,9 @@
+grml-terminalserver (0.67) unstable; urgency=low
+
+  * changed dependency to grml-shlib 
+
+ -- Michael Gebetsroither <michael.geb@gmx.at>  Fri, 11 Nov 2005 20:17:37 +0100
+
 grml-terminalserver (0.66) unstable; urgency=low
 
   * fixed partition defaults in option dialog from grml2hd
