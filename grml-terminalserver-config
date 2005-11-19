@@ -85,12 +85,12 @@ function writeConfig
 # created on "$date_"
 INTERFACE_="$INTERFACE_"
 IP_="$IP_"
+NETWORK_="$NETWORK_"
 NETMASK_="$NETMASK_"
 GW_="$GW_"
 NAMESERVERS_="$NAMESERVERS_"
 IPRANGE_FROM_="$IPRANGE_FROM_"
 IPRANGE_TO_="$IPRANGE_TO_"
-NETWORK_="$NETWORK_"
 OPTIONS_="$OPTIONS_"
 BOOT_ARGS_="$BOOT_ARGS_"
 
@@ -290,9 +290,10 @@ for addresses from 192.168.0.101 to (and including) 192.168.0.200.
       netcardconfig || die "Could not get interface" $?
   done
 
-  IPRANGE_FROM_=`execute "ipcalc -n $IP_/$NETMASK_" warn |awk '/HostMin/{print $2}'`
-  IPRANGE_TO_=`execute "ipcalc -n $IP_/$NETMASK_" warn |awk '/HostMax/{print $2}'`
-  NETWORK_=$IPRANGE_FROM_
+  IPRANGE_FROM_=`execute "ipcalc -nb $IP_/$NETMASK_" warn |awk '/HostMin/{print $2}'`
+  IPRANGE_TO_=`execute "ipcalc -nb $IP_/$NETMASK_" warn |awk '/HostMax/{print $2}'`
+  NETWORK_=`execute "ipcalc -nb $IP_/$NETMASK_" warn |awk '/Network:/{print $2}'`
+  NETWORK_=${NETWORK_%/*}
   local iprange_=""
   while [ -z "$IPRANGE_FROM_" -o -z "$IPRANGE_TO_" -o -z "$iprange_" ]; do
     iprange_="$IPRANGE_FROM_ $IPRANGE_TO_"

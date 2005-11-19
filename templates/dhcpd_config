@@ -37,7 +37,7 @@ allow bootp;
 default-lease-time 600;
 max-lease-time 7200;
 
-subnet ${IP_%.*}.0 netmask $NETMASK_ {
+subnet $NETWORK_ netmask $NETMASK_ {
   next-server $IP_;
   if substring (option vendor-class-identifier, 0, 9) = "Etherboot" { filename "etherboot.nbi"; }
   else { filename "pxelinux.0"; }

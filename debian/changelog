@@ -1,3 +1,11 @@
+grml-terminalserver (0.68) unstable; urgency=low
+
+  * fixed bug in dhcp-config template
+  * fixed bug with false NETWORK_
+  * changed configfile layout (still fully compatibel to older versions)
+
+ -- Michael Gebetsroither <michael.geb@gmx.at>  Sat, 19 Nov 2005 10:51:23 +0100
+
 grml-terminalserver (0.67) unstable; urgency=low
 
   * changed dependency to grml-shlib 
