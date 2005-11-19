@@ -42,8 +42,9 @@ comming with grml.
 
 COMMANDS:
    help             This help text
-   start <service>  Start services
+   start <service>  Start services (if all services are started, configs will be updated)
    stop <service>   Stop services
+   config <service> Update config of given service (or from all if no services given)
    clean            Stop all + remove config and boot files from services
    <default>        interactive
 
@@ -62,21 +63,34 @@ EOT
 
 function killPortmapper
 {
-    /etc/init.d/portmap stop >/dev/null 2>&1
-    killall -9 portmap
+    /etc/init.d/portmap stop >/dev/null &>/dev/null
+    killall -9 portmap &>/dev/null
 }
 
 # DHCP SERVICE {{{
 function createDhcpConf
 {
-  execute "mv -fb \"$DHCPD_CONFIG_FILE_\" \"$DHCPD_CONFIG_FILE_.old\"" eprint &>/dev/null
-
-  execute "source $TEMPLATE_CONFIG_DIR_/dhcpd_config" die
+  if [ -e "$DHCPD_CONFIG_FILE_" ]; then
+    if grep $CONFIG_PATTERN_ $DHCPD_CONFIG_FILE_ &>/dev/null; then
+      execute "mv -fb \"$DHCPD_CONFIG_FILE_\" \"$DHCPD_CONFIG_FILE_.old\"" eprint &>/dev/null
+      execute "source $TEMPLATE_CONFIG_DIR_/dhcpd_config" die
+    else
+      warn "Not updating user edited configfile $DHCPD_CONFIG_FILE_"
+    fi
+  else
+    execute "source $TEMPLATE_CONFIG_DIR_/dhcpd_config" die
+  fi
 }
 
 function removeDhcpConf
 {
-  rm -f "$DHCPD_CONFIG_FILE_"
+  if [ -e "$DHCPD_CONFIG_FILE_" ]; then
+    if grep $CONFIG_PATTERN_ $DHCPD_CONFIG_FILE_ &>/dev/null; then
+      rm -f "$DHCPD_CONFIG_FILE_"
+    else
+      warn "Not deleting user edited configfile $DHCPD_CONFIG_FILE_"
+    fi
+  fi
 }
 
 
@@ -146,6 +160,16 @@ function runTftp
 
 
 # NFS  {{{
+function createNfsConfig
+{
+  execute "exportfs -o ro,no_root_squash,async,nohide $NETWORK_/$NETMASK_:$MOUNT_POINT_" warn
+}
+
+function removeNfsConfig
+{
+  execute "exportfs -u -o ro,no_root_squash,async,nohide $NETWORK_/$NETMASK_:$MOUNT_POINT_" warn
+}
+
 function startNfs
 {
   /etc/init.d/portmap start
@@ -153,14 +177,11 @@ function startNfs
   # FIXME /etc/init.d/nfs-kernel-server start
   $USR_SHARE_/nfs-kernel-server start
 
-  # FIXME Silly "/etc/init.d/nfs-kernel-server start"
-  # FIXME #246904 (init script does not start if no exports in /etc/exports)
-  execute "exportfs -o ro,no_root_squash,async,nohide $NETWORK_/$NETMASK_:$MOUNT_POINT_" warn
-  #execute "echo -e \"\n$MOUNT_POINT_   $NETWORK_/$NETMASK_(ro,no_root_squash,async)\" >> /etc/exports" warn
+  createNfsConfig
 }
 function stopNfs
 {
-  execute "exportfs -u -o ro,no_root_squash,async,nohide $NETWORK_/$NETMASK_:$MOUNT_POINT_" warn
+  removeNfsConfig
   if [[ `exportfs |wc -l` > 0 ]]; then
     dprint "There are other exports, not stopping NFS serivces"
   else
@@ -216,6 +237,19 @@ function actionClean
   removeTftpConf
   removeDhcpConf
   stopNfs
+}
+
+function updateConfig
+{
+  local service_="$1"
+
+  case "$service_" in
+    "") createConfig ;;
+    tftp) createTftpConf ;;
+    dhcp) createDhcpConf ;;
+    nfs) removeNfsConfig; createNfsConfig ;;
+    *) warn "Service $service_ not available" ;;
+  esac
 }
 
 # SERVICES {{{
@@ -325,10 +359,11 @@ fi
 case "$1" in
   start) serviceStart "$2" ;;
   stop) serviceStop "$2" ;;
+  config) updateConfig "$2" ;;
   "")  actionStart ;;
   *)  printUsage ;;
 esac
 
 # END OF FILE
 ################################################################################
-# vim:foldmethod=marker
+# vim:foldmethod=marker tabstop=2 expandtab shiftwidth=2

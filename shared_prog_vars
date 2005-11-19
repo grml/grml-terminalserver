@@ -75,3 +75,6 @@ INITRD_="$PATH_/mini-root"
 # only for this cards (kernel module names of drivers) drivers are copied into
 # the initrd
 CARDS_DETECTED_BY_DISCOVER="$PATH_/discover_netcards"
+
+# as long as this pattern is in a config file, it will be overwritten every time
+CONFIG_PATTERN_="__PLEASE_UPDATE_THIS_FILE__"

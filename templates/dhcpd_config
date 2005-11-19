@@ -28,6 +28,12 @@ date_=`execute date warn`
 cat >"$DHCPD_CONFIG_FILE_" <<EOT
 # ${DHCPD_CONFIG_FILE_##/*/} for GRML terminalserver
 # created on $date_
+# THIS IS A GENERATED CONFIG FROM GRML-TERMINALSERVER, DO NOT EDIT!!!
+# better adapt $TEMPLATE_CONFIG_DIR_/dhcpd_config to your needs and update config
+# with grml-terminalserver config dhcp
+#
+# If you really want to edit _this_ file remove the next line
+# __PLEASE_UPDATE_THIS_FILE__
 
 # global settings
 allow booting;
