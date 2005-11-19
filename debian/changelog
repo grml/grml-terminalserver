@@ -7,8 +7,9 @@ grml-terminalserver (0.68) unstable; urgency=low
   * implemented a "do not touch" for dhcp config (if user removes the line,
     grml-terminalserver won't touch this configfile anymore).
   * added config action to grml-terminalserver to update configs.
+  * implemented force option (-f) 
 
- -- Michael Gebetsroither <michael.geb@gmx.at>  Sat, 19 Nov 2005 11:26:01 +0100
+ -- Michael Gebetsroither <michael.geb@gmx.at>  Sat, 19 Nov 2005 11:50:46 +0100
 
 grml-terminalserver (0.67) unstable; urgency=low
 

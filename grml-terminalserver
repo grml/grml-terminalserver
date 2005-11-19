@@ -20,6 +20,7 @@
 ### __VARIABLES
 ###
 
+FORCE_='false'
 verbose_=0
 
 # this file holds all variable definitions
@@ -57,6 +58,7 @@ SERVICES:
 OPTIONS:
    -v         verbose (show what is going on, v++)
    -h         this help text
+   -f         Force
 
 EOT
 }
@@ -75,7 +77,12 @@ function createDhcpConf
       execute "mv -fb \"$DHCPD_CONFIG_FILE_\" \"$DHCPD_CONFIG_FILE_.old\"" eprint &>/dev/null
       execute "source $TEMPLATE_CONFIG_DIR_/dhcpd_config" die
     else
-      warn "Not updating user edited configfile $DHCPD_CONFIG_FILE_"
+      if [[ $FORCE_ == "true" ]]; then
+        execute "mv -fb \"$DHCPD_CONFIG_FILE_\" \"$DHCPD_CONFIG_FILE_.old\"" eprint &>/dev/null
+        execute "source $TEMPLATE_CONFIG_DIR_/dhcpd_config" die
+      else
+        warn "Not updating user edited configfile $DHCPD_CONFIG_FILE_, user -f to override"
+      fi
     fi
   else
     execute "source $TEMPLATE_CONFIG_DIR_/dhcpd_config" die
@@ -88,7 +95,11 @@ function removeDhcpConf
     if grep $CONFIG_PATTERN_ $DHCPD_CONFIG_FILE_ &>/dev/null; then
       rm -f "$DHCPD_CONFIG_FILE_"
     else
-      warn "Not deleting user edited configfile $DHCPD_CONFIG_FILE_"
+      if [[ $FORCE_ == "true" ]]; then
+        rm -f "$DHCPD_CONFIG_FILE_"
+      else
+        warn "Not deleting user edited configfile $DHCPD_CONFIG_FILE_, user -f to override"
+      fi
     fi
   fi
 }
@@ -284,8 +295,9 @@ function serviceStop
 ### __MAIN
 ###
 
-while getopts "i:hv" opt; do
+while getopts "fi:hv" opt; do
   case "$opt" in
+    f) FORCE_='true' ;;
     h) printUsage; exit ;;
     v) let verbose_=$verbose_+1 ;;
     ?) printUsage; exit 64 ;;
