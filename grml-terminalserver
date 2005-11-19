@@ -60,6 +60,11 @@ OPTIONS:
 EOT
 }
 
+function killPortmapper
+{
+    /etc/init.d/portmap stop >/dev/null 2>&1
+    killall -9 portmap
+}
 
 # DHCP SERVICE {{{
 function createDhcpConf
@@ -161,7 +166,7 @@ function stopNfs
   else
     /etc/init.d/nfs-kernel-server stop >/dev/null 2>&1
     /etc/init.d/nfs-common stop >/dev/null 2>&1
-    /etc/init.d/portmap stop >/dev/null 2>&1
+    killPortmapper
   fi
 }
 # }}}
