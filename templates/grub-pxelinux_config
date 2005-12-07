@@ -33,7 +33,7 @@ pxe_def_boot_args_="$default_boot_args_ initrd=minirt26.gz"
 
 # default arguments for framebuffer console
 def_fb_args_="video=vesafb:ypan,1024x768-16@60"
-no_fb_args_="video=ofonly"
+no_fb_args_="video=nofb"
 
 ###
 ## create grub config
@@ -103,22 +103,22 @@ KERNEL linux26
 APPEND $pxe_def_boot_args_ $def_fb_args_ $BOOT_ARGS_
 LABEL grmlnofb
 KERNEL linux26
-APPEND $pxe_def_boot_args_ video=nofb $BOOT_ARGS_
+APPEND $pxe_def_boot_args_ $no_fb_args_ $BOOT_ARGS_
 LABEL small
 KERNEL linux26
 APPEND $pxe_def_boot_args_ small $def_fb_args_ $BOOT_ARGS_
 LABEL smallnofb
 KERNEL linux26
-APPEND $pxe_def_boot_args_ small video=nofb $BOOT_ARGS_
+APPEND $pxe_def_boot_args_ small $no_fb_args_ $BOOT_ARGS_
 LABEL debuginit
 KERNEL linux26
 APPEND $pxe_def_boot_args_ debuginit $def_fb_args_ $BOOT_ARGS_
 LABEL debuginit
 KERNEL linux26
-APPEND $pxe_def_boot_args_ debuginit video=nofb $BOOT_ARGS_
+APPEND $pxe_def_boot_args_ debuginit $no_fb_args_ $BOOT_ARGS_
 LABEL resuce
 KERNEL linux26
-APPEND $pxe_def_boot_args_ video=nofb
+APPEND $pxe_def_boot_args_ $no_fb_args_
 LABEL memtest
 KERNEL memtest
 APPEND initrd=
