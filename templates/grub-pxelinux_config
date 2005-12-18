@@ -32,8 +32,8 @@ grub_def_boot_args_="/linux26 $default_boot_args_"
 pxe_def_boot_args_="$default_boot_args_ initrd=minirt26.gz"
 
 # default arguments for framebuffer console
-def_fb_args_="video=vesafb:ypan,1024x768-16@60"
-no_fb_args_="video=nofb"
+def_fb_args_="vga=791"
+no_fb_args_="vga=normal"
 
 ###
 ## create grub config
