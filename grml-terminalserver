@@ -203,11 +203,6 @@ function stopNfs
 }
 # }}}
 
-function allreadyConfigured
-{
-  isExistent "$CONF_FILE_" dprint || return 1
-  return 0
-}
 
 function createConfig
 {

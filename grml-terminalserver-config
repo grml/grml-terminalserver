@@ -123,7 +123,7 @@ function actionAutoconf
 function actionMkInitrd
 {
   echo "Creating initrd: $PATH_/minirt26.gz"
-  isExistent "$PATH_/minirt26.gz" && echo "$PATH_/minirt26.gz does allready exist, skipping initrd creation" && return 0
+  isExistent "$PATH_/minirt26.gz" && echo "$PATH_/minirt26.gz does already exist, skipping initrd creation" && return 0
   mkInitrd
   echo 'done'
 }
@@ -151,7 +151,7 @@ function mkInitrd
 
   # implanting my initrd changes into the original initrd
   
-  # copy programs, check if there are allready links with this name to busybox
+  # copy programs, check if there are already links with this name to busybox
   for i in $USR_SHARE_/discover* $USR_SHARE_/udhcpc $USR_SHARE_/udhcp-config.sh $USR_SHARE_/cdir $USR_SHARE_/rdir /usr/bin/ldd ;do
     tmp_name_="${i##*/}"
     isNotExistent "$INITRD_/static/$tmp_name_" eprint || execute "rm $INITRD_/static/$tmp_name_"
@@ -457,7 +457,7 @@ function grubConfigWork
   local grub_title_="Grub configuration"
   local grub_nic_message_="
 Give me the types of network cards you would want to boot from.
-If you networkcard is allready listed press <OK>!
+If you networkcard is already listed press <OK>!
 
 WARNING: DON't add all NIC's, grub could possibly stop working!!"
   local nics_=""
