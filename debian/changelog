@@ -1,9 +1,15 @@
+grml-terminalserver (0.70) unstable; urgency=low
+
+  * a few typo corrections 
+
+ -- Michael Gebetsroither <michael.geb@gmx.at>  Fri,  7 Apr 2006 01:54:24 +0200
+
 grml-terminalserver (0.69) unstable; urgency=low
 
    * moved video to vga options, because vesa-tng is not there anymore
    * added video=ofonly to video=nofb for missing vesa-tng
 
- -- Michael Gebetsroither <michael.geb@gmx.at>  Wed, 21 Dec 2005 22:03:58 +0100
+ -- Michael Gebetsroither <michael.geb@gmx.at>  Fri,  7 Apr 2006 01:54:14 +0200
 
 grml-terminalserver (0.68) unstable; urgency=low
 
