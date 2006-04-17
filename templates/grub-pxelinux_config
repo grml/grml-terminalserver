@@ -116,7 +116,7 @@ APPEND $pxe_def_boot_args_ debuginit $def_fb_args_ $BOOT_ARGS_
 LABEL debuginit
 KERNEL linux26
 APPEND $pxe_def_boot_args_ debuginit $no_fb_args_ $BOOT_ARGS_
-LABEL resuce
+LABEL rescue
 KERNEL linux26
 APPEND $pxe_def_boot_args_ $no_fb_args_
 LABEL memtest
