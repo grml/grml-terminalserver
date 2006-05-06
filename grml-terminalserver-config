@@ -374,8 +374,10 @@ Quite usefull examples:
 ssh=<pw>              - Start ssh server and set password of user grml to pw
 services=<1,2,3>      - Execute /etc/init.d/{1,2,3} start
 console=ttyS0,9600n8  - Initialise seriell console
-
+secure                - Boot only restricted clients (without root permissions)
+startx                - Boot into X (should be used with secure)
  
+
 "
   $DIALOG_ --clear --no-collapse --backtitle "$BACK_TITLE_" --title "$OPTIONS_TITLE_" --inputbox "$OPTIONS_BOOTARG_MESSAGE_" 0 0\
     2>$TMP_ || die "problems getting additional boot arguments"
