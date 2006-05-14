@@ -6,4 +6,5 @@
   * DON'T delete /var/lib/tftpdboot on a !grml-system
   * config vars to use external services (dhcp, tftp, nfs)
   * make pxelinux configurable (to use another pxe-boot-manager) (MAYBE)
+  * default dhcp range not from 0.1-254 but from 0.2-253
   * ...
