@@ -501,7 +501,7 @@ title Load config from Tftp server
   configfile (nd)/menu.lst
 EOT
   #execute "./configure --enable-diskless --enable-preset-menu=./preset-menu $cmd_line_" warn || read
-  execute "./configure --enable-preset-menu=./preset-menu $cmd_line_" warn || read
+  execute "CC=gcc-3.3 ./configure --enable-preset-menu=./preset-menu $cmd_line_" warn || read
   execute "make -j2 CC=gcc-3.3" warn || read #return 1
 
   local st1_="stage1/stage1"
