@@ -42,7 +42,7 @@ def run(dir):
         print 'Error: no such file or directory, using current directory'
         files = os.listdir('.')
     dir = os.path.abspath(dir)
-    files = [ f for f in files if os.path.isfile(os.path.join(dir, f)) ]
+    files = ( f for f in files if os.path.isfile(os.path.join(dir, f)) )
 
     screen = snack.SnackScreen()
     gui = ChooserGui(screen)
