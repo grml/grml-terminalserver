@@ -1,5 +1,3 @@
-#!/bin/sh i like colors :)
-#
 # the following variables are available in the template:
 #
 # $INTERFACE_     (interface for the terminalserver)

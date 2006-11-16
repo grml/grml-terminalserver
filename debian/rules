@@ -9,9 +9,6 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
-
-
-
 CFLAGS = -Wall -g
 
 ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
@@ -34,8 +31,6 @@ build-stamp: configure-stamp
 	dh_testdir
 
 	# Add here commands to compile the package.
-	# $(MAKE)
-	#docbook-to-man debian/grml-terminalserver.sgml > grml-terminalserver.1
 
 	touch build-stamp
 
@@ -70,26 +65,13 @@ binary-arch: build install
 	dh_installchangelogs 
 	dh_installdocs
 	dh_installexamples
-#	dh_install
-#	dh_installmenu
-#	dh_installdebconf	
-#	dh_installlogrotate
-#	dh_installemacsen
-#	dh_installpam
-#	dh_installmime
-#	dh_installinit
-#	dh_installcron
-#	dh_installinfo
 	dh_installman debian/grml-terminalserver.8 debian/grml-terminalserver-config.8
 	dh_link
-#	dh_strip
 	dh_compress
+	mkdir -p debian/grml-terminalserver/usr/share/lintian/overrides/
+	cp -av debian/overrides debian/grml-terminalserver/usr/share/lintian/overrides/grml-terminalserver
 	dh_fixperms
-#	dh_perl
-#	dh_python
-#	dh_makeshlibs
 	dh_installdeb
-#	dh_shlibdeps
 	dh_gencontrol
 	dh_md5sums
 	dh_builddeb

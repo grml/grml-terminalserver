@@ -1,6 +1,7 @@
 grml-terminalserver (0.72) unstable; urgency=low
 
   Maintenance release:
+  * make package lintian clean
   * update linuxrc
   * try to fix the "discover" bugs
 
