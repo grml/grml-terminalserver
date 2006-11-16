@@ -54,7 +54,7 @@ SERVICES:
   dhcp        Dhcp daemon
   nfs         All necessary nfs daemons
   <>          ALL services
-  
+
 OPTIONS:
    -v         verbose (show what is going on, v++)
    -h         this help text
@@ -112,14 +112,16 @@ function stopDhcp
   rm -f /var/lib/dhcp3/dhcpd.leases* 2>/dev/null    #FIXME
   touch /var/lib/dhcp3/dhcpd.leases
 }
+
 function startDhcp
 {
   local conf_file_="$DHCPD_CONFIG_FILE_"
-  
+
   test -f $DHCPD_BIN_ || die "could not find dhcpd \"$DHCPD_BIN_\""
   start-stop-daemon --start --quiet --pidfile "$DHCPD_PID_" \
     --exec "$DHCPD_BIN_" -- -cf "$conf_file_" -q "$INTERFACE_" || warn "problems starting dhcpd"
 }
+
 function runDhcp
 {
   isExistent "$DHCPD_CONFIG_FILE_" || \
@@ -128,6 +130,29 @@ function runDhcp
   stopDhcp
   sleep 1
   startDhcp
+}
+
+# make sure tcp/113 is rejected
+function runIptables
+{
+ # something keeps answering all tftp requests with auth requests (SYN
+ # packets to the client tcp/113). Since the PXE client doesn't answer with
+ # RST, the auth query has to wait until it times out. Forbidding the
+ # terminalserver to send out packets to tcp/113 via iptables _greatly_
+ # speeds up the process. But of course the real fix would be to have grml
+ # stop sending out auth queries to tftp clients. according to netstat, it
+ # is in.tftpd itself sending out the auth queries.
+ # Thanks to Marc Haber and Wolfgang Karall for noticing and current fix.
+ if [ -x /sbin/iptables ] ; then
+    if iptables -L | grep -q '^REJECT.*tcp-reset' ; then
+       echo "Rule for tcp/113 already present, nothing to be done."
+    else
+       echo -n "Rejecting tcp/113 via iptables to speed up speed up booting via PXE:"
+       iptables -A OUTPUT -p tcp --dport 113 -j REJECT --reject-with tcp-reset && echo done || echo failed
+    fi
+ else
+    warn "iptables executable not avilable"
+ fi
 }
 # }}}
 
@@ -139,7 +164,7 @@ function removeTftpConf
 function createTftpConf
 {
   removeTftpConf
-  
+
   execute "mkdir $TFTPD_DATA_DIR_/pxelinux.cfg" die
   execute "install -m 644 /usr/lib/syslinux/pxelinux.0 $TFTPD_DATA_DIR_" die
   execute "install -m 644 $PATH_/minirt26.gz $TFTPD_DATA_DIR_" die
@@ -217,16 +242,17 @@ function createConfig
 function actionStart
 {
   createConfig
-  
-  echo -n "Starting tftpd..."
-  runTftp
-  echo "done"
-  echo -n "Starting dhcpd..."
-  runDhcp
-  echo "done"
-  echo -n "Starting nfs..."
-  startNfs
-  echo "done"
+
+  echo -n "Starting tftpd: "
+  runTftp && echo done || echo failed
+
+  echo -n "Starting dhcpd: "
+  runDhcp && echo done || echo failed
+
+  runIptables
+
+  echo "Starting nfs: "
+  startNfs && echo "Sucessfully finished startup of grml-terminalserver." || echo 'Startup of grml-terminalserver-config failed!'
 }
 
 function actionStop
@@ -326,7 +352,7 @@ PXE_BOOT_MSG_=\"$PXE_BOOT_MSG_\"
 PXE_BOOT_LOGO_=\"$PXE_BOOT_LOGO_\""
   die "False configuration, please update $CONFIG_"
 fi
-  
+
 case "$1" in
   clean) actionClean; exit 0 ;;
 esac
@@ -340,7 +366,7 @@ while true; do
       "grml-terminalserver-config returned an error, do you want to quit now?" 5 75 && exit 1
   else
     break
-  fi  
+  fi
 done
 source $CONF_FILE_
 

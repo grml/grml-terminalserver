@@ -4,6 +4,7 @@ grml-terminalserver (0.72) unstable; urgency=low
   * make package lintian clean
   * update linuxrc
   * try to fix the "discover" bugs
+  * reject tcp/113 via iptables to speed up PXE boot
 
  -- Michael Prokop <mika@grml.org>  Thu, 16 Nov 2006 14:46:48 +0100
 
