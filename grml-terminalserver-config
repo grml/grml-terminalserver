@@ -177,7 +177,12 @@ function mkInitrd
     isNotExistent $CARDS_DETECTED_BY_DISCOVER && awk '/ethernet/{print $3}' /lib/discover/pci.lst |sort |uniq > $CARDS_DETECTED_BY_DISCOVER
   else # newer discover does not provide /lib/discover/pci.lst, get a list of all network drivers therefore
     isNotExistent $CARDS_DETECTED_BY_DISCOVER && \
-    find /lib/modules/`uname -r`/kernel/drivers/net/ -name \*.ko | sed 's#.*./## ; s#\.ko##' | sort | uniq > $CARDS_DETECTED_BY_DISCOVER
+    # find *all* network drivers
+    # find /lib/modules/`uname -r`/kernel/drivers/net/ -name \*.ko | sed 's#.*./## ; s#\.ko##' | sort | uniq > $CARDS_DETECTED_BY_DISCOVER
+    # find the ones supported by discover
+    for mod in `grep "name'>.*</data>" /lib/discover/pci-device.xml | sed "s#.*name'>## ; s#</data>##" | sort -u`; do
+        find /lib/modules/2.6.18-grml/kernel/drivers/net -name ${mod}.ko | sed 's#.*./## ; s#\.ko##' >> $CARDS_DETECTED_BY_DISCOVER
+    done
   fi
 
   local modules="`cat $CARDS_DETECTED_BY_DISCOVER |xargs` af_packet"
