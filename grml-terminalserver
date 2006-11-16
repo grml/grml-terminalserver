@@ -251,7 +251,7 @@ function actionStart
 
   runIptables
 
-  echo "Starting nfs: "
+  echo "Finally starting nfs services..."
   startNfs && echo "Sucessfully finished startup of grml-terminalserver." || echo 'Startup of grml-terminalserver-config failed!'
 }
 
