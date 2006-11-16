@@ -508,11 +508,9 @@ esac
 
 stage=2
 rundebugshell
-echo "before NFS"
+# NFS
 for i in $cmdline; do case "$i" in nfsdir=*|NFSDIR=*) eval $i;; esac; done
 [ -n "$nfsdir" ] && NFS="$nfsdir"
-echo "nfsdir=$NFS"
-# NFS
 if [ -n "$NFS" ]; then
   tmp_="$(getbootparam nfsdir)"
   echo -n "checkbootparam nfsdir   "
@@ -532,17 +530,17 @@ if [ -n "$NFS" ]; then
   for mod in `find /lib/modules/$KERNELVER/kernel/drivers/net/ -name \*.ko` ; do
       echo `basename $mod | tr -d \.ko` >> /modules.load
   done
-  modules_to_load=`cat /modules.load`
+  modules_to_load=`cat /modules.load | xargs`
 
   # FIXME modprobe is buggy from busybox
-  modules_to_load=`echo $modules_to_load | xargs`
   modLoad()
   {
     for mod in $@ ; do
-      tmp_="`modprobe -vn $mod`"
+      tmp_="`modprobe -vn $mod 2>/dev/null`"
       if [ $? -ne 0 ]; then
          continue
       fi
+      # be quiet by default, be verbose only with bootoption debuglinuxrc
       [ -n "$DEBUG" ] && eval "$tmp_" || eval "$tmp_" 1>/dev/null 2>/dev/null
     done
   }
@@ -561,19 +559,17 @@ if [ -n "$NFS" ]; then
   #rm -rf /myusr /mylib
 
   log_begin_msg "${RED}Debug: NFS = ${NFS}${NORMAL}"
-  log_begin_msg -n "${CRE}${BLUE}Looking for GRML in: ${MAGENTA}$NFS${NORMAL}   "
+  log_begin_msg -n "${CRE}${NORMAL}Looking for GRML in: ${MAGENTA}$NFS${NORMAL}"
   if mount -t nfs "$NFS" -o "async,ro,nolock" /cdrom #>/dev/null 2>&1
     then
     if test -f /cdrom/$GRML_DIR/$GRML_NAME
       then
-      log_begin_msg -n "${CRE} ${GREEN}Accessing grml CDROM at ${MAGENTA}$NFS${GREEN}...${NORMAL}"
+      log_begin_msg -n "Accessing grml CDROM at ${MAGENTA}$NFS${NORMAL}" ; echo "  $SUCCESS"
       FOUND_GRML="$NFS"
       break
     fi
   fi
 fi
-echo "after NFS"
-
 
 # Now that the right SCSI driver is (hopefully) loaded, try to find CD-ROM
 if test -z $NFS ; then
