@@ -2,6 +2,8 @@ grml-terminalserver (0.72) unstable; urgency=low
 
   Maintenance release:
   * make package lintian clean
+  * use Architecture 'any' instead of 'all' as the package ships
+    architecture specific binaries
   * big update of linuxrc - do not use discover anymore (broken) but
     instead try modprobing all available network modules
   * reject tcp/113 via iptables to speed up PXE boot

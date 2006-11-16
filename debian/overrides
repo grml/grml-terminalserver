@@ -3,3 +3,4 @@ grml-terminalserver: wrong-path-for-interpreter #!/static/sh != /bin/sh (./usr/s
 grml-terminalserver: wrong-path-for-interpreter #!/static/ash != /bin/ash (./usr/share/grml-terminalserver/rdir)
 grml-terminalserver: wrong-path-for-interpreter #!/static/ash != /bin/ash (./usr/share/grml-terminalserver/cdir)
 grml-terminalserver: wrong-path-for-interpreter #!/static/ash != /bin/ash (./usr/share/grml-terminalserver/discover-nic)
+grml-terminalserver: statically-linked-binary ./usr/share/grml-terminalserver/udhcpc
