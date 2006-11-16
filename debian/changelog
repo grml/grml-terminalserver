@@ -1,3 +1,11 @@
+grml-terminalserver (0.72) unstable; urgency=low
+
+  Maintenance release:
+  * update linuxrc
+  * try to fix the "discover" bugs
+
+ -- Michael Prokop <mika@grml.org>  Thu, 16 Nov 2006 14:46:48 +0100
+
 grml-terminalserver (0.71) unstable; urgency=low
 
   * compile error fixes (thanks to Spida)
