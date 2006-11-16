@@ -122,10 +122,10 @@ function actionAutoconf
 
 function actionMkInitrd
 {
-  echo "Creating initrd: $PATH_/minirt26.gz"
+  echo -n "Creating initrd $PATH_/minirt26.gz: "
   isExistent "$PATH_/minirt26.gz" && echo "$PATH_/minirt26.gz does already exist, skipping initrd creation" && return 0
   mkInitrd
-  echo 'done'
+  echo done
 }
 
 function mkInitrd
@@ -188,13 +188,13 @@ function mkInitrd
   local modules="`cat $CARDS_DETECTED_BY_DISCOVER |xargs` af_packet"
   local modules_dep=""
 
-  # get paths of modules + paths of all dependet modules
+  # get paths of modules + paths of all dependent modules
   echo -n "" >"$TMP_"
   for i in $modules; do
     tmp_=`awk -F: '{if($1~/'"$i".ko'/) {print $0}}' $MODULES_PATH_/$KERNEL_VERSION_/modules.dep`
     echo "${tmp_%%:*}"
     # FIXME ugly sed hack :(
-    echo "${tmp_#*:}" |xargs -n1 echo |sed 's/://'
+    echo "${tmp_#*:}" | xargs -n1 echo | sed 's/://'
   done \
   | sort | uniq | while read module relax; do
     if [ -n "$module" ]; then
@@ -231,7 +231,7 @@ function mkInitrd
   local tmp_size=`du -s $INITRD_ |awk '{print $1}'`   # in kB
   let tmp_size=$tmp_size+1000
   if (( $tmp_size >= 16000 )); then
-    warn "Your initrd is $tmp_size kByte large => TOO BIG (should be 16000kByte)"
+    warn "Your initrd is $tmp_size kByte large => TOO BIG (should be <= 16000kB)"
     warn "Please remove a few modules from $CARDS_DETECTED_BY_DISCOVER or edit $INITRD_ manually"
     return 1
   fi

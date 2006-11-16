@@ -147,7 +147,7 @@ function runIptables
     if iptables -L | grep -q '^REJECT.*tcp-reset' ; then
        echo "Rule for tcp/113 already present, nothing to be done."
     else
-       echo -n "Rejecting tcp/113 via iptables to speed up speed up booting via PXE:"
+       echo -n "Rejecting tcp/113 via iptables to speed up speed up booting via PXE: "
        iptables -A OUTPUT -p tcp --dport 113 -j REJECT --reject-with tcp-reset && echo done || echo failed
     fi
  else

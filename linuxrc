@@ -523,13 +523,19 @@ if [ -n "$NFS" ]; then
   cdir
 
   # starting hw-detection for network card
-  echo "Starting hw-detection"
-  kernel_version_=`uname -r`
-  modules_to_load=$(/static/discover --disable-bus all --enable-bus pci --type network --normalize-whitespace --data-path=linux/module/name --data-version=$kernel_version_ | grep -v '^ $' | uniq)
-  echo "trying to load the following network modules:  \"$modules_to_load\""
+#  echo "Starting hw-detection"
+#  kernel_version_=`uname -r`
+#  modules_to_load=$(/static/discover --disable-bus all --enable-bus pci --type network --normalize-whitespace --data-path=linux/module/name --data-version=$kernel_version_ | grep -v '^ $' | uniq)
+#  echo "trying to load the following network modules:  \"$modules_to_load\""
 
-  # FIXME modprobe is buggy from busybox
-  modules_to_load=`echo $modules_to_load | xargs`
+  KERNELVER=`uname -r`
+  for mod in `find /lib/modules/$KERNELVER/kernel/drivers/net/ -name \*.ko` ; do
+      echo `basename $mod | tr -d \.ko` >> /loadme
+  done
+  modules_to_load=`cat /loadme`
+#
+#  # FIXME modprobe is buggy from busybox
+#  modules_to_load=`echo $modules_to_load | xargs`
   modLoad()
   {
     for mod in $@ ; do
