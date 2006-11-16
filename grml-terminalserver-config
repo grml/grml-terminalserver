@@ -123,7 +123,7 @@ function actionAutoconf
 function actionMkInitrd
 {
   echo -n "Creating initrd $PATH_/minirt26.gz: "
-  isExistent "$PATH_/minirt26.gz" && echo "$PATH_/minirt26.gz does already exist, skipping initrd creation" && return 0
+  isExistent "$PATH_/minirt26.gz" && echo && echo "$PATH_/minirt26.gz exists already, skipping initrd creation" && return 0
   mkInitrd
   echo done
 }
