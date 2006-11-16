@@ -48,7 +48,7 @@ install: build
 	dh_testdir
 	dh_testroot
 	dh_clean -k 
-	dh_installdirs
+	dh_installdirs usr/sbin
 
 	# Add here commands to install the package into debian/grml-terminalserver.
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/grml-terminalserver
