@@ -1,9 +1,11 @@
-  * fix problem with nvidia NICs (forcedeath)
-  * maybe dump discover + libuclibc in favour of hwinfo + libc (space?)
+TODOs for grml-terminalserver
+-----------------------------
+
   * udhcp client "timeout" ( --background + in linuxrc 10s warten bis IP kommt, wenn schon ip vorhanden sofort weitermachen).
   * resolv.conf should be copied from the initrd
   * DON'T delete /var/lib/tftpdboot on a !grml-system
   * config vars to use external services (dhcp, tftp, nfs)
   * make pxelinux configurable (to use another pxe-boot-manager) (MAYBE)
   * default dhcp range not from 0.1-254 but from 0.2-253
-  * ...
+  * fix problem with nvidia NICs (forcedeath)
+  * maybe dump discover + libuclibc in favour of hwinfo + libc (space?) => discover is not used currently, JFYI
