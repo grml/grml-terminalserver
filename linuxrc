@@ -522,31 +522,32 @@ if [ -n "$NFS" ]; then
   # put the mylibs into /lib for discover and udhcpc
   cdir
 
-  # starting hw-detection for network card
-#  echo "Starting hw-detection"
-#  kernel_version_=`uname -r`
-#  modules_to_load=$(/static/discover --disable-bus all --enable-bus pci --type network --normalize-whitespace --data-path=linux/module/name --data-version=$kernel_version_ | grep -v '^ $' | uniq)
-#  echo "trying to load the following network modules:  \"$modules_to_load\""
+  # starting hw-detection for network card - currently broken, so don't use it
+  #  echo "Starting hw-detection"
+  #  kernel_version_=`uname -r`
+  #  modules_to_load=$(/static/discover --disable-bus all --enable-bus pci --type network --normalize-whitespace --data-path=linux/module/name --data-version=$kernel_version_ | grep -v '^ $' | uniq)
+  #  echo "trying to load the following network modules:  \"$modules_to_load\""
 
   KERNELVER=`uname -r`
   for mod in `find /lib/modules/$KERNELVER/kernel/drivers/net/ -name \*.ko` ; do
-      echo `basename $mod | tr -d \.ko` >> /loadme
+      echo `basename $mod | tr -d \.ko` >> /modules.load
   done
-  modules_to_load=`cat /loadme`
-#
-#  # FIXME modprobe is buggy from busybox
-#  modules_to_load=`echo $modules_to_load | xargs`
+  modules_to_load=`cat /modules.load`
+
+  # FIXME modprobe is buggy from busybox
+  modules_to_load=`echo $modules_to_load | xargs`
   modLoad()
   {
     for mod in $@ ; do
       tmp_="`modprobe -vn $mod`"
       if [ $? -ne 0 ]; then
-        continue
+         continue
       fi
-      eval "$tmp_"
+      [ -n "$DEBUG" ] && eval "$tmp_" || eval "$tmp_" 1>/dev/null 2>/dev/null
     done
   }
   modLoad "$modules_to_load"
+  rm -f /modules.load
 
   # loading additional modules
   modLoad sunrpc lockd af_packet nfs
