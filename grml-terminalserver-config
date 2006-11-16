@@ -1,10 +1,10 @@
 #!/bin/sh
 # Filename:      terminalserver-config
-# Purpose:       Program to do something
+# Purpose:       configuration program for grml-terminalserver
 # Authors:       grml-team (grml.org), (c) Michael Gebetsroither <gebi@grml.org>
 # Bug-Reports:   see http://grml.org/bugs/
 # License:       This file is licensed under the GPL v2.
-# Latest change: Sun May 08 22:21:32 CEST 2005 [gebi]
+# Latest change: Don Nov 16 14:39:51 CET 2006 [mika]
 ################################################################################
 
 
@@ -38,7 +38,7 @@ IPRANGE_TO_=""
 NETWORK_=""
 OPTIONS_=""
 BOOT_ARGS_=""
- 
+
 
 ###
 ### __FUNCTIONS
@@ -49,23 +49,23 @@ function printUsage
   cat <<EOT
 Usage: "$PROG_NAME__" [OPTIONS] <command>
 
-$PROG_NAME__ is the config program for the terminalserver
-comming with grml.
+$PROG_NAME__ is the config program for the terminalserver coming with grml.
 
 COMMANDS:
-   help             This text
+
+   help             This help text
    interactive      Interactive Configuration of the grml-terminalserver
-   grubConf         Configure grub and make boot-image (for non-PXE NICs)
+   grubConf         Configure grub and create boot-image (for non-PXE NICs)
    grubConfWrite    Configure grub and write image to floppy disk
    grubWrite        Write compiled grub-image to floppy disk
    grubMultiWrite   batchwrite grub-image to floppy disk
    initrd           Only create the initrd
    clean            Remove all configfiles created during user configuration
-   <default>        interactive
+   <default>        interactive mode
 
 OPTIONS:
-   -v             verbose (show what is going on, v++)
-   -h             this help text
+   -v               verbose (show what is going on, v++)
+   -h               this help text
 
 EOT
 }
@@ -150,7 +150,7 @@ function mkInitrd
   execute "rm $TMP_DIR_/minirt26" warn || return 1
 
   # implanting my initrd changes into the original initrd
-  
+
   # copy programs, check if there are already links with this name to busybox
   for i in $USR_SHARE_/discover* $USR_SHARE_/udhcpc $USR_SHARE_/udhcp-config.sh $USR_SHARE_/cdir $USR_SHARE_/rdir /usr/bin/ldd ;do
     tmp_name_="${i##*/}"
@@ -168,13 +168,17 @@ function mkInitrd
   mkdir -p $INITRD_/mylib/discover
   cp /lib/discover/list.xml /lib/discover/pci-*.xml $INITRD_/mylib/discover/
 
-
   #
   # which modules should i put into the ramdisk
   #
 
   # get cards detected by discover
-  isNotExistent $CARDS_DETECTED_BY_DISCOVER && awk '/ethernet/{print $3}' /lib/discover/pci.lst |sort |uniq > $CARDS_DETECTED_BY_DISCOVER
+  if [ -f /lib/discover/pci.lst ] ; then
+    isNotExistent $CARDS_DETECTED_BY_DISCOVER && awk '/ethernet/{print $3}' /lib/discover/pci.lst |sort |uniq > $CARDS_DETECTED_BY_DISCOVER
+  else # newer discover does not provide /lib/discover/pci.lst, get a list of all network drivers therefore
+    isNotExistent $CARDS_DETECTED_BY_DISCOVER && \
+    find /lib/modules/`uname -r`/kernel/drivers/net/ -name \*.ko | sed 's#.*./## ; s#\.ko##' | sort | uniq > $CARDS_DETECTED_BY_DISCOVER
+  fi
 
   local modules="`cat $CARDS_DETECTED_BY_DISCOVER |xargs` af_packet"
   local modules_dep=""
@@ -255,7 +259,7 @@ function actionInteractive
   local i=""
 
   dprint "running in interactive mode"
-  
+
   local card_title_="Choose network device connected to client network"
   local card_message_="Available network devices:"
   local iprange_title_="IP Address range for clients"
@@ -272,7 +276,7 @@ for addresses from 192.168.0.101 to (and including) 192.168.0.200.
   local runconfig_message_="Would you like to configure your interfaces now?"
   local grub_title_="Grub configuration"
   local grub_message_="Do you have any NON-PXE network cards you would like to boot from?"
-  
+
   # on witch interfaces should we listen
   local netdevices_="$(cat /proc/net/dev | awk -F: '/eth.:|tr.:/{print $1}')"
   local device_list_=""
@@ -319,21 +323,21 @@ for addresses from 192.168.0.101 to (and including) 192.168.0.200.
   local grub_write_="YES"
   $DIALOG_ --clear --backtitle "$BACK_TITLE_" --title "$grub_title_" --yesno "$grub_message_" 5 75 && \
     grubConfig || grub_write_="NO"
- 
+
 
   # get options
   #local OPT_IPTABLES_="yes"
   #local OPT_SSH_="yes"
   #local OPT_DISTCC_="yes"
   #local OPT_SQUID_=""
-  
+
   local OPTIONS_TITLE_="Options"
   local OPTIONS_MESSAGE_="Please give the appropriate options you want the clients to use:
 
 grml2hd   - Make a non-interactive remote installation
 
 
- 
+
 "
 #  local OPTIONS_MESSAGE_="Please give the appropriate options you want the clients to use:
 #
@@ -376,7 +380,7 @@ services=<1,2,3>      - Execute /etc/init.d/{1,2,3} start
 console=ttyS0,9600n8  - Initialise seriell console
 secure                - Boot only restricted clients (without root permissions)
 startx                - Boot into X (should be used with secure)
- 
+
 
 "
   $DIALOG_ --clear --no-collapse --backtitle "$BACK_TITLE_" --title "$OPTIONS_TITLE_" --inputbox "$OPTIONS_BOOTARG_MESSAGE_" 0 0\
@@ -398,7 +402,7 @@ function optGrml2Hd
   local GRML2HD_TITLE_='Grml2hd options dialog'
   local tmp_=''
   local options_='BOOT_IMAGE=grml2hd'
-  
+
   # get partition to install grml2hd on
   OPTIONS_PARTITION_MSG_='Please give me the target partition where to install grml'
   PARTITION_TITLE_='Partition selection'
@@ -407,7 +411,7 @@ function optGrml2Hd
     "$OPTIONS_PARTITION_MSG_" 0 75 '/dev/hda1' 2>$TMP_ || die "problems getting partition"
   tmp_="partition=$(<$TMP_)"
   options_="$options_ $tmp_"
-  
+
   # get filesystem type
   OPTION_FS_TYPE_='Please give me the filesystem type'
   FS_TITLE_='Filesystem selection'
@@ -416,7 +420,7 @@ function optGrml2Hd
   "$OPTION_FS_TYPE_" 0 75 'ext3' 2>$TMP_ || die "problems getting filesystem type"
   tmp_="filesystem=$(<$TMP_)"
   options_="$options_ $tmp_"
-    
+
   # get where to save mbr
   OPTION_MBR_='Please give me the location where to save the mbr'
   MBR_TITLE_='Select location of mbr'
@@ -490,7 +494,7 @@ cat >preset-menu <<EOT
 # Set up the serial terminal, first of all.
 #serial --unit=0 --speed=19200
 #terminal --timeout=0 serial
-    
+
 # Initialize the network.
 #dhcp --with-configfile
 #bootp --with-configfile
@@ -527,7 +531,7 @@ function grubWrite
 function grubMultiWrite
 {
   local target_=${1:-'/dev/fd0'}
-  
+
   isExistent "$PATH_/grub.img" die "you must give me an image or run \"$PROG_NAME__ grubconf\""
   isExistent "$target_" die "$target_ is not a valied"
   while true; do
@@ -575,7 +579,7 @@ setVerbose $verbose_
 case "$1" in
   help)   printUsage; exit 0 ;;
 esac
-  
+
 checkRoot die 'You have to be root to use this program'
 disableSyslog
 
@@ -598,7 +602,7 @@ KERNEL_VERSION_=\"$KERNEL_VERSION_\" \
 ORIGINAL_INITRD_=\"$ORIGINAL_INITRD_\""
   die "False configuration, please update $CONFIG_"
 fi
-    
+
 
 case "$1" in
   interactive)  actionInteractive ;;
