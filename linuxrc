@@ -2,7 +2,7 @@
 # Filename: /linuxrc
 # Purpose:  minirt for kernel 2.6 running on grml live-cd
 # Authors:  (c) Klaus Knopper <knoppix@knopper.net>, (c) Michael Prokop <mika@grml.org>
-# Latest change: Don Nov 16 14:46:00 CET 2006 [mika]
+# Latest change: Don Nov 16 19:08:07 CET 2006 [mika]
 #######################################################################################
 
 # hardcoded configurable options
@@ -513,9 +513,7 @@ for i in $cmdline; do case "$i" in nfsdir=*|NFSDIR=*) eval $i;; esac; done
 [ -n "$nfsdir" ] && NFS="$nfsdir"
 if [ -n "$NFS" ]; then
   tmp_="$(getbootparam nfsdir)"
-  echo -n "checkbootparam nfsdir   "
-  checkbootparam "nfsdir" && echo "OK" || echo "FAILED"
-  echo "getbootparam nfsdir=\"$tmp_\""
+  log_begin_msg "Bootoption NFS found." ; echo "$SUCCESS"
 
   # put the mylibs into /lib for discover and udhcpc
   cdir
@@ -533,6 +531,7 @@ if [ -n "$NFS" ]; then
   modules_to_load=`cat /modules.load | xargs`
 
   # FIXME modprobe is buggy from busybox
+  log_begin_msg "Trying to load network driver(s)."
   modLoad()
   {
     for mod in $@ ; do
@@ -550,7 +549,8 @@ if [ -n "$NFS" ]; then
   # loading additional modules
   modLoad sunrpc lockd af_packet nfs
 
-  /static/udhcpc --foreground --quit --script=/static/udhcp-config.sh
+  log_begin_msg "Requesting network configuration using udhcp: "
+  /static/udhcpc --foreground --quit --script=/static/udhcp-config.sh && echo "$SUCCESS" || echo "$FAILED"
   #echo "press <enter> to start a system shell and configure your system"
   #sh
 
@@ -558,13 +558,12 @@ if [ -n "$NFS" ]; then
   rdir
   #rm -rf /myusr /mylib
 
-  log_begin_msg "${RED}Debug: NFS = ${NFS}${NORMAL}"
-  log_begin_msg -n "${CRE}${NORMAL}Looking for GRML in: ${MAGENTA}$NFS${NORMAL}"
+  log_begin_msg "Looking for GRML in: ${MAGENTA}$NFS${NORMAL}"
   if mount -t nfs "$NFS" -o "async,ro,nolock" /cdrom #>/dev/null 2>&1
     then
     if test -f /cdrom/$GRML_DIR/$GRML_NAME
       then
-      log_begin_msg -n "Accessing grml CDROM at ${MAGENTA}$NFS${NORMAL}" ; echo "  $SUCCESS"
+      log_begin_msg "Accessing grml CDROM at ${MAGENTA}$NFS${NORMAL}" ; echo "  $SUCCESS"
       FOUND_GRML="$NFS"
       break
     fi
