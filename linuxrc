@@ -2,7 +2,11 @@
 # Filename: /linuxrc
 # Purpose:  minirt for kernel 2.6 running on grml live-cd
 # Authors:  (c) Klaus Knopper <knoppix@knopper.net>, (c) Michael Prokop <mika@grml.org>
+<<<<<<< /home/mika/grml/hg/grml-terminalserver/linuxrc
 # Latest change: Don Nov 16 14:46:00 CET 2006 [mika]
+=======
+# Latest change: Mon Sep 18 23:19:53 CEST 2006 [mika]
+>>>>>>> /tmp/linuxrc~other.LuZLNY
 #######################################################################################
 
 # hardcoded configurable options
@@ -264,6 +268,7 @@ echo "${GREEN}DONE.${NORMAL}"
 
 # Ask user for modules
 askmodules(){
+<<<<<<< /home/mika/grml/hg/grml-terminalserver/linuxrc
  TYPE="$1"; shift
  echo "${TYPE} modules available:${WHITE}"
  c=""
@@ -278,6 +283,22 @@ askmodules(){
  echo -n "insmod module(s)> "
  read MODULES
  case "$MODULES" in n|N) MODULES=""; ;; y|"")  MODULES="$*"; ;; esac
+=======
+ TYPE="$1"; shift
+ echo "${TYPE} modules available:${WHITE}"
+ c=""
+ for m in "$@"; do
+  if test -f "/modules/scsi/$m"; then
+   test -z "$c"  && { echo -n "	$m"; c="1"; } || { echo "		$m"; c=""; }
+  fi
+ done
+ [ -n "$c" ] && echo ""
+ echo "Load ${TYPE} Modules?"
+ echo "[Enter full filename(s) (space-separated), Return for autoprobe, n for none] "
+ echo -n "insmod module(s)> "
+ read MODULES
+ case "$MODULES" in n|N) MODULES=""; ;; y|"")  MODULES="$*"; ;; esac
+>>>>>>> /tmp/linuxrc~other.LuZLNY
 }
 
 # Try to load the given modules (full path or current directory)
@@ -508,11 +529,8 @@ esac
 
 stage=2
 rundebugshell
-echo "before NFS"
-for i in $cmdline; do case "$i" in nfsdir=*|NFSDIR=*) eval $i;; esac; done
-[ -n "$nfsdir" ] && NFS="$nfsdir"
-echo "nfsdir=$NFS"
 # NFS
+<<<<<<< /home/mika/grml/hg/grml-terminalserver/linuxrc
 if [ -n "$NFS" ]; then
   tmp_="$(getbootparam nfsdir)"
   echo -n "checkbootparam nfsdir   "
@@ -556,17 +574,28 @@ if [ -n "$NFS" ]; then
   log_begin_msg "${RED}Debug: NFS = ${NFS}${NORMAL}"
   log_begin_msg -n "${CRE}${BLUE}Looking for GRML in: ${MAGENTA}$NFS${NORMAL}   "
   if mount -t nfs "$NFS" -o "async,ro,nolock" /cdrom #>/dev/null 2>&1
+=======
+if checkbootparam "nfsdir" ; then
+  NFS="$(getbootparam nfsdir)"
+#  if test -z $NFS
+#    then
+#    NFS=192.168.0.1
+#    echo "${CRE}${BLUE}No NFS-server given, assuming default $NFS${NORMAL}"
+#  fi
+  echo "${RED}Debug: NFS = ${NFS}${NORMAL}"
+  log_begin_msg "${CRE} ${GREEN}*${NORMAL} Looking for CD-ROM in: ${MAGENTA}$NFS${NORMAL}"
+  if mountit -t nfs $NFS "-o ro" >/dev/null 2>&1
+>>>>>>> /tmp/linuxrc~other.LuZLNY
     then
     if test -f /cdrom/$GRML_DIR/$GRML_NAME
       then
-      log_begin_msg -n "${CRE} ${GREEN}Accessing grml CDROM at ${MAGENTA}$NFS${GREEN}...${NORMAL}"
+      log_begin_msg "Accessing grml CD-ROM at ${MAGENTA}${NFS}${NORMAL}" ; echo "     $SUCCESS"
       FOUND_GRML="$NFS"
       break
     fi
+    umount /cdrom
   fi
 fi
-echo "after NFS"
-
 
 # Now that the right SCSI driver is (hopefully) loaded, try to find CD-ROM
 if test -z $NFS ; then
@@ -690,6 +719,7 @@ copy_to()
       TARGET_DEV=$(echo $CMDLINE | /usr/bin/tr ' ' '\n' | /bin/sed -n '/tohd=/s/.*=//p' | /usr/bin/tail -1)
       TARGET_DEV_DESC="$TARGET_DEV"
       # load filesystems
+<<<<<<< /home/mika/grml/hg/grml-terminalserver/linuxrc
       /GRML/sbin/modprobe fuse
       /GRML/sbin/modprobe ntfs
       FS="ext3 ext2 reiserfs reiser4 vfat ntfs"
@@ -704,6 +734,22 @@ copy_to()
       if test -z "$MOUNTED"; then
         log_failure_msg "Copying grml CD-ROM failed. ${MAGENTA}$TARGET_DEV_DESC${NORMAL} is not mountable."
         sleep 2
+=======
+      /GRML/sbin/modprobe fuse
+      /GRML/sbin/modprobe ntfs
+      FS="ext3 ext2 reiserfs reiser4 vfat ntfs"
+
+      MOUNTED=""
+      for i in $FS; do
+       if /GRML/bin/mount -o rw -t "$i" "$TARGET_DEV" "$TARGET"; then
+        MOUNTED="true"
+        break
+       fi
+      done
+      if test -z "$MOUNTED"; then
+        echo -n "${CRE} ${RED}Copying grml CD-ROM failed. ${MAGENTA}$TARGET_DEV_DESC${RED} is not mountable.${NORMAL}"
+        sleep 2
+>>>>>>> /tmp/linuxrc~other.LuZLNY
         return 1
       fi
       # check for enough free space
@@ -727,9 +773,14 @@ copy_to()
   fi
 
   # do the real copy
+<<<<<<< /home/mika/grml/hg/grml-terminalserver/linuxrc
 
   log_begin_msg "Copying grml CD-ROM to ${TARGET_DEV_DESC}... Please be patient."
   echo
+=======
+
+  echo "${CRE} ${GREEN}Copying grml CD-ROM to ${MAGENTA}$TARGET_DEV_DESC${GREEN}... Please be patient. ${NORMAL}"
+>>>>>>> /tmp/linuxrc~other.LuZLNY
   if [ -z "$use_cp" -a -x /usr/bin/rsync ]
   then
     # first cp the small files
@@ -755,7 +806,11 @@ copy_to()
     return 1
   fi
   # remount r/o
+<<<<<<< /home/mika/grml/hg/grml-terminalserver/linuxrc
   /bin/mount -n -o remount,ro $TARGET 1>/dev/null 2>&1
+=======
+  /bin/mount -n -o remount,ro $TARGET
+>>>>>>> /tmp/linuxrc~other.LuZLNY
   remount_grml
 }
 
@@ -780,6 +835,7 @@ if  test -n "$DO_REMOUNT" -a -n "$FOUND_GRML" ; then
 
   SOURCE="/cdrom"
   TARGET="/cdrom2"
+<<<<<<< /home/mika/grml/hg/grml-terminalserver/linuxrc
 
   # first copy_to, then boot_from
   if [ -n "$COPYTO" ]; then
@@ -793,6 +849,21 @@ if  test -n "$DO_REMOUNT" -a -n "$FOUND_GRML" ; then
         SOURCE2="$LOOP_SOURCE"
         SOURCE="/cdrom2"
         TARGET="/cdrom3"
+=======
+
+  # first copy_to, then boot_from
+  if [ -n "$COPYTO" ]; then
+   copy_to $COPYTO && REAL_TARGET="$TARGET"
+  fi
+  if [ -n "$BOOTFROM" ]; then
+    boot_from
+    if [ "$?" -eq "0" ]; then
+      # set new source / target paths
+      REAL_TARGET="$TARGET"
+      SOURCE2="$LOOP_SOURCE"
+      SOURCE="/cdrom2"
+      TARGET="/cdrom3"
+>>>>>>> /tmp/linuxrc~other.LuZLNY
     fi
   fi
 fi
@@ -827,9 +898,16 @@ export PATH
 # From here, we should have all essential commands available.
 hash -r
 
+<<<<<<< /home/mika/grml/hg/grml-terminalserver/linuxrc
 # Did we remount the source media?
 if  test -n "$REAL_TARGET"; then
   /bin/mount -n --move $REAL_TARGET /cdrom # move it back and go on to normal boot
+=======
+# Did we remount the source media ?
+if  test -n "$REAL_TARGET";
+then
+   /bin/mount -n --move $REAL_TARGET /cdrom # move it back and go on to normal boot
+>>>>>>> /tmp/linuxrc~other.LuZLNY
 fi
 
 # Clean up /etc/mtab (and - just in case - make a nice entry for looped ISO)
@@ -948,6 +1026,7 @@ rm -f /linuxrc
 exit 0
 
 else
+<<<<<<< /home/mika/grml/hg/grml-terminalserver/linuxrc
  log_failure_msg "Error: Can't find grml filesystem, sorry."
  echo "
 Are you booting via USB or firewire?
@@ -993,5 +1072,52 @@ http://grml.org/contact/
  # Allow signals
  trap 1 2 3 15
  exec /static/sh
+=======
+ echo "${CRE}${RED}Can't find grml filesystem, sorry.${NORMAL}"
+ echo "
+Are you booting via USB or firewire?
+====================================
+Try to boot with bootparam scandelay which delays the
+bootup sequence so modules should have enough time
+to initialize devices.
+
+Usage examples on bootprompt of grml-iso:
+
+grml scandelay       -> adds the default delay of 10 seconds
+grml scandelay=13    -> adds a delay of 13 seconds
+
+Are you booting via SCSI?
+====================================
+Use the bootparam scsi.
+Usage examples on bootprompt of grml-iso:
+
+grml scsi=probe      -> autoprobing of scsi modules
+grml scsi=ask        -> list modules and prompt for module which should be loaded
+grml scsi=modulename -> loads specified module (without .ko extension)
+expert               -> activate expert mode, similar to scsi=ask
+
+Are you getting SquashFS/zlib errors?
+=====================================
+Try to boot with \"grml nodma\"
+
+Still problems?
+===============
+Make sure the ISO itself is ok.
+Check the md5sum of downloaded ISO.
+Used a CD-RW? Make sure the medium is ok!
+
+Please report any problems you notice to the grml-team!
+http://grml.org/contact/
+"
+ echo "${RED}Now dropping you to the busybox shell.${NORMAL}"
+ echo "${RED}Press reset button to quit.${NORMAL}"
+ echo ""
+ PS1="grml# "
+ export PS1
+ echo "6" > /proc/sys/kernel/printk
+ # Allow signals
+ trap 1 2 3 15
+ exec /static/sh
+>>>>>>> /tmp/linuxrc~other.LuZLNY
 fi
 # EOF
