@@ -1,3 +1,9 @@
+grml-terminalserver (0.74) unstable; urgency=low
+
+  * Run udhcpc for earch present interface.
+
+ -- Michael Prokop <mika@grml.org>  Fri, 17 Nov 2006 19:20:43 +0100
+
 grml-terminalserver (0.73) unstable; urgency=low
 
   * /linuxrc: replace tr with sed command, thanks for the fix -
