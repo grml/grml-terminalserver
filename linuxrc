@@ -526,7 +526,7 @@ if [ -n "$NFS" ]; then
 
   KERNELVER=`uname -r`
   for mod in `find /lib/modules/$KERNELVER/kernel/drivers/net/ -name \*.ko` ; do
-      echo `basename $mod | tr -d \.ko` >> /modules.load
+      echo `basename $mod | sed -e 's/\.ko$//'` >> /modules.load
   done
   modules_to_load=`cat /modules.load | xargs`
 

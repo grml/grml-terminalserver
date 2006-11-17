@@ -1,3 +1,10 @@
+grml-terminalserver (0.73) unstable; urgency=low
+
+  * /linuxrc: replace tr with sed command, thanks for the fix -
+    Wolfgang Karall!
+
+ -- Michael Prokop <mika@grml.org>  Fri, 17 Nov 2006 13:18:52 +0100
+
 grml-terminalserver (0.72) unstable; urgency=low
 
   Maintenance release:
