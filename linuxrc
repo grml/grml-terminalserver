@@ -549,10 +549,12 @@ if [ -n "$NFS" ]; then
   # loading additional modules
   modLoad sunrpc lockd af_packet nfs
 
-  log_begin_msg "Requesting network configuration using udhcp:" ; echo
-  /static/udhcpc --foreground --quit --script=/static/udhcp-config.sh
-  #echo "press <enter> to start a system shell and configure your system"
-  #sh
+  for INTERFACE in `ifconfig | grep '^[a-z]' | sed 's/\ .*//'` ; do
+      log_begin_msg "Requesting network configuration using udhcp for ${INTERFACE}:" ; echo
+      /static/udhcpc --interface="${INTERFACE}" --foreground --quit --script=/static/udhcp-config.sh
+      # echo "press <enter> to start a system shell and configure your system"
+      # sh
+  done
 
   # recreate the old dir structures
   rdir
