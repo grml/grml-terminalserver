@@ -24,6 +24,7 @@ install:
 	$(install_) -m 755 modcalc $(usrshare)
 	$(install_) -m 755 rdir $(usrshare)
 	$(install_) -m 755 cdir $(usrshare)
+	$(install_) -m 755 timeout $(usrshare)
 	$(install_) -m 755 discover-nic $(usrshare)
 	cp -r templates $(usrshare)
 

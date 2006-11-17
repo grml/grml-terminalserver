@@ -152,7 +152,7 @@ function mkInitrd
   # implanting my initrd changes into the original initrd
 
   # copy programs, check if there are already links with this name to busybox
-  for i in $USR_SHARE_/discover* $USR_SHARE_/udhcpc $USR_SHARE_/udhcp-config.sh $USR_SHARE_/cdir $USR_SHARE_/rdir /usr/bin/ldd ;do
+  for i in $USR_SHARE_/timeout $USR_SHARE_/discover* $USR_SHARE_/udhcpc $USR_SHARE_/udhcp-config.sh $USR_SHARE_/cdir $USR_SHARE_/rdir /usr/bin/ldd ;do
     tmp_name_="${i##*/}"
     isNotExistent "$INITRD_/static/$tmp_name_" eprint || execute "rm $INITRD_/static/$tmp_name_"
     cp $i "$INITRD_/static/$tmp_name_"

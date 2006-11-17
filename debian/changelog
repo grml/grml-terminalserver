@@ -1,6 +1,9 @@
 grml-terminalserver (0.74) unstable; urgency=low
 
   * Run udhcpc for earch present interface.
+  * Added statically compiled binary timeout, taken from
+    Coroner's Toolkit (TCT), built running
+    diet gcc -static -o timeout timeout.c
 
  -- Michael Prokop <mika@grml.org>  Fri, 17 Nov 2006 19:20:43 +0100
 

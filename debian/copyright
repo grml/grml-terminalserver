@@ -3,6 +3,9 @@ on Sun, 20 Mar 2005 19:39:26 +0100.
 
 Sources available at http://grml.org/repos/ and http://hg.grml.org/
 
+The timeout binary has been extracted from package tct (Forensics related utilities) version 1.11-6.3.
+The udhcpc binary has been built from package udhcp-0.9.8cvs20050303.
+
 Copyright (C) 2003++ Michael Gebetsroither <gebi@grml.org> and Michael Prokop <mika@grml.org>
 
    This package is free software; you can redistribute it and/or modify
