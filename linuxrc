@@ -549,7 +549,12 @@ if [ -n "$NFS" ]; then
   # loading additional modules
   modLoad sunrpc lockd af_packet nfs
 
-  for INTERFACE in `ifconfig -a | grep '^eth' | sed 's/\ .*//'` ; do
+  dhcp_iface_=$(getbootparam dhcp_iface)
+  if [ -z "$dhcp_iface_" ]; then
+  	dhcp_iface_=`ifconfig -a | grep '^eth' | sed 's/ .*//'`
+  fi
+
+  for INTERFACE in $dhcp_iface_ ; do
       log_begin_msg "Requesting network configuration using udhcp for ${INTERFACE}:" ; echo
       /static/timeout 10 /static/udhcpc --interface="${INTERFACE}" --foreground --quit --script=/static/udhcp-config.sh
       # echo "press <enter> to start a system shell and configure your system"

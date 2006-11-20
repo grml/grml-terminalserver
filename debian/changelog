@@ -1,3 +1,10 @@
+grml-terminalserver (0.76) unstable; urgency=low
+
+  * Support bootoption dhcp_iface via /linuxrc for selection of
+    network device, thanks for the patch - Wolfgang Karall!
+
+ -- Michael Prokop <mika@grml.org>  Tue, 21 Nov 2006 00:22:51 +0100
+
 grml-terminalserver (0.75) unstable; urgency=low
 
   * Support usbhid module in /linuxrc.
