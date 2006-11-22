@@ -1,3 +1,10 @@
+grml-terminalserver (0.77) unstable; urgency=low
+
+  * Avoid syntax error in dhcpd.conf if values for DNS and Gateway
+    are empty, thanks for the patch - Wolfgang Karall!
+
+ -- Michael Prokop <mika@grml.org>  Wed, 22 Nov 2006 11:16:46 +0100
+
 grml-terminalserver (0.76) unstable; urgency=low
 
   * Support bootoption dhcp_iface via /linuxrc for selection of

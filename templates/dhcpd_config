@@ -24,8 +24,13 @@
 date_=`execute date warn`
 
 # insert commas when having multiple nameservers
-DNS_=$(echo "$NAMESERVERS_" | sed -e 's/\([0-9]\) \([0-9]\)/\1, \2/g')
+if [ -n "$NAMESERVERS_" ]; then
+	DNS_LINE_="option domain-name-servers $(echo "$NAMESERVERS_" | sed -e 's/\([0-9]\) \([0-9]\)/\1, \2/g');"
+fi
 # note: we don't support multiple routers options
+if [ -n "$GW_" ]; then
+	ROUTERS_LINE_="option routers $GW_;"
+fi
 
 cat >"$DHCPD_CONFIG_FILE_" <<EOT
 # ${DHCPD_CONFIG_FILE_##/*/} for GRML terminalserver
@@ -51,8 +56,8 @@ subnet $NETWORK_ netmask $NETMASK_ {
   else { filename "pxelinux.0"; }
 #  option subnet-mask $NETMASK_;
   range $IPRANGE_FROM_ $IPRANGE_TO_;
-  option routers $GW_;
-  option domain-name-servers $DNS_;
+  $ROUTERS_LINE_
+  $DNS_LINE_
 #  option T150 "/menu.lst";
 #  option option-150 "(nd)/menu.lst";
 }
