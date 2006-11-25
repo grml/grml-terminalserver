@@ -1,3 +1,11 @@
+grml-terminalserver (0.78) unstable; urgency=low
+
+  * Deactivate Multicast-DNS via iptables, thanks for suggestion -
+    Wolfgang Karall! Mention details about iptables commands also
+    when starting up grml-terminalserver.
+
+ -- Michael Prokop <mika@grml.org>  Sat, 25 Nov 2006 21:49:59 +0100
+
 grml-terminalserver (0.77) unstable; urgency=low
 
   * Avoid syntax error in dhcpd.conf if values for DNS and Gateway
