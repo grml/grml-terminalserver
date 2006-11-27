@@ -2,14 +2,22 @@ install_ = "install"
 
 name = "grml-terminalserver"
 
+#ifndef CFLAGS
+CFLAGS = -Wall -O2
+#endif
+
 etc = ${DESTDIR}/etc/grml/terminalserver
 usr = ${DESTDIR}/usr
 usrbin = $(usr)/bin
 usrsbin = $(usr)/sbin
 usrshare = $(usr)/share/$(name)
 
+bin: timeout
 
-install:
+timeout: timeout.c
+	diet gcc $(CFLAGS) $^ -o $@
+
+install: bin
 	$(install_) -d -m 755 $(etc)
 	$(install_) -m 644 config $(etc)
 
@@ -33,4 +41,4 @@ install:
 	$(install_) -m 755 grml-terminalserver-config $(usrsbin)
 
 clean:
-	true
+	rm -f timeout
