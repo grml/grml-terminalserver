@@ -2,7 +2,7 @@
 # Filename: /linuxrc
 # Purpose:  minirt for kernel 2.6 running on grml live-cd
 # Authors:  (c) Klaus Knopper <knoppix@knopper.net>, (c) Michael Prokop <mika@grml.org>
-# Latest change: Don Nov 16 19:08:07 CET 2006 [mika]
+# Latest change: Son Dez 03 00:21:25 CET 2006 [mika]
 #######################################################################################
 
 # hardcoded configurable options
@@ -419,7 +419,7 @@ fi
 if test -z "$NOFIREWIRE" ; then
   log_begin_msg "Checking for Firewire."
   if test -f /modules/div/ieee1394.ko ; then
-    $insmoD /modules/div/ieee1394.ko > /dev/null 2>&1
+    $INSMOD /modules/div/ieee1394.ko > /dev/null 2>&1
     FOUNDFIREWIRE=""
     test -f /modules/div/ohci1394.ko && $INSMOD /modules/div/ohci1394.ko > /dev/null 2>&1 && FOUNDFIREWIRE="yes"
     if test -n "$FOUNDFIREWIRE" ; then
