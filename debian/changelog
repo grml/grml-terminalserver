@@ -1,11 +1,16 @@
 grml-terminalserver (0.79) unstable; urgency=low
 
+  [mika]
   * Applied patch from Wolfgang Karall which:
     - improve display of iptables message
     - fix the /etc/resolv.conf issue (Closes: issue21)
     - support for SNAT
-
     Thanks a lot, Wolfgang!
+  * Build udhcpc binary from source.
+
+  [gebi]
+  * Added dietlibc-dev to build dependencies
+  * Slimmed down timeout.c and cleanly compile it from source
 
  -- Michael Prokop <mika@grml.org>  Sat,  2 Dec 2006 10:29:20 +0100
 

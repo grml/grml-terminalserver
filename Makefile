@@ -12,10 +12,14 @@ usrbin = $(usr)/bin
 usrsbin = $(usr)/sbin
 usrshare = $(usr)/share/$(name)
 
-bin: timeout
+bin: timeout udhcpc
 
 timeout: timeout.c
 	diet gcc $(CFLAGS) $^ -o $@
+	strip --strip-unneeded $@
+
+udhcpc: udhcp
+	cd udhcp ; LDFLAGS='-static' make
 
 install: bin
 	$(install_) -d -m 755 $(etc)
@@ -33,6 +37,7 @@ install: bin
 	$(install_) -m 755 rdir $(usrshare)
 	$(install_) -m 755 cdir $(usrshare)
 	$(install_) -m 755 timeout $(usrshare)
+	$(install_) -m 755 udhcp/udhcpc $(usrshare)
 	$(install_) -m 755 discover-nic $(usrshare)
 	cp -r templates $(usrshare)
 
@@ -41,4 +46,4 @@ install: bin
 	$(install_) -m 755 grml-terminalserver-config $(usrsbin)
 
 clean:
-	rm -f timeout
+	rm -f timeout ; cd udhcp && make clean && cd ..
