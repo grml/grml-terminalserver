@@ -32,7 +32,6 @@ install: bin
 	$(install_) -m 755 nfs-kernel-server $(usrshare)
 	$(install_) -m 755 linuxrc $(usrshare)
 	$(install_) -m 755 udhcp-config.sh $(usrshare)
-	$(install_) -m 755 udhcpc $(usrshare)
 	$(install_) -m 755 modcalc $(usrshare)
 	$(install_) -m 755 rdir $(usrshare)
 	$(install_) -m 755 cdir $(usrshare)
