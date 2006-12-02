@@ -888,6 +888,10 @@ mkdir -p /UNIONFS
 if test -n "$UNIONFS" && /bin/mount -t unionfs -o noatime${SECURE},dirs=/ramdisk=rw:/GRML=ro /UNIONFS /UNIONFS; then
  # We now have unionfs, copy some data from the initial ramdisk first
  cp -a /etc/fstab /etc/auto.mnt /etc/filesystems /etc/mtab /UNIONFS/etc/
+ # disable resolvconf on the terminalserver client
+ rm /UNIONFS/etc/resolv.conf
+ cp -a /etc/resolv.conf /UNIONFS/etc
+ echo REPORT_ABSENT_SYMLINK=no >> /UNIONFS/etc/default/resolvconf
  for i in bin boot etc sbin var lib opt root usr; do # Move directories to unionfs
   if test -d /$i; then
    mv /$i /$i.old && \

@@ -38,6 +38,7 @@ IPRANGE_TO_=""
 NETWORK_=""
 OPTIONS_=""
 BOOT_ARGS_=""
+NAT_INTERFACE_=""
 
 
 ###
@@ -93,6 +94,7 @@ IPRANGE_FROM_="$IPRANGE_FROM_"
 IPRANGE_TO_="$IPRANGE_TO_"
 OPTIONS_="$OPTIONS_"
 BOOT_ARGS_="$BOOT_ARGS_"
+NAT_INTERFACE_="$NAT_INTERFACE_"
 
 EOT
   notice "config successfully safed to \"$CONF_FILE_\""
@@ -323,6 +325,30 @@ for addresses from 192.168.0.101 to (and including) 192.168.0.200.
 
   NAMESERVERS_=`netGetNameservers warn`
   GW_=`netGetDefaultGateway warn`
+  GW_DEV_=`/sbin/ip route get "$GW_" | awk '{ print $3; exit; }'`
+  if [ "$GW_DEV_" != "$INTERFACE_" ]; then
+    # GW_DEV_ of server is not the same device as the one serviced by dhcpd
+    # so it doesn't make sense to provide the GW_ address to the clients
+    local do_nat_="YES"
+    local do_nat_title_="Network Address Translation"
+    local do_nat_message_="
+Do you want to set up NAT so that clients booting from this
+grml-terminalserver can use this machine also as gateway to
+the internet?"
+
+    $DIALOG_ --clear --backtitle "$BACK_TITLE_" --title "$do_nat_title_" --yesno "$do_nat_message_" 15 75 || \
+      do_nat_="NO"
+    if [ "$do_nat_" = "YES" ]; then
+      # user wants NAT, we give the clients the server address as
+      # gateway as well
+      GW_="$IP_"
+      NAT_INTERFACE_="$GW_DEV_"
+    else
+      # no NAT, no sensible gateway
+      GW_=
+      NAT_INTERFACE_="none"
+    fi
+  fi
 
 
   # grub

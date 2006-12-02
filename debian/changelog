@@ -1,3 +1,14 @@
+grml-terminalserver (0.79) unstable; urgency=low
+
+  * Applied patch from Wolfgang Karall which:
+    - improve display of iptables message
+    - fix the /etc/resolv.conf issue (Closes: issue21)
+    - support for SNAT
+
+    Thanks a lot, Wolfgang!
+
+ -- Michael Prokop <mika@grml.org>  Sat,  2 Dec 2006 10:29:20 +0100
+
 grml-terminalserver (0.78) unstable; urgency=low
 
   * Deactivate Multicast-DNS via iptables, thanks for suggestion -

@@ -148,7 +148,7 @@ function runIptables
        echo "Rule for tcp/113 already present, nothing to be done."
     else
        echo "Rejecting tcp/113 via iptables to speed up booting via PXE, running:"
-       echo -n '* iptables -A OUTPUT -p tcp --dport 113 -j REJECT --reject-with tcp-reset'
+       echo -n '* iptables -A OUTPUT -p tcp --dport 113 -j REJECT --reject-with tcp-reset ... '
        iptables -A OUTPUT -p tcp --dport 113 -j REJECT --reject-with tcp-reset && echo done || echo failed
     fi
     # deactivate Multicast-DNS
@@ -156,8 +156,28 @@ function runIptables
        echo "Rule for udp/5353 already present, nothing to be done."
     else
        echo "Rejecting udp/5353 via iptables for deactivating Multicast-DNS, running:"
-       echo -n '* iptables -A OUTPUT -p udp -d 224.0.0.0/8 --dport 5353 -j REJECT'
+       echo -n '* iptables -A OUTPUT -p udp -d 224.0.0.0/8 --dport 5353 -j REJECT ... '
        iptables -A OUTPUT -p udp -d 224.0.0.0/8 --dport 5353 -j REJECT && echo done || echo failed
+    fi
+    if [ "$NAT_INTERFACE_" != "none" ]; then
+       local nat_source_ip_=`netGetIp "$NAT_INTERFACE_" warn`
+
+       if iptables -t nat -vnL POSTROUTING | grep -q "SNAT.*${NAT_INTERFACE_}.*to:${nat_source_ip_}" ; then
+          echo "Rule for SNAT already present, nothing to be done."
+       else
+          echo "Setting up SNAT for terminalserver clients on ${NAT_INTERFACE_}:"
+          echo    "* iptables -t nat -F POSTROUTING"
+          echo -n "* iptables -t nat -A POSTROUTING -o $NAT_INTERFACE_ -j SNAT --to-source $nat_source_ip_ ... "
+          { iptables -t nat -F POSTROUTING && \
+            iptables -t nat -A POSTROUTING -o "$NAT_INTERFACE_" -j SNAT --to-source "$nat_source_ip_" ; } && \
+            echo done || echo failed
+       fi
+       if [ `cat /proc/sys/net/ipv4/ip_forward` -eq 1 ]; then
+          echo "IP-Forwarding already enabled, nothing to be done."
+       else
+          echo -n "Enabling IP-Forwarding: "
+          echo 1 > /proc/sys/net/ipv4/ip_forward && echo done || echo failed
+       fi
     fi
  else
     warn "iptables executable not avilable"
