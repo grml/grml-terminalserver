@@ -1,3 +1,9 @@
+grml-terminalserver (0.81) unstable; urgency=low
+
+  * Fix iptables problem when not using the NAT/gateway feature.
+
+ -- Michael Prokop <mika@grml.org>  Sun,  3 Dec 2006 23:00:24 +0100
+
 grml-terminalserver (0.80) unstable; urgency=low
 
   * Fix typo in /linuxrc causing problems with booting via

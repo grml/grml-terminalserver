@@ -348,6 +348,10 @@ the internet?"
       GW_=
       NAT_INTERFACE_="none"
     fi
+  else
+    # no NAT, no sensible gateway
+    GW_=
+    NAT_INTERFACE_="none"
   fi
 
 
