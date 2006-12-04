@@ -38,7 +38,7 @@ IPRANGE_TO_=""
 NETWORK_=""
 OPTIONS_=""
 BOOT_ARGS_=""
-NAT_INTERFACE_=""
+NAT_INTERFACE_="none"
 
 
 ###
@@ -326,7 +326,7 @@ for addresses from 192.168.0.101 to (and including) 192.168.0.200.
   NAMESERVERS_=`netGetNameservers warn`
   GW_=`netGetDefaultGateway warn`
   GW_DEV_=`/sbin/ip route get "$GW_" | awk '{ print $3; exit; }'`
-  if [ "$GW_DEV_" != "$INTERFACE_" ]; then
+  if [ "$GW_DEV_" != "$INTERFACE_" ] && [ "$GW_DEV_" != "" ]; then
     # GW_DEV_ of server is not the same device as the one serviced by dhcpd
     # so it doesn't make sense to provide the GW_ address to the clients
     local do_nat_="YES"
@@ -348,10 +348,6 @@ the internet?"
       GW_=
       NAT_INTERFACE_="none"
     fi
-  else
-    # no NAT, no sensible gateway
-    GW_=
-    NAT_INTERFACE_="none"
   fi
 
 
