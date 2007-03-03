@@ -181,8 +181,9 @@ function mkInitrd
     isNotExistent $CARDS_DETECTED_BY_DISCOVER && \
     # find *all* network drivers, but do not include wlan/pcmcia/... related ones
     # blacklist: proteon and depca as they seem to cause problems with udevsettle
-    find /lib/modules/`uname -r`/kernel/drivers/net/ -name \*.ko | grep -v 'wireless\|wan\|hamradio\|wlan\|ppp\|irda\|pcmcia\|depca\|proteon' | \
-         sed 's#.*./## ; s#\.ko##' | sort | uniq > $CARDS_DETECTED_BY_DISCOVER
+    find /lib/modules/${KERNEL_VERSION_}/kernel/drivers/net/ -name \*.ko | \
+      grep -v 'wireless\|wan\|hamradio\|wlan\|ppp\|irda\|pcmcia\|depca\|proteon' | \
+        sed 's#.*./## ; s#\.ko##' | sort | uniq > $CARDS_DETECTED_BY_DISCOVER
     # find the ones supported by discover
     # for mod in `grep "name'>.*</data>" /lib/discover/pci-device.xml | sed "s#.*name'>## ; s#</data>##" | sort -u`; do
     #     find /lib/modules/${KERNEL_VERSION_}/kernel/drivers/net -name ${mod}.ko | sed 's#.*./## ; s#\.ko##' >> $CARDS_DETECTED_BY_DISCOVER
