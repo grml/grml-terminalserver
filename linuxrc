@@ -2,7 +2,7 @@
 # Filename: /linuxrc
 # Purpose:  minirt for kernel 2.6 running on grml live-cd
 # Authors:  (c) Klaus Knopper <knoppix@knopper.net>, (c) Michael Prokop <mika@grml.org>
-# Latest change: Son Dez 03 00:21:25 CET 2006 [mika]
+# Latest change: Sun Mar 04 13:47:33 CET 2007
 #######################################################################################
 
 # hardcoded configurable options
@@ -215,6 +215,10 @@ GRML_DIR="GRML"
 GRML_NAME="GRML"
 case "$CMDLINE" in *grml_dir=*) GRML_DIR="$grml_dir"; ;; esac
 case "$CMDLINE" in *grml_name=*) GRML_NAME="$grml_name"; ;; esac
+
+# NFS
+for i in $cmdline; do case "$i" in nfsdir=*|NFSDIR=*) eval $i;; esac; done
+[ -n "$nfsdir" ] && NFS="$nfsdir"
 
 if [ -n "$DEBUG" ]; then
    log_begin_msg "Bootoption debug detected. Printing kernel command line:"
@@ -508,9 +512,6 @@ esac
 
 stage=2
 rundebugshell
-# NFS
-for i in $cmdline; do case "$i" in nfsdir=*|NFSDIR=*) eval $i;; esac; done
-[ -n "$nfsdir" ] && NFS="$nfsdir"
 if [ -n "$NFS" ]; then
   tmp_="$(getbootparam nfsdir)"
   log_begin_msg "Bootoption NFS found." ; echo "$SUCCESS"
@@ -813,11 +814,19 @@ then
 cat /GRML/etc/ld.so.cache > /etc/ld.so.cache
 
 UNIONFS=""
-$INSMOD /modules/unionfs.ko 1>/dev/null
-grep -q unionfs /proc/filesystems && UNIONFS=yes
-
-# Enable kernel messages
-echo "6" > /proc/sys/kernel/printk
+if checkbootparam "unionfs" ; then
+   $INSMOD /modules/unionfs.ko 1>/dev/null
+   grep -q unionfs /proc/filesystems && UNIONFS=yes
+   unionfs='unionfs'
+   UNIONFS_FILETYPE='unionfs'
+   AUFS=''
+else
+   $INSMOD /modules/aufs.ko 1>/dev/null
+   grep -q aufs /proc/filesystems && UNIONFS=yes
+   unionfs='unionfs (using aufs)'
+   UNIONFS_FILETYPE='aufs'
+   AUFS='yes'
+fi
 
 # Set paths
 log_begin_msg "Setting paths"
@@ -855,7 +864,11 @@ FOUNDMEM="$(awk '/MemTotal/{print $2}' /proc/meminfo)"
 TOTALMEM="$(awk 'BEGIN{m=0};/MemFree|Cached/{m+=$2};END{print m}' /proc/meminfo)"
 
 # Be verbose
-log_begin_msg "Total memory found: $FOUNDMEM kB" ; echo "       $SUCCESS"
+if [ -n "$FOUNDMEM" ] ; then
+   log_begin_msg "Total memory found: $FOUNDMEM kB" ; echo "       $SUCCESS"
+else
+   log_failure_msg "Could not fetch memory information." ; echo "     $FAILED"
+fi
 
 # Now we need to use a little intuition for finding a ramdisk size
 # that keeps us from running out of space, but still doesn't crash the
@@ -866,9 +879,9 @@ MINSIZE=20000
 # At least this much memory minus 30% should remain when home and var are full.
 MINLEFT=16000
 # Maximum ramdisk size
-MAXSIZE="$(expr $TOTALMEM - $MINLEFT)"
+[ -n "$TOTALMEM" ] && MAXSIZE="$(expr $TOTALMEM - $MINLEFT)"
 # Default ramdisk size for ramdisk
-RAMSIZE="$(expr $TOTALMEM / 5)"
+[ -n "$TOTALMEM" ] && RAMSIZE="$(expr $TOTALMEM / 5)"
 
 # Create additional dynamic ramdisk.
 test -z "$RAMSIZE" -o "$RAMSIZE" -lt "$MINSIZE" && RAMSIZE="$MINSIZE"
@@ -883,15 +896,19 @@ mkdir -p /ramdisk/tmp /ramdisk/home/grml && chmod 1777 /ramdisk/tmp && chown grm
 stage=3
 rundebugshell
 # unionfs
-log_begin_msg "Creating unionfs and symlinks on ramdisk"
+log_begin_msg "Creating $unionfs and symlinks on ramdisk"
 mkdir -p /UNIONFS
-if test -n "$UNIONFS" && /bin/mount -t unionfs -o noatime${SECURE},dirs=/ramdisk=rw:/GRML=ro /UNIONFS /UNIONFS; then
+if test -n "$UNIONFS" && /bin/mount -t $UNIONFS_FILETYPE -o noatime${SECURE},dirs=/ramdisk=rw:/GRML=ro /UNIONFS /UNIONFS ; then
  # We now have unionfs, copy some data from the initial ramdisk first
  cp -a /etc/fstab /etc/auto.mnt /etc/filesystems /etc/mtab /UNIONFS/etc/
+
  # disable resolvconf on the terminalserver client
- rm /UNIONFS/etc/resolv.conf
- cp -a /etc/resolv.conf /UNIONFS/etc
- echo REPORT_ABSENT_SYMLINK=no >> /UNIONFS/etc/default/resolvconf
+ if [ -n "$NFS" ] ; then
+    rm /UNIONFS/etc/resolv.conf
+    cp -a /etc/resolv.conf /UNIONFS/etc
+    echo REPORT_ABSENT_SYMLINK=no >> /UNIONFS/etc/default/resolvconf
+ fi
+
  for i in bin boot etc sbin var lib opt root usr; do # Move directories to unionfs
   if test -d /$i; then
    mv /$i /$i.old && \
@@ -901,7 +918,7 @@ if test -n "$UNIONFS" && /bin/mount -t unionfs -o noatime${SECURE},dirs=/ramdisk
    ln -snf /UNIONFS/$i /$i
   fi
  done
- echo "                 $SUCCESS"
+ [ -n "$AUFS" ] && echo "    $SUCCESS" || echo "                 $SUCCESS"
  log_begin_msg "Merging read-only system with read-writeable /ramdisk."
  for i in $(cd /UNIONFS; echo *); do # Create links for new stuff on /UNIONFS
    test "$i" = "home" -o "$i" = "tmp" && continue
@@ -911,8 +928,10 @@ else
  echo ""
  log_failure_msg "ERROR: CANNOT UNITE READ-ONLY MEDIA AND INITIAL RAMDISK!"
  echo "$FAILED"
- NOUNIONFS="yes"
- /GRML/sbin/halt -f -n
+ sleep 2
+ echo "Can not continue booting, dropping you to a busybox shell."
+ stage=4
+ rundebugshell
 fi
 
 chown grml.grml /home/grml

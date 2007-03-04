@@ -1,3 +1,9 @@
+grml-terminalserver (0.83) unstable; urgency=low
+
+  * Merge linuxrc from outside of terminalserver.
+
+ -- Michael Prokop <mika@grml.org>  Sun,  4 Mar 2007 13:48:04 +0100
+
 grml-terminalserver (0.82) unstable; urgency=low
 
   * Improve handling of NAT/gateway feature, thanks - Wolfgang Karall!
