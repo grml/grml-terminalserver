@@ -19,7 +19,7 @@
 
 
 # default boot arguments used for both grub and pxelinux
-default_boot_args_="ramdisk_size=16384 root=/dev/ram0 rw \
+default_boot_args_="ramdisk_size=24000 root=/dev/ram0 rw \
 init=/etc/init nfsdir=$IP_:$MOUNT_POINT_ nodhcp noprompt noeject \
 apm=power-off nomce"
 

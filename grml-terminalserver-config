@@ -235,8 +235,9 @@ function mkInitrd
   # put everything into the new initrd
   local tmp_size=`du -s $INITRD_ |awk '{print $1}'`   # in kB
   let tmp_size=$tmp_size+1000
-  if (( $tmp_size >= 16000 )); then
-    warn "Your initrd is $tmp_size kByte large => TOO BIG (should be <= 16000kB)"
+  local max_size=24000
+  if (( $tmp_size >= $max_size )); then
+    warn "Your initrd is $tmp_size kByte large => TOO BIG (should be <= ${max_size}kB)"
     warn "Please remove a few modules from $CARDS_DETECTED_BY_DISCOVER or edit $INITRD_ manually"
     return 1
   fi
