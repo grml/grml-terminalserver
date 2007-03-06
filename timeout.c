@@ -137,4 +137,4 @@ int main(int argc, char** argv)
     }
 }
 
-// vim: foldmethod=maker
+// vim: foldmethod=marker
