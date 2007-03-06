@@ -516,20 +516,7 @@ if [ -n "$NFS" ]; then
   tmp_="$(getbootparam nfsdir)"
   log_begin_msg "Bootoption NFS found." ; echo "$SUCCESS"
 
-  # put the mylibs into /lib for discover and udhcpc
   cdir
-
-  # starting hw-detection for network card - currently broken, so don't use it
-  #  echo "Starting hw-detection"
-  #  kernel_version_=`uname -r`
-  #  modules_to_load=$(/static/discover --disable-bus all --enable-bus pci --type network --normalize-whitespace --data-path=linux/module/name --data-version=$kernel_version_ | grep -v '^ $' | uniq)
-  #  echo "trying to load the following network modules:  \"$modules_to_load\""
-
-  KERNELVER=`uname -r`
-  for mod in `find /lib/modules/$KERNELVER/kernel/drivers/net/ -name \*.ko` ; do
-      echo `basename $mod | sed -e 's/\.ko$//'` >> /modules.load
-  done
-  modules_to_load=`cat /modules.load | xargs`
 
   # FIXME modprobe is buggy from busybox
   log_begin_msg "Trying to load network driver(s)." ; echo
@@ -544,8 +531,9 @@ if [ -n "$NFS" ]; then
       [ -n "$DEBUG" ] && eval "$tmp_" || eval "$tmp_" 1>/dev/null 2>/dev/null
     done
   }
-  modLoad "$modules_to_load"
-  rm -f /modules.load
+  # modules.alias and modules.dep are in place so USE IT :)!
+  modLoad "$(for x in $(find /sys/devices/ -name modalias); do grep pci: $x; done |xargs)"
+  modLoad "$NIC_PROBE"
 
   # loading additional modules
   modLoad sunrpc lockd af_packet nfs
@@ -562,9 +550,9 @@ if [ -n "$NFS" ]; then
       # sh
   done
 
-  # recreate the old dir structures
+  # recreate dir layout + remove extra modules
   rdir
-  #rm -rf /myusr /mylib
+  rm -rf /mylib
 
   log_begin_msg "Looking for GRML in: ${MAGENTA}$NFS${NORMAL}" ; echo "$SUCCESS"
   if mount -t nfs "$NFS" -o "async,ro,nolock" /cdrom #>/dev/null 2>&1

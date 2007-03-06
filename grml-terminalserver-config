@@ -154,41 +154,23 @@ function mkInitrd
   # implanting my initrd changes into the original initrd
 
   # copy programs, check if there are already links with this name to busybox
-  for i in $USR_SHARE_/timeout $USR_SHARE_/discover* $USR_SHARE_/udhcpc $USR_SHARE_/udhcp-config.sh $USR_SHARE_/cdir $USR_SHARE_/rdir /usr/bin/ldd ;do
+  for i in $USR_SHARE_/timeout $USR_SHARE_/udhcpc $USR_SHARE_/udhcp-config.sh $USR_SHARE_/cdir $USR_SHARE_/rdir; do
     tmp_name_="${i##*/}"
     isNotExistent "$INITRD_/static/$tmp_name_" eprint || execute "rm $INITRD_/static/$tmp_name_"
     cp $i "$INITRD_/static/$tmp_name_"
   done
   cp $USR_SHARE_/linuxrc $INITRD_/
   mkdir -p $INITRD_/mylib
-  mkdir -p $INITRD_/myusr/i386-uclibc-linux/lib
-  for i in libdl libc libuClibc ld-uClibc; do
-    cp -a $UCLIBC_PATH_/$i*.so* $INITRD_/myusr/i386-uclibc-linux/lib
-  done
-
-  # copy data files for discover (discover-data)
-  mkdir -p $INITRD_/mylib/discover
-  cp /lib/discover/list.xml /lib/discover/pci-*.xml $INITRD_/mylib/discover/
 
   #
   # which modules should i put into the ramdisk
   #
 
-  # get cards detected by discover
-  if [ -f /lib/discover/pci.lst ] ; then
-    isNotExistent $CARDS_DETECTED_BY_DISCOVER && awk '/ethernet/{print $3}' /lib/discover/pci.lst |sort |uniq > $CARDS_DETECTED_BY_DISCOVER
-  else # newer discover does not provide /lib/discover/pci.lst, get a list of all network drivers therefore
-    isNotExistent $CARDS_DETECTED_BY_DISCOVER && \
-    # find *all* network drivers, but do not include wlan/pcmcia/... related ones
-    # blacklist: proteon and depca as they seem to cause problems with udevsettle
-    find /lib/modules/${KERNEL_VERSION_}/kernel/drivers/net/ -name \*.ko | \
-      grep -v 'wireless\|wan\|hamradio\|wlan\|ppp\|irda\|pcmcia\|depca\|proteon' | \
-        sed 's#.*./## ; s#\.ko##' | sort | uniq > $CARDS_DETECTED_BY_DISCOVER
-    # find the ones supported by discover
-    # for mod in `grep "name'>.*</data>" /lib/discover/pci-device.xml | sed "s#.*name'>## ; s#</data>##" | sort -u`; do
-    #     find /lib/modules/${KERNEL_VERSION_}/kernel/drivers/net -name ${mod}.ko | sed 's#.*./## ; s#\.ko##' >> $CARDS_DETECTED_BY_DISCOVER
-    # done
-  fi
+  # find *all* network drivers, but do not include wlan/pcmcia/... related ones
+  # blacklist: proteon and depca as they seem to cause problems with udevsettle
+  find ${MODULES_PATH_}/${KERNEL_VERSION_}/kernel/drivers/net/ -name \*.ko | \
+    grep -v 'wireless\|wan\|hamradio\|wlan\|ppp\|irda\|pcmcia\|depca\|proteon' | \
+      sed 's#.*./## ; s#\.ko##' | sort | uniq > $CARDS_DETECTED_BY_DISCOVER
 
   local modules="`cat $CARDS_DETECTED_BY_DISCOVER |xargs` af_packet"
   local modules_dep=""
@@ -227,8 +209,9 @@ function mkInitrd
     cp $MODULES_PATH_/$KERNEL_VERSION_/kernel/$i "$tmp_path"
   done
 
-  # generate modules.dep
+  # copying modules.*
   cp $MODULES_PATH_/$KERNEL_VERSION_/modules.dep $mod_path_
+  cp $MODULES_PATH_/$KERNEL_VERSION_/modules.alias $mod_path_
   #grep "^\/lib\/modules\/$KERNEL_VERSION_\/kernel\/" $MODULES_PATH_/$KERNEL_VERSION_/modules.dep |\
   #  sed "s/\/lib\/modules\/$KERNEL_VERSION_\/kernel\//\/modules\//g" > $mod_path_/modules.dep
 
