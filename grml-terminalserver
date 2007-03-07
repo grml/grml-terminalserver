@@ -207,12 +207,12 @@ function createTftpConf
 
 function stopTftp
 {
-  start-stop-daemon --stop --quiet --name "${TFTPD_BIN_##*/}"
+  start-stop-daemon --stop --quiet -p "$TFTPD_PID_"
 }
 function startTftp
 {
   test -f $TFTPD_BIN_ || die "could not find \"$TFTPD_BIN_\""
-  start-stop-daemon --start --quiet --exec "$TFTPD_BIN_" -- -l -a "$IP_" -s "$TFTPD_DATA_DIR_" || \
+  start-stop-daemon --start --quiet --exec "$TFTPD_BIN_" -- --daemon --no-multicast --pidfile "$TFTPD_PID_" --bind-address "$IP_" "$TFTPD_DATA_DIR_" || \
     warn "problems starting tftpd server"
 }
 function runTftp
@@ -278,7 +278,7 @@ function actionStart
   echo -n "Starting dhcpd: "
   runDhcp && echo done || echo failed
 
-  runIptables
+  #runIptables
 
   echo "Finally starting nfs services..."
   startNfs && echo "Sucessfully finished startup of grml-terminalserver." || echo 'Startup of grml-terminalserver-config failed!'
