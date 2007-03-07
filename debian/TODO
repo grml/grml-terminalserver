@@ -4,3 +4,9 @@ TODOs for grml-terminalserver
   * DON'T delete /var/lib/tftpdboot on a !grml-system
   * config vars to use external services (dhcp, tftp, nfs)
   * make pxelinux configurable (to use another pxe-boot-manager) (MAYBE)
+  * don't write to /etc/grml/terminalserver
+  * don't recreate the config on every grml-terminalserver start
+  * introduce a special config rewrite commando
+  * verify config option to change location of grml image + cd mountpoint
+  * autodetection of kernelversion from grml image
+  * write a small script to create the netboot packages
