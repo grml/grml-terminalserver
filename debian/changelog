@@ -1,3 +1,18 @@
+grml-terminalserver (0.84) unstable; urgency=low
+
+  * Building new package with changes from gebi (thanks!):
+    - change from in.tftpd to atftpd [Closes: issue143]
+    - set max initrd size to 24000kB [Closes: issue142]
+    - remove libuclibc0 and discover-data from depends
+    - remove unnecesarry files
+    - change hw detection from discover to a modalias based one
+    - vim modline fixes in timeout.c
+    - merge linuxrc from outside of terminalserver
+    - fix error to not only use a running kernel
+    - updated todo
+
+ -- Michael Prokop <mika@grml.org>  Thu, 15 Mar 2007 17:19:14 +0100
+
 grml-terminalserver (0.83) unstable; urgency=low
 
   * Merge linuxrc from outside of terminalserver.
