@@ -194,7 +194,7 @@ function createTftpConf
 {
   removeTftpConf
 
-  execute "mkdir $TFTPD_DATA_DIR_/pxelinux.cfg" die
+  execute "mkdir -p $TFTPD_DATA_DIR_/pxelinux.cfg" die
   execute "install -m 644 /usr/lib/syslinux/pxelinux.0 $TFTPD_DATA_DIR_" die
   execute "install -m 644 $PATH_/minirt26.gz $TFTPD_DATA_DIR_" die
   execute "install -m 644 $KERNEL_IMAGE_ $TFTPD_DATA_DIR_/linux26" die

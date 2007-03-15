@@ -1,6 +1,6 @@
 grml-terminalserver (0.84) unstable; urgency=low
 
-  * Building new package with changes from gebi (thanks!):
+  [gebi]
     - change from in.tftpd to atftpd [Closes: issue143]
     - set max initrd size to 24000kB [Closes: issue142]
     - remove libuclibc0 and discover-data from depends
@@ -10,6 +10,8 @@ grml-terminalserver (0.84) unstable; urgency=low
     - merge linuxrc from outside of terminalserver
     - fix error to not only use a running kernel
     - updated todo
+  [mika]
+    - fix mkdir call of $TFTPD_DATA_DIR_/pxelinux.cfg
 
  -- Michael Prokop <mika@grml.org>  Thu, 15 Mar 2007 17:19:14 +0100
 
