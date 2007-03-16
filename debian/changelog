@@ -5,6 +5,7 @@ grml-terminalserver (0.83) unstable; urgency=low
   * merge linuxrc from outside of terminalserver, some
     fixes and updates for current version of busybox
     (using busybox-1.4.1 now)
+  * grml-terminalserver-config: do not copy udhcpc anymore
 
   [ Michael Gebetsroither ]
   * change from in.tftpd to atftpd [Closes: issue143]
