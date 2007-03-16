@@ -14,8 +14,9 @@ grml-terminalserver (0.83) unstable; urgency=low
   * fix error to not only use a running kernel
   * updated todo
   * fix module loading in linuxrc
+  * removed udhcpc
 
- -- Michael Gebetsroither <gebi@grml.org>  Fri, 16 Mar 2007 11:09:35 +0100
+ -- Michael Gebetsroither <gebi@grml.org>  Fri, 16 Mar 2007 11:22:00 +0100
 
 grml-terminalserver (0.82) unstable; urgency=low
 
