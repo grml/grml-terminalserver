@@ -2,6 +2,9 @@ grml-terminalserver (0.83) unstable; urgency=low
 
   [ Michael Prokop ]
   * fix mkdir call of $TFTPD_DATA_DIR_/pxelinux.cfg
+  * merge linuxrc from outside of terminalserver, some
+    fixes and updates for current version of busybox
+    (using busybox-1.4.1 now)
 
   [ Michael Gebetsroither ]
   * change from in.tftpd to atftpd [Closes: issue143]
@@ -10,7 +13,6 @@ grml-terminalserver (0.83) unstable; urgency=low
   * remove unnecesarry files
   * change hw detection from discover to a modalias based one
   * vim modline fixes in timeout.c
-  * merge linuxrc from outside of terminalserver
   * fix error to not only use a running kernel
   * updated todo
   * fix module loading in linuxrc
