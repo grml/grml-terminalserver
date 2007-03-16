@@ -161,6 +161,7 @@ function mkInitrd
   done
   cp $USR_SHARE_/linuxrc $INITRD_/
   mkdir -p $INITRD_/mylib
+  mkdir -p $INITRD_/myusr
 
   #
   # which modules should i put into the ramdisk

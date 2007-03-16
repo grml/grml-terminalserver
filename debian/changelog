@@ -10,6 +10,7 @@ grml-terminalserver (0.84) unstable; urgency=low
     - merge linuxrc from outside of terminalserver
     - fix error to not only use a running kernel
     - updated todo
+    - fix module loading in linuxrc
   [mika]
     - fix mkdir call of $TFTPD_DATA_DIR_/pxelinux.cfg
 

@@ -527,13 +527,14 @@ if [ -n "$NFS" ]; then
       if [ $? -ne 0 ]; then
          continue
       fi
-      # be quiet by default, be verbose only with bootoption debuglinuxrc
-      [ -n "$DEBUG" ] && eval "$tmp_" || eval "$tmp_" 1>/dev/null 2>/dev/null
+      echo "$tmp_" | while read i; do
+         # be quiet by default, be verbose only with bootoption debuglinuxrc
+         [ -n "$DEBUG" ] && eval "$i" || eval "$i" 1>/dev/null 2>/dev/null
+      done
     done
   }
   # modules.alias and modules.dep are in place so USE IT :)!
   modLoad "$(for x in $(find /sys/devices/ -name modalias); do grep pci: $x; done |xargs)"
-  modLoad "$NIC_PROBE"
 
   # loading additional modules
   modLoad sunrpc lockd af_packet nfs
@@ -552,7 +553,7 @@ if [ -n "$NFS" ]; then
 
   # recreate dir layout + remove extra modules
   rdir
-  rm -rf /mylib
+  #rm -rf /mylib
 
   log_begin_msg "Looking for GRML in: ${MAGENTA}$NFS${NORMAL}" ; echo "$SUCCESS"
   if mount -t nfs "$NFS" -o "async,ro,nolock" /cdrom #>/dev/null 2>&1
