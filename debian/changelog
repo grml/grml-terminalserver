@@ -6,6 +6,9 @@ grml-terminalserver (0.83) unstable; urgency=low
     fixes and updates for current version of busybox
     (using busybox-1.4.1 now)
   * linuxrc: use /static/xargs instead of xargs
+  * linuxrc: remove obsolete "FIXME modprobe is buggy from
+    busybox" and adjust code corresponding
+  * adjust code for udhcpc from busybox
   * grml-terminalserver-config: do not copy udhcpc anymore
 
   [ Michael Gebetsroither ]

@@ -2,7 +2,7 @@
 # Filename: /linuxrc
 # Purpose:  minirt for kernel 2.6 running on grml live-cd
 # Authors:  (c) Klaus Knopper <knoppix@knopper.net>, (c) Michael Prokop <mika@grml.org>
-# Latest change: Fri Mar 16 11:35:19 CET 2007 [mika]
+# Latest change: Fre Mär 16 15:55:37 CET 2007 [mika]
 #######################################################################################
 
 # hardcoded configurable options
@@ -516,21 +516,18 @@ if [ -n "$NFS" ]; then
   tmp_="$(getbootparam nfsdir)"
   log_begin_msg "Bootoption NFS found." ; echo "$SUCCESS"
 
-  cdir
+  /static/cdir
 
-  # FIXME modprobe is buggy from busybox
   log_begin_msg "Trying to load network driver(s)." ; echo
   modLoad()
   {
     for mod in $@ ; do
-      tmp_="`modprobe -vn $mod 2>/dev/null`"
-      if [ $? -ne 0 ]; then
-         continue
+      if [ -n "$DEBUG" ] ; then
+         echo "Debug: trying to load $mod:"
+	 modprobe -v $mod
+      else
+         modprobe $mod 2>/dev/null
       fi
-      echo "$tmp_" | while read i; do
-         # be quiet by default, be verbose only with bootoption debuglinuxrc
-         [ -n "$DEBUG" ] && eval "$i" || eval "$i" 1>/dev/null 2>/dev/null
-      done
     done
   }
   # modules.alias and modules.dep are in place so USE IT :)!
@@ -544,6 +541,12 @@ if [ -n "$NFS" ]; then
   	dhcp_iface_=`ifconfig -a | grep '^eth' | sed 's/ .*//'`
   fi
 
+  # make sure we have a udhcpc executable, if it's not present
+  # assume that busybox provides one
+  if ! [ -x /static/udhcpc ] ; then
+     ln -s /static/busybox /static/udhcpc
+  fi
+
   for INTERFACE in $dhcp_iface_ ; do
       log_begin_msg "Requesting network configuration using udhcp for ${INTERFACE}:" ; echo
       /static/timeout 10 /static/udhcpc --interface="${INTERFACE}" --foreground --quit --script=/static/udhcp-config.sh
@@ -552,8 +555,7 @@ if [ -n "$NFS" ]; then
   done
 
   # recreate dir layout + remove extra modules
-  rdir
-  #rm -rf /mylib
+  /static/rdir
 
   log_begin_msg "Looking for GRML in: ${MAGENTA}$NFS${NORMAL}" ; echo "$SUCCESS"
   if mount -t nfs "$NFS" -o "async,ro,nolock" /cdrom #>/dev/null 2>&1
