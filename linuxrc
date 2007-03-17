@@ -524,7 +524,7 @@ if [ -n "$NFS" ]; then
     for mod in $@ ; do
       if [ -n "$DEBUG" ] ; then
          echo "Debug: trying to load $mod:"
-	 modprobe -v $mod
+         modprobe -v $mod
       else
          modprobe $mod 2>/dev/null
       fi
