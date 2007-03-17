@@ -52,6 +52,7 @@ COMMANDS:
 SERVICES:
   tftp        Tftp daemon
   dhcp        Dhcp daemon
+  ipt         Iptables setup (snat for clients)
   nfs         All necessary nfs daemons
   <>          ALL services
 
@@ -136,7 +137,15 @@ function runDhcp
 # IPTABLES {{{
 function runIptables
 {
- if [ -x /sbin/iptables ] ; then
+  if [[ $IPTABLES_SNAT_ != "true" ]]; then
+    return
+  fi
+  startIptables
+}
+
+function startIptables
+{
+  if [ -x /sbin/iptables ] ; then
     if [[ $NAT_INTERFACE_ != "" ]]; then
        local nat_source_ip_=`netGetIp "$NAT_INTERFACE_" warn`
 
@@ -157,9 +166,27 @@ function runIptables
           echo 1 > /proc/sys/net/ipv4/ip_forward && echo done || echo failed
        fi
     fi
- else
+  else
     warn "iptables executable not avilable"
- fi
+  fi
+}
+
+function stopIptables
+{
+  if [[ $IPTABLES_SNAT_ != "true" ]]; then
+    return
+  fi
+  if [ -x /sbin/iptables ] ; then
+    if [[ $NAT_INTERFACE_ != "" ]]; then
+       local nat_source_ip_=`netGetIp "$NAT_INTERFACE_" warn`
+
+       if iptables -t nat -vnL POSTROUTING | grep -q "SNAT.*${NAT_INTERFACE_}.*to:${nat_source_ip_}" ; then
+         iptables -t nat -F POSTROUTING &>/dev/null && \
+           iptables -t nat -D POSTROUTING -o "$NAT_INTERFACE_" -j SNAT --to-source "$nat_source_ip_"
+       fi
+       echo 0 > /proc/sys/net/ipv4/ip_forward
+    fi
+  fi
 }
 # }}}
 
@@ -256,16 +283,17 @@ function actionStart
   echo -n "Starting dhcpd: "
   runDhcp && echo done || echo failed
 
-  #runIptables
+  runIptables
 
   echo "Finally starting nfs services..."
-  startNfs && echo "Sucessfully finished startup of grml-terminalserver." || echo 'Startup of grml-terminalserver-config failed!'
+  startNfs && echo "Sucessfully finished startup of grml-terminalserver." || echo 'Startup of grml-terminalserver failed!'
 }
 
 function actionStop
 {
   stopTftp
   stopDhcp
+  stopIptables
   stopNfs
   notice "Terminal-server stopped"
 }
@@ -300,6 +328,7 @@ function serviceStart
     "") actionStart ;;
     tftp) runTftp ;;
     dhcp) runDhcp ;;
+    ipt) startIptables ;;
     nfs) startNfs ;;
     *) warn "Service $service_ not available" ;;
   esac
@@ -313,6 +342,7 @@ function serviceStop
     "") actionStop ;;
     tftp) stopTftp ;;
     dhcp) stopDhcp ;;
+    ipt) stopIptables ;;
     nfs) stopNfs ;;
     *) warn "Service $service_ not available" ;;
   esac

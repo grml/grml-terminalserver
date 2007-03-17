@@ -22,3 +22,5 @@ PXE_BOOT_MSG_="$DATA_PATH_/boot.msg"
 
 PXE_BOOT_LOGO_="$DATA_PATH_/logo.16"
 
+IPTABLES_SNAT_="true"
+

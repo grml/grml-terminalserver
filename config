@@ -49,3 +49,7 @@
 # path to pxelinux boot logo
 # default: /cdrom/boot/isolinux/logo.16
 #PXE_BOOT_LOGO_=""
+
+# should the terminalserver activate snat for the clients to his default gateway?
+# default: true
+#IPTABLES_SNAT_=""
