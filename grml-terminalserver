@@ -132,34 +132,10 @@ function runDhcp
   startDhcp
 }
 
-# make sure tcp/113 is rejected
 function runIptables
 {
  if [ -x /sbin/iptables ] ; then
-    # something keeps answering all tftp requests with auth requests (SYN
-    # packets to the client tcp/113). Since the PXE client doesn't answer with
-    # RST, the auth query has to wait until it times out. Forbidding the
-    # terminalserver to send out packets to tcp/113 via iptables _greatly_
-    # speeds up the process. But of course the real fix would be to have grml
-    # stop sending out auth queries to tftp clients. according to netstat, it
-    # is in.tftpd itself sending out the auth queries.
-    # Thanks to Marc Haber and Wolfgang Karall for noticing and current fix.
-    if iptables -L | grep -q '^REJECT.*tcp dpt:auth reject-with tcp-reset' ; then
-       echo "Rule for tcp/113 already present, nothing to be done."
-    else
-       echo "Rejecting tcp/113 via iptables to speed up booting via PXE, running:"
-       echo -n '* iptables -A OUTPUT -p tcp --dport 113 -j REJECT --reject-with tcp-reset ... '
-       iptables -A OUTPUT -p tcp --dport 113 -j REJECT --reject-with tcp-reset && echo done || echo failed
-    fi
-    # deactivate Multicast-DNS
-    if iptables -L | grep -q '^REJECT.*dpt:mdns reject-with icmp-port-unreachable' ; then
-       echo "Rule for udp/5353 already present, nothing to be done."
-    else
-       echo "Rejecting udp/5353 via iptables for deactivating Multicast-DNS, running:"
-       echo -n '* iptables -A OUTPUT -p udp -d 224.0.0.0/8 --dport 5353 -j REJECT ... '
-       iptables -A OUTPUT -p udp -d 224.0.0.0/8 --dport 5353 -j REJECT && echo done || echo failed
-    fi
-    if [ "$NAT_INTERFACE_" != "none" ]; then
+    if [[ "$NAT_INTERFACE_" != "none" ]]; then
        local nat_source_ip_=`netGetIp "$NAT_INTERFACE_" warn`
 
        if iptables -t nat -vnL POSTROUTING | grep -q "SNAT.*${NAT_INTERFACE_}.*to:${nat_source_ip_}" ; then
