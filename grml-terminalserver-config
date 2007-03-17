@@ -38,7 +38,7 @@ IPRANGE_TO_=""
 NETWORK_=""
 OPTIONS_=""
 BOOT_ARGS_=""
-NAT_INTERFACE_="none"
+NAT_INTERFACE_=""
 
 
 ###
@@ -331,8 +331,8 @@ the internet?"
       NAT_INTERFACE_="$GW_DEV_"
     else
       # no NAT, no sensible gateway
-      GW_=
-      NAT_INTERFACE_="none"
+      GW_=""
+      NAT_INTERFACE_=""
     fi
   fi
 

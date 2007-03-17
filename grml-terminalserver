@@ -131,11 +131,13 @@ function runDhcp
   sleep 1
   startDhcp
 }
+# }}}
 
+# IPTABLES {{{
 function runIptables
 {
  if [ -x /sbin/iptables ] ; then
-    if [[ "$NAT_INTERFACE_" != "none" ]]; then
+    if [[ $NAT_INTERFACE_ != "" ]]; then
        local nat_source_ip_=`netGetIp "$NAT_INTERFACE_" warn`
 
        if iptables -t nat -vnL POSTROUTING | grep -q "SNAT.*${NAT_INTERFACE_}.*to:${nat_source_ip_}" ; then
