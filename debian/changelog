@@ -1,9 +1,12 @@
 grml-terminalserver (0.84) unstable; urgency=low
 
+  * linuxrc: tab cleanup
+  * removed iptables hacks necessary for tftpd-hpa
+  * changed default value for NAT_INTERFACE_ from none to ""
   * introduced iptables as a seperate configurable service within
-    grml-terminalserver 
+    grml-terminalserver
 
- -- Michael Gebetsroither <gebi@grml.org>  Sat, 17 Mar 2007 20:20:00 +0100
+ -- Michael Gebetsroither <gebi@grml.org>  Mon, 19 Mar 2007 00:21:20 +0100
 
 grml-terminalserver (0.83) unstable; urgency=low
 
