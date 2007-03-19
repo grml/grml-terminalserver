@@ -56,7 +56,8 @@ COMMANDS:
 
    help             This help text
    interactive      Interactive Configuration of the grml-terminalserver
-   grubConf         Configure grub and create boot-image (for non-PXE NICs)
+   grubConf <file>  Configure grub and create boot-image (for non-PXE NICs)
+                      Read modules for grub from file if given.
    grubConfWrite    Configure grub and write image to floppy disk
    grubWrite        Write compiled grub-image to floppy disk
    grubMultiWrite   batchwrite grub-image to floppy disk
@@ -468,7 +469,7 @@ function grubConfig
   local tmp_=`mktemp -td terminalserver_grub.XXXXXX` || warn "could not create tmp file for grubConfig"
   if [ -z "$tmp_" ]; then return 1; fi
 
-  grubConfigWork $tmp_
+  grubConfigWork "$tmp_" "$1"
   local ret_=$?
   execute "rm -rf $tmp_" warn
 
@@ -487,19 +488,23 @@ If you networkcard is already listed press <OK>!
 WARNING: DON't add all NIC's, grub could possibly stop working!!"
   local nics_=""
 
-  while read module_ desc_ mode_; do
-    nics_="$nics_ $module_ $desc_ $mode_"
-  done < $GRUB_NIC_CONF_
+  if [[ $2 == "" ]]; then
+    while read module_ desc_ mode_; do
+      nics_="$nics_ $module_ $desc_ $mode_"
+    done < $GRUB_NIC_CONF_
 
-  echo -n "" >$TMP_
-  local cmd_line_=""
-  $DIALOG_ --clear --separate-output --backtitle "$BACK_TITLE_" --title "$grub_title_" --checklist \
-    "$grub_nic_message_" 10 70 0 $nics_ 2>$TMP_
-  local ret_=$?
-  if [[ $ret_ -ne 0 || `wc -l <$TMP_` -eq 0 ]]; then
-    echo $ret_
-    warn "you should give me your specified NICs but didn't => DEFAULT will be used"
-    awk '/ on$/{print $1}' $GRUB_NIC_CONF_ >$TMP_
+    echo -n "" >$TMP_
+    local cmd_line_=""
+    $DIALOG_ --clear --separate-output --backtitle "$BACK_TITLE_" --title "$grub_title_" --checklist \
+      "$grub_nic_message_" 10 70 0 $nics_ 2>$TMP_
+    local ret_=$?
+    if [[ $ret_ -ne 0 || `wc -l <$TMP_` -eq 0 ]]; then
+      echo $ret_
+      warn "you should give me your specified NICs but didn't => DEFAULT will be used"
+      awk '/ on$/{print $1}' $GRUB_NIC_CONF_ >$TMP_
+    fi
+  else
+    cat $2 >$TMP_
   fi
   while read module_; do
     cmd_line_="$cmd_line_ --enable-$module_"
@@ -625,7 +630,7 @@ fi
 
 case "$1" in
   interactive)  actionInteractive ;;
-  grubConf)   grubConfig ;;
+  grubConf)   grubConfig "$2" ;;
   grubConfWrite)  grubConfig && grubWrite ;;
   grubWrite)    grubWrite ;;
   grubMultiWrite)   grubMultiWrite "$2" ;;

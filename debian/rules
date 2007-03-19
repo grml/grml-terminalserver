@@ -66,6 +66,7 @@ binary-arch: build install
 	dh_installdocs
 	dh_installexamples
 	dh_installman debian/grml-terminalserver.8 debian/grml-terminalserver-config.8
+	dh_installexamples create-netboot
 	dh_link
 	dh_compress
 	mkdir -p debian/grml-terminalserver/usr/share/lintian/overrides/

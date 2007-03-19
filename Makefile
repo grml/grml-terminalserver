@@ -27,6 +27,7 @@ install: bin
 	$(install_) -m 644 default_config $(usrshare)
 	$(install_) -m 644 shared_prog_vars $(usrshare)
 	$(install_) -m 755 nfs-kernel-server $(usrshare)
+	$(install_) -m 644 terminalserver_netboot_package.conf $(usrshare)
 	$(install_) -m 755 linuxrc $(usrshare)
 	$(install_) -m 755 udhcp-config.sh $(usrshare)
 	$(install_) -m 755 rdir $(usrshare)

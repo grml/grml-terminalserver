@@ -5,8 +5,9 @@ grml-terminalserver (0.84) unstable; urgency=low
   * changed default value for NAT_INTERFACE_ from none to ""
   * introduced iptables as a seperate configurable service within
     grml-terminalserver
+  * adding create_netboot script to examples 
 
- -- Michael Gebetsroither <gebi@grml.org>  Mon, 19 Mar 2007 00:21:20 +0100
+ -- Michael Gebetsroither <gebi@grml.org>  Mon, 19 Mar 2007 02:45:28 +0100
 
 grml-terminalserver (0.83) unstable; urgency=low
 

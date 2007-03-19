@@ -20,6 +20,9 @@ CONFIG_="$PATH_/config"
 # 'data dir' from terminalserver
 USR_SHARE_="/usr/share/grml-terminalserver"
 
+# sample config file for making the netboot package
+NETBOOT_PACKAGE_CONF_FILE_="$USR_SHARE_/terminalserver_netboot_package.conf"
+
 # defaults for vars in terminalserver.conf
 DEFAULT_CONFIG_="$USR_SHARE_/default_config"
 
