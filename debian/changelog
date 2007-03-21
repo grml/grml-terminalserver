@@ -1,3 +1,9 @@
+grml-terminalserver (0.85) unstable; urgency=low
+
+  * fix for booting memtest86+ over pxelinux 
+
+ -- Michael Gebetsroither <gebi@grml.org>  Wed, 21 Mar 2007 15:46:08 +0100
+
 grml-terminalserver (0.84) unstable; urgency=low
 
   * linuxrc: tab cleanup

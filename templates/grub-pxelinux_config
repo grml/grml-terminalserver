@@ -119,7 +119,7 @@ KERNEL linux26
 APPEND $pxe_def_boot_args_ $no_fb_args_
 LABEL memtest
 KERNEL memtest
-APPEND initrd=
+APPEND fix
 
 EOT
 
