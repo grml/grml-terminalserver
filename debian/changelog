@@ -1,7 +1,7 @@
 grml-terminalserver (0.86) unstable; urgency=low
 
   * Support gcc-3.4 and crosscompiling on grml64. Adjusted Depends
-    corresponding. [Closes: issue175]
+    corresponding.
 
  -- Michael Prokop <mika@grml.org>  Tue, 27 Mar 2007 13:33:59 +0200
 
