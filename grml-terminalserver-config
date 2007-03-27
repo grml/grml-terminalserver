@@ -4,7 +4,7 @@
 # Authors:       grml-team (grml.org), (c) Michael Gebetsroither <gebi@grml.org>
 # Bug-Reports:   see http://grml.org/bugs/
 # License:       This file is licensed under the GPL v2.
-# Latest change: Don Nov 16 14:39:51 CET 2006 [mika]
+# Latest change: Die Mär 27 13:34:47 CEST 2007 [mika]
 ################################################################################
 
 
@@ -529,8 +529,15 @@ title Load config from Tftp server
   configfile (nd)/menu.lst
 EOT
   #execute "./configure --enable-diskless --enable-preset-menu=./preset-menu $cmd_line_" warn || read
-  execute "CC=gcc-3.3 ./configure --enable-preset-menu=./preset-menu $cmd_line_" warn || read
-  execute "make -j2 CC=gcc-3.3" warn || read #return 1
+  if [ -x /usr/bin/gcc-3.4 ] ; then
+    CC='gcc-3.4'
+  else # assume we have gcc-3.3
+    CC='gcc-3.3'
+  fi
+  [ -r /lib64 ] && CC="$CC -m32"
+
+  execute "CC=$CC ./configure --enable-preset-menu=./preset-menu $cmd_line_" warn || read
+  execute "make -j2 CC=$CC" warn || read #return 1
 
   local st1_="stage1/stage1"
   local st2_="stage2/stage2"
