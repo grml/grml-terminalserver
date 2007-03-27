@@ -530,14 +530,14 @@ title Load config from Tftp server
 EOT
   #execute "./configure --enable-diskless --enable-preset-menu=./preset-menu $cmd_line_" warn || read
   if [ -x /usr/bin/gcc-3.4 ] ; then
-    CC='gcc-3.4'
+    export CC='gcc-3.4'
   else # assume we have gcc-3.3
-    CC='gcc-3.3'
+    export CC='gcc-3.3'
   fi
-  [ -r /lib64 ] && CC="$CC -m32"
+  [ -r /lib64 ] && export CC="$CC -m32"
 
-  execute "CC=$CC ./configure --enable-preset-menu=./preset-menu $cmd_line_" warn || read
-  execute "make -j2 CC=$CC" warn || read #return 1
+  CC="$CC" execute "./configure --enable-preset-menu=./preset-menu $cmd_line_" warn || read
+  CC="$CC" execute "make -j2" warn || read #return 1
 
   local st1_="stage1/stage1"
   local st2_="stage2/stage2"
