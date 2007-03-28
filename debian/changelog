@@ -1,11 +1,19 @@
+grml-terminalserver (0.88) unstable; urgency=low
+
+  * Just raising package version so we get in sync with different
+    archs and changelog.
+
+ -- Michael Prokop <mika@grml.org>  Wed, 28 Mar 2007 13:16:56 +0200
+
 grml-terminalserver (0.87) unstable; urgency=low
 
   [ Michael Prokop ]
-  * Merge in linuxrc from grml64, not terminalserver using
-    busybox 1.4.2 (important: 1.5.0 is broken!) should work again.
+  * Merge in linuxrc from grml64, now terminalserver using
+    busybox 1.4.2 (important: 1.5.0 is broken!) works again
+    See http://bts.grml.org/grml/issue175 for details.
 
   [ Michael Gebetsroither ]
-  * updating linuxc with fixes for busybox (1.5.0 is hopeless broken) 
+  * updating linuxrc with fixes for busybox (1.5.0 is hopeless broken) 
 
  -- Michael Gebetsroither <gebi@grml.org>  Wed, 28 Mar 2007 12:07:10 +0200
 
