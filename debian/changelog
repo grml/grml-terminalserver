@@ -1,3 +1,10 @@
+grml-terminalserver (0.87) unstable; urgency=low
+
+  * Merge in linuxrc from grml64, not terminalserver using
+    busybox 1.4.2 (important: 1.5.0 is broken!) should work again.
+
+ -- Michael Prokop <mika@grml.org>  Wed, 28 Mar 2007 12:24:40 +0200
+
 grml-terminalserver (0.86) unstable; urgency=low
 
   * Support gcc-3.4 and crosscompiling on grml64. Adjusted Depends

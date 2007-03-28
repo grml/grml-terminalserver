@@ -2,7 +2,7 @@
 # Filename: /linuxrc
 # Purpose:  minirt for kernel 2.6 running on grml live-cd
 # Authors:  (c) Klaus Knopper <knoppix@knopper.net>, (c) Michael Prokop <mika@grml.org>
-# Latest change: Fre Mär 16 15:55:37 CET 2007 [mika]
+# Latest change: Tue Mar 27 23:05:51 CEST 2007
 #######################################################################################
 
 # hardcoded configurable options
@@ -531,8 +531,9 @@ if [ -n "$NFS" ]; then
     done
   }
   # modules.alias and modules.dep are in place so USE IT :)!
-  modLoad "$(for x in $(find /sys/devices/ -name modalias); do grep pci: $x; done |/static/xargs)"
-
+  find /sys/devices/ -name modalias |/static/xargs -r /static/grep -h pci: |while read i; do
+    modLoad "$i"
+  done
   # loading additional modules
   modLoad sunrpc lockd af_packet nfs
 
@@ -889,20 +890,29 @@ rundebugshell
 log_begin_msg "Creating $unionfs and symlinks on ramdisk"
 mkdir -p /UNIONFS
 if test -n "$UNIONFS" && /bin/mount -t $UNIONFS_FILETYPE -o noatime${SECURE},dirs=/ramdisk=rw:/GRML=ro /UNIONFS /UNIONFS ; then
+ # check architecture
+ if [ -f /GRML/lib/ld-linux.so.2 ] ; then
+   LDLINUX=/GRML/lib/ld-linux.so.2
+   GRMLLIB=/GRML/lib
+ elif [ -f /GRML/lib64/ld-linux-x86-64.so.2 ] ; then
+   LDLINUX=/GRML/lib64/ld-linux-x86-64.so.2
+   EMUL='emul'
+   LIB64='lib64'
+   GRMLLIB=/GRML/lib64
+ fi
  # We now have unionfs, copy some data from the initial ramdisk first
  cp -a /etc/fstab /etc/auto.mnt /etc/filesystems /etc/mtab /UNIONFS/etc/
-
  # disable resolvconf on the terminalserver client
  if [ -n "$NFS" ] ; then
     rm /UNIONFS/etc/resolv.conf
     cp -a /etc/resolv.conf /UNIONFS/etc
     echo REPORT_ABSENT_SYMLINK=no >> /UNIONFS/etc/default/resolvconf
  fi
-
- for i in bin boot etc sbin var lib opt root usr; do # Move directories to unionfs
+ for i in bin boot etc sbin var opt root usr $EMUL $LIB64 lib ; do # Move directories to unionfs
   if test -d /$i; then
    /bin/mv /$i /$i.old && \
-   /GRML/lib/ld-linux.so.2 --library-path /GRML/lib /GRML/bin/ln -snf /UNIONFS/$i /$i && \
+   # /GRML/lib/ld-linux.so.2 --library-path /GRML/lib /GRML/bin/ln -snf /UNIONFS/$i /$i && \
+   $LDLINUX --library-path $GRMLLIB /GRML/bin/ln -snf /UNIONFS/$i /$i 1>/dev/null 2>/dev/null
    rm -rf /$i.old
   else
    ln -snf /UNIONFS/$i /$i
@@ -964,7 +974,7 @@ echo "0x100" > /proc/sys/kernel/real-root-dev
 stage=4
 rundebugshell
 # Give control to the init process.
-log_begin_msg "Starting init process."
+log_begin_msg "Starting init process. "
 [ -r /mountit ] && rm -f /mountit
 rm -f /linuxrc
 exit 0
