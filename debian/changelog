@@ -1,3 +1,11 @@
+grml-terminalserver (0.89) unstable; urgency=low
+
+  * Update for new grml-terminalserver-data package.
+  * Fixed typo in grml-terminalserver-config and removed the
+    not-yet support bootoption 'secure' from examples.
+
+ -- Michael Prokop <mika@grml.org>  Thu, 12 Apr 2007 00:03:49 +0200
+
 grml-terminalserver (0.88) unstable; urgency=low
 
   * Just raising package version so we get in sync with different

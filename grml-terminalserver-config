@@ -397,9 +397,8 @@ Quite usefull examples:
 
 ssh=<pw>              - Start ssh server and set password of user grml to pw
 services=<1,2,3>      - Execute /etc/init.d/{1,2,3} start
-console=ttyS0,9600n8  - Initialise seriell console
-secure                - Boot only restricted clients (without root permissions)
-startx                - Boot into X (should be used with secure)
+console=ttyS0,9600n8  - Initialise serial console
+startx                - Boot into X
 
 
 "
