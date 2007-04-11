@@ -1,6 +1,8 @@
 grml-terminalserver (0.89) unstable; urgency=low
 
   * Update for new grml-terminalserver-data package.
+  * Remove /usr/share/grml-terminalserver/discover-nic from
+    debian/overrides.
   * Fixed typo in grml-terminalserver-config and removed the
     not-yet support bootoption 'secure' from examples.
 
