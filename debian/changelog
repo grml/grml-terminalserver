@@ -1,3 +1,10 @@
+grml-terminalserver (0.90) unstable; urgency=low
+
+  * Forgot to adjust $CC in grml-terminalserver-config for new
+    gcc version. Fixed.
+
+ -- Michael Prokop <mika@grml.org>  Thu, 12 Apr 2007 11:05:57 +0200
+
 grml-terminalserver (0.89) unstable; urgency=low
 
   * Update for new grml-terminalserver-data package.
