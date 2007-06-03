@@ -528,10 +528,8 @@ title Load config from Tftp server
   configfile (nd)/menu.lst
 EOT
 
-  [ -x /usr/bin/gcc-3.3 ] && export CC='gcc-3.3'
-  [ -x /usr/bin/gcc-3.4 ] && export CC='gcc-3.4'
-  [ -x /usr/bin/gcc-4.1 ] && export CC='gcc-4.1'
-  [ -r /lib64 ]           && export CC="$CC -m32"
+  CC='gcc'
+  [ -r /lib64 ] export CC="$CC -m32"
 
   CC="$CC" execute "./configure --enable-preset-menu=./preset-menu $cmd_line_" warn || read
   CC="$CC" execute "make -j2" warn || read #return 1
