@@ -1,3 +1,11 @@
+grml-terminalserver (0.91) unstable; urgency=low
+
+  * Readme.Debian: better howto
+  * make grub compile code ready for gcc-4.2 and any later version
+  * fix dependencies for grub 32bit compilation on amd64
+
+ -- Michael Gebetsroither <gebi@grml.org>  Wed, 11 Jul 2007 13:15:46 +0200
+
 grml-terminalserver (0.90) unstable; urgency=low
 
   * Forgot to adjust $CC in grml-terminalserver-config for new
