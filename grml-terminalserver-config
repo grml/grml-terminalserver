@@ -274,7 +274,7 @@ for addresses from 192.168.0.101 to (and including) 192.168.0.200.
   local grub_message_="Do you have any NON-PXE network cards you would like to boot from?"
 
   # on witch interfaces should we listen
-  local netdevices_="$(cat /proc/net/dev | awk -F: '/eth.:|tr.:/{print $1}')"
+  local netdevices_="$(grep -ve 'lo:' -ve 'Inter-|' -ve 'face |bytes' /proc/net/dev | awk -F: '{print $1}')"
   local device_list_=""
   for INTERFACE_ in $netdevices_; do device_list_="$device_list_ ${INTERFACE_} Networkcard_${INTERFACE_##eth}"; done
     echo -n "" >"$TMP_"

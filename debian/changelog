@@ -1,3 +1,9 @@
+grml-terminalserver (0.92) unstable; urgency=low
+
+  * Fix detection of network devices - do not assume it is named eth*.
+
+ -- Michael Prokop <mika@grml.org>  Sun,  9 Sep 2007 12:05:05 +0200
+
 grml-terminalserver (0.91) unstable; urgency=low
 
   * Readme.Debian: better howto
