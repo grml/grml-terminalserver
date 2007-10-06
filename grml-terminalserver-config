@@ -122,13 +122,32 @@ function actionAutoconf
 
 
 # INITRD {{{
-
 function actionMkInitrd
 {
   echo -n "Creating initrd $PATH_/minirt26.gz: "
   isExistent "$PATH_/minirt26.gz" && echo && echo "$PATH_/minirt26.gz exists already, skipping initrd creation" && return 0
-  mkInitrd
+  if [ -e '/live/cow' ]; then
+    mkInitrdNew
+  else
+    mkInitrd
+  fi
   echo done
+}
+
+function mkInitrdNew
+{
+  set -e
+  local cfg_="/etc/initramfs-tools/initramfs.conf"
+  local tmp_="`mktemp -t terminalserver__initramfsbk.XXXXXX`"
+  cp $cfg_ $tmp_
+  sed -i 's/^MODULES=.*/MODULES=netboot/' $cfg_
+  update-initramfs -u -t
+  mv $tmp_ $cfg_
+
+  local initrd_="/boot/initrd.img-$KERNEL_VERSION_"
+  mv $initrd_ $PATH_/minirt26.gz
+  mv ${initrd_}.bak $initrd_
+  set +e
 }
 
 function mkInitrd
