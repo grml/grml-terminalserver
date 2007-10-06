@@ -1,8 +1,12 @@
 grml-terminalserver (0.92) unstable; urgency=low
 
+  [ Michael Prokop ]
   * Fix detection of network devices - do not assume it is named eth*.
 
- -- Michael Prokop <mika@grml.org>  Sun,  9 Sep 2007 12:05:05 +0200
+  [ Michael Gebetsroither ]
+  * Update initrd generation for use with live-initramfs.
+
+ -- Michael Prokop <mika@grml.org>  Sat,  6 Oct 2007 15:44:16 +0200
 
 grml-terminalserver (0.91) unstable; urgency=low
 
