@@ -548,7 +548,7 @@ title Load config from Tftp server
 EOT
 
   CC='gcc'
-  [ -r /lib64 ] export CC="$CC -m32"
+  test -r /lib64 && export CC="$CC -m32"
 
   CC="$CC" execute "./configure --enable-preset-menu=./preset-menu $cmd_line_" warn || read
   CC="$CC" execute "make -j2" warn || read #return 1
