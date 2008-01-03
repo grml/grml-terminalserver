@@ -558,8 +558,12 @@ EOT
   isExistent $st1_ warn || return 1
   isExistent $st2_ warn || return 1
 
-  execute "mv -fb $PATH_/grub.img $PATH_/grub.img.old"
+  if [ -r "$PATH_/grub.img" ] ; then
+     execute "mv -fb $PATH_/grub.img $PATH_/grub.img.old"
+  fi
+
   execute "cat $st1_ $st2_ > $PATH_/grub.img" warn || return 1
+
   return 0
 }
 
