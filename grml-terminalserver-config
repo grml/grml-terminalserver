@@ -4,7 +4,7 @@
 # Authors:       grml-team (grml.org), (c) Michael Gebetsroither <gebi@grml.org>
 # Bug-Reports:   see http://grml.org/bugs/
 # License:       This file is licensed under the GPL v2.
-# Latest change: Die Mär 27 13:34:47 CEST 2007 [mika]
+# Latest change: Son Jän 20 12:12:44 CET 2008 [mika]
 ################################################################################
 
 
@@ -125,7 +125,12 @@ function actionAutoconf
 function actionMkInitrd
 {
   echo -n "Creating initrd $PATH_/minirt26.gz: "
-  isExistent "$PATH_/minirt26.gz" && echo && echo "$PATH_/minirt26.gz exists already, skipping initrd creation" && return 0
+  if isExistent "$PATH_/minirt26.gz" ; then
+     echo
+     echo "$PATH_/minirt26.gz exists already, skipping initrd creation"
+     return 0
+  fi
+
   if [ -e '/live/cow' ]; then
     mkInitrdNew
   else
@@ -141,7 +146,7 @@ function mkInitrdNew
   local tmp_="`mktemp -t terminalserver__initramfsbk.XXXXXX`"
   cp $cfg_ $tmp_
   sed -i 's/^MODULES=.*/MODULES=netboot/' $cfg_
-  update-initramfs -u -t
+  update-initramfs -u -t 1>/dev/null
   mv $tmp_ $cfg_
 
   local initrd_="/boot/initrd.img-$KERNEL_VERSION_"
