@@ -5,6 +5,7 @@ grml-terminalserver (0.95) unstable; urgency=low
 
   [ Michael Prokop ]
   * Boot terminalnodes with noprompt.
+  * Bump Standard-Version to 3.7.3 (no further changes).
 
  -- Michael Prokop <mika@grml.org>  Fri, 25 Jan 2008 21:24:28 +0100
 
