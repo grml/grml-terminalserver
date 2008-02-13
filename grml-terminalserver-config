@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Filename:      terminalserver-config
 # Purpose:       configuration program for grml-terminalserver
 # Authors:       grml-team (grml.org), (c) Michael Gebetsroither <gebi@grml.org>
