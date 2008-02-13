@@ -1,6 +1,6 @@
 grml-terminalserver (0.96) UNRELEASED; urgency=low
 
-  * changed to /bin/bash [Closes: issue180]
+  * changed to /bin/bash [Closes: issue182]
 
  -- Michael Gebetsroither <gebi@grml.org>  Wed, 13 Feb 2008 14:01:54 +0100
 
