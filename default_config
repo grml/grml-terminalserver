@@ -20,9 +20,11 @@ ISOLIN_PATH_="$DATA_PATH_/isolinux"
 
 ADDONS_PATH_="$DATA_PATH_/addons"
 
-KERNEL_IMAGE_="$DATA_PATH_/grml/linux26"
+MULTIBOOT_PATH_="$(dirname $(find $DATA_PATH_ -maxdepth 2 -name linux26))"
 
-ORIGINAL_INITRD_="$DATA_PATH_/grml/initrd.gz"
+KERNEL_IMAGE_="$MULTIBOOT_PATH_/linux26"
+
+ORIGINAL_INITRD_="$MULTIBOOT_PATH_/initrd.gz"
 
 MEMTEST_IMAGE_="$ADDONS_PATH_/memtest"
 
