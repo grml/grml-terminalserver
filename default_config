@@ -14,17 +14,21 @@ else
   MOUNT_POINT_="/cdrom"
 fi
 
-DATA_PATH_="$MOUNT_POINT_/boot/isolinux"
+DATA_PATH_="$MOUNT_POINT_/boot"
 
-KERNEL_IMAGE_="$DATA_PATH_/linux26"
+ISOLIN_PATH_="$DATA_PATH_/isolinux"
 
-ORIGINAL_INITRD_="$DATA_PATH_/minirt26.gz"
+ADDONS_PATH_="$DATA_PATH_/addons"
 
-MEMTEST_IMAGE_="$DATA_PATH_/memtest"
+KERNEL_IMAGE_="$DATA_PATH_/grml/linux26"
 
-PXE_BOOT_MSG_="$DATA_PATH_/boot.msg"
+ORIGINAL_INITRD_="$DATA_PATH_/grml/initrd.gz"
 
-PXE_BOOT_LOGO_="$DATA_PATH_/logo.16"
+MEMTEST_IMAGE_="$ADDONS_PATH_/memtest"
+
+PXE_BOOT_MSG_="$ISOLIN_PATH_/boot.msg"
+
+PXE_BOOT_LOGO_="$ISOLIN_PATH_/logo.16"
 
 IPTABLES_SNAT_="true"
 
