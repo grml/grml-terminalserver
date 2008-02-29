@@ -1,8 +1,8 @@
-grml-terminalserver (0.96) UNRELEASED; urgency=low
+grml-terminalserver (0.96) unstable; urgency=low
 
   * Fixed breakage introduced by boot layout change.
 
- -- Michael Gebetsroither <gebi@grml.org>  Wed, 27 Feb 2008 13:29:02 +0100
+ -- Michael Gebetsroither <gebi@grml.org>  Fri, 29 Feb 2008 01:38:04 +0100
 
 grml-terminalserver (0.95) unstable; urgency=low
 
