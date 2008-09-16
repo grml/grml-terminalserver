@@ -1,3 +1,6 @@
+# integrating gPXE chainloading => MODULARIZE boot methods
+http://www.etherboot.org/wiki/pxechaining
+
 # cmds booting new grml
 cp /live/image/boot/isolinux/initrd.gz /boot/initrd.img-2.6.22-grml
 #vi /etc/initramfs-tools/initramfs.conf

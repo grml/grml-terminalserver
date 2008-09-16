@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Filename:      terminalserver
 # Purpose:       Program to do something
 # Authors:       grml-team (grml.org), (c) Michael Gebetsroither <gebi@grml.org>

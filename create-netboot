@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 . /etc/grml/sh-lib
 SHARED_PROG_VARS_="/usr/share/grml-terminalserver/shared_prog_vars"

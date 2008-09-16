@@ -1,3 +1,9 @@
+grml-terminalserver (0.98) UNRELEASED; urgency=low
+
+  * change to /bin/bash [Closes: issue182] 
+
+ -- Michael Gebetsroither <gebi@grml.org>  Wed, 17 Sep 2008 00:04:42 +0200
+
 grml-terminalserver (0.97) unstable; urgency=low
 
   * Fixed breakage introduced by necessary changes because of isolinux
