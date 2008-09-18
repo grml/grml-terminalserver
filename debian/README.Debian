@@ -1,19 +1,16 @@
 grml-terminalserver for Debian
 ------------------------------
 
-This version of grml-terminalserver is tested and developed on Debian
-unstable/grml.  If you want to use grml-terminalserver on plain Debian
-please adjust the configuration in /etc/grml/terminalserver/config.
+Because of our switch to live-initramfs and default initramfs in general it's
+unfortunately not possibel anymore to run grml-terminalserver on anything other
+than the system you want to netboot.
 
-Example setup on debian:
+So you have to create the initrd directly within the grml system you want to
+use for netbooting.
 
-1. mount your grml cd or the iso image to /cdrom
-2. mount /cdrom/GRML/GRML to /mnt/tmp (mount -t squashfs -o loop /cdrom/GRML/GRML /mnt/tmp)
-3. adjust the following variables:
-   MODULES_PATH_ROOT_DIFF_="/mnt/tmp"
-   MODULES_PATH_="/mnt/tmp/lib/modules"
-4. set the kernel version to the kernel you would want to use
-   choose one from: find /mnt/tmp/lib/modules -maxdepth 1 -name '*-grml*' |xargs basename
-   eg. KERNEL_VERSION_="2.6.18-grml"
+You may also use the official netboot packages provided for every stable grml
+release from:
+http://wiki.grml.org/doku.php?id=terminalserver#grml_netboot_packages
 
- -- Michael Gebetsroither <gebi@grml.org>, Sun, 20 Mar 2005 19:39:26 +0100
+
+ -- Michael Gebetsroither <gebi@grml.org>
