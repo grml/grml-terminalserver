@@ -1,4 +1,4 @@
-grml-terminalserver (0.98) UNRELEASED; urgency=low
+grml-terminalserver (0.98) unstable; urgency=low
 
   * change to /bin/bash [Closes: issue182] 
   * updated README.Debian [Closes: issue500] 
