@@ -5,9 +5,9 @@ Maintainer: Michael Gebetsroither <gebi@grml.org>
 Uploaders: Michael Prokop <mika@grml.org>
 Build-Depends: debhelper (>= 4.0.0), dietlibc-dev
 Standards-Version: 3.8.0
-Homepage: http://hg.grml.org/grml-terminalserver/
-XS-Vcs-hg: http://hg.grml.org/grml-terminalserver/
-XS-Vcs-Browser: http://hg.grml.org/grml-terminalserver/
+Homepage: http://grml.org/terminalserver/
+Vcs-git: git://git.grml.org/grml-terminalserver.git
+Vcs-Browser: http://git.grml.org/?p=grml-terminalserver.git
 
 Package: grml-terminalserver
 Architecture: any

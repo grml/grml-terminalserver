@@ -1,8 +1,12 @@
 grml-terminalserver (0.99) unstable; urgency=low
 
+  [ Michael Gebetsroither ]
   * Fixed dependencies for grml-medium (added make and nfs-kernel-server)
 
- -- Michael Gebetsroither <gebi@grml.org>  Sat, 29 Nov 2008 14:28:15 +0100
+  [ Michael Prokop ]
+  * Adjust VCS headers.
+
+ -- Michael Prokop <mika@grml.org>  Sat, 29 Nov 2008 22:08:37 +0100
 
 grml-terminalserver (0.98) unstable; urgency=low
 
