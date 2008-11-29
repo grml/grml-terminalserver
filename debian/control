@@ -11,7 +11,7 @@ XS-Vcs-Browser: http://hg.grml.org/grml-terminalserver/
 
 Package: grml-terminalserver
 Architecture: any
-Depends: grml-shlib (>=1.02.03), grml-terminalserver-data (>=0.63), dialog, dhcp3-server, atftpd (>=0.7.dfsg-1.2), syslinux, gcc, ipcalc, ash, libc6-dev [i386], gcc-multilib [amd64]
+Depends: grml-shlib (>=1.02.03), grml-terminalserver-data (>=0.63), dialog, dhcp3-server, atftpd (>=0.7.dfsg-1.2), syslinux, gcc, ipcalc, ash, libc6-dev [i386], gcc-multilib [amd64], make, nfs-kernel-server
 Description: terminalserver for grml
  This software should netboot grml on other computers over the
  network. The terminalserver also works with NON-PXE
