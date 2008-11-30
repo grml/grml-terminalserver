@@ -21,7 +21,7 @@ function actionPkg
     local path_="$tmp_/grml_netboot_package_$version_"
     mkdir "$path_"
 
-    cp $NETBOOT_PACKAGE_CONF_FILE_ $CONFIG_
+    cp $NETBOOT_PACKAGE_CONF_FILE_ $CONF_FILE_
     echo "executing grml-terminalserver-config initrd"
     grml-terminalserver-config initrd
 
