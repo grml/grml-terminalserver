@@ -1,3 +1,10 @@
+grml-terminalserver (0.99.2) unstable; urgency=low
+
+  * Fix usage of dirname if no files can be located. [Closes: issue575]
+  * Adjust configuration for new grml2usb layout.
+
+ -- Michael Prokop <mika@grml.org>  Sat, 14 Mar 2009 12:37:26 +0100
+
 grml-terminalserver (0.99.1) unstable; urgency=low
 
   * fix create-netboot to work with new initrds

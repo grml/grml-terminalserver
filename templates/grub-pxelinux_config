@@ -17,15 +17,18 @@
 #
 # GLOBAL_README_END
 
+if grep -q live-media-path= /proc/cmdline 2>/dev/null ; then
+    live_media_path_="live-media-path=$(awk -F live-media-path= '{print $2}' /proc/cmdline)"
+fi
 
 # default boot arguments used for both grub and pxelinux
 if [ -e '/live/cow' ]; then
     default_boot_args_="root=/dev/nfs rw nfsroot=$IP_:$MOUNT_POINT_ \
-boot=live lang=us nomce quiet apm=power-off nodhcp noprompt noeject"
+boot=live $live_media_path_ nomce quiet apm=power-off nodhcp noprompt noeject"
 else
     default_boot_args_="ramdisk_size=24000 root=/dev/ram0 rw \
 init=/etc/init nfsdir=$IP_:$MOUNT_POINT_ nodhcp noprompt noeject \
-apm=power-off nomce lang=us"
+apm=power-off nomce"
 fi
 
 # special boot arguments required by grub
