@@ -4,7 +4,6 @@
 # Authors:       grml-team (grml.org), (c) Michael Gebetsroither <gebi@grml.org>
 # Bug-Reports:   see http://grml.org/bugs/
 # License:       This file is licensed under the GPL v2.
-# Latest change: Son Jän 20 12:12:44 CET 2008 [mika]
 ################################################################################
 
 
@@ -125,7 +124,7 @@ function actionAutoconf
 function actionMkInitrd
 {
   echo
-  echo -n "Creating initrd $PATH_/minirt26.gz: "
+  echo "Creating initrd $PATH_/minirt26.gz:"
   if isExistent "$PATH_/minirt26.gz" ; then
      echo
      echo "$PATH_/minirt26.gz exists already, skipping initrd creation"
@@ -137,7 +136,7 @@ function actionMkInitrd
   else
     mkInitrd
   fi
-  echo done
+  echo '... done'
 }
 
 function mkInitrdNew
@@ -448,7 +447,7 @@ function optGrml2Hd
   local options_='BOOT_IMAGE=grml2hd'
 
   # get partition to install grml2hd on
-  OPTIONS_PARTITION_MSG_='Please give me the target partition where to install grml'
+  OPTIONS_PARTITION_MSG_='Please specify the target partition where to install grml'
   PARTITION_TITLE_='Partition selection'
   echo -n "" >"$TMP_"
   $DIALOG_ --clear --backtitle "$BACK_TITLE_" --title "$PARTITION_TITLE_" --inputbox \
@@ -457,7 +456,7 @@ function optGrml2Hd
   options_="$options_ $tmp_"
 
   # get filesystem type
-  OPTION_FS_TYPE_='Please give me the filesystem type'
+  OPTION_FS_TYPE_='Please specify the filesystem type'
   FS_TITLE_='Filesystem selection'
   echo -n "" >"$TMP_"
   $DIALOG_ --clear --backtitle "$BACK_TITLE_" --title "$FS_TITLE_" --inputbox \
@@ -466,7 +465,7 @@ function optGrml2Hd
   options_="$options_ $tmp_"
 
   # get where to save mbr
-  OPTION_MBR_='Please give me the location where to save the mbr'
+  OPTION_MBR_='Please specify the location where to save the mbr'
   MBR_TITLE_='Select location of mbr'
   echo -n "" >"$TMP_"
   $DIALOG_ --clear --backtitle "$BACK_TITLE_" --title "$MBR_TITLE_" --inputbox \
@@ -527,7 +526,7 @@ WARNING: Do NOT add all NICs, grub could possibly stop working!"
     fi
     if [[ `wc -l <$TMP_` -eq 0 ]]; then
       echo $ret_
-      warn "you should give me your specified NICs but didn't => DEFAULT will be used"
+      warn "you should specify the NICs but didn't => DEFAULT will be used"
       awk '/ on$/{print $1}' $GRUB_NIC_CONF_ >$TMP_
     fi
   else
@@ -583,7 +582,7 @@ function grubWrite
 {
   local grub_title_="Grub configuration"
   $DIALOG_ --clear --backtitle "$BACK_TITLE_" --title "$grub_title_" --yesno \
-    "Do you want to write your grub image to /dev/fd0" 5 75 || return 1
+    "Do you want to write the grub image to /dev/fd0" 5 75 || return 1
 
   execute "dd if=$PATH_/grub.img of=/dev/fd0" warn || return 0
   return 1
@@ -593,7 +592,7 @@ function grubMultiWrite
 {
   local target_=${1:-'/dev/fd0'}
 
-  isExistent "$PATH_/grub.img" die "you must give me an image or run \"$PROG_NAME__ grubconf\""
+  isExistent "$PATH_/grub.img" die "you have to specify an image or run \"$PROG_NAME__ grubconf\""
   isExistent "$target_" die "$target_ is not a valied"
   while true; do
     echo -n "Please insert disk into $target_ and press <ENTER> (STRG-C for end)"

@@ -7,8 +7,9 @@ grml-terminalserver (0.99.3) unstable; urgency=low
     - add additional newline in front of 'Creating initrd' so
       the text doesn't appear inside dialog's output.
     - get rid of 'error retrieving current directory' messages
+    - replace wording 'give me' with 'specify'
 
- -- Michael Prokop <mika@grml.org>  Sat, 16 May 2009 22:08:37 +0200
+ -- Michael Prokop <mika@grml.org>  Sat, 16 May 2009 22:14:53 +0200
 
 grml-terminalserver (0.99.2) unstable; urgency=low
 
