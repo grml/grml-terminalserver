@@ -521,7 +521,10 @@ WARNING: Do NOT add all NICs, grub could possibly stop working!"
     $DIALOG_ --clear --separate-output --backtitle "$BACK_TITLE_" --title "$grub_title_" --checklist \
       "$grub_nic_message_" 10 70 0 $nics_ 2>$TMP_
     local ret_=$?
-    if [[ $ret_ -ne 0 || `wc -l <$TMP_` -eq 0 ]]; then
+    if [[ $ret_ -ne 0 ]]; then
+       die "exiting as requested"
+    fi
+    if [[ `wc -l <$TMP_` -eq 0 ]]; then
       echo $ret_
       warn "you should give me your specified NICs but didn't => DEFAULT will be used"
       awk '/ on$/{print $1}' $GRUB_NIC_CONF_ >$TMP_
