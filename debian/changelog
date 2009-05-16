@@ -1,13 +1,11 @@
 grml-terminalserver (0.99.3) unstable; urgency=low
 
   * grml-terminalserver-config
-    - improve wording of grub's network boot selection dialog.
     - exit script if user selects 'Cancel' in grub's network boot
       selection dialog.
-    - add additional newline in front of 'Creating initrd' so
-      the text doesn't appear inside dialog's output.
     - get rid of 'error retrieving current directory' messages
-    - replace wording 'give me' with 'specify'
+    - add some additional newlines in startup messages
+    - some minor spelling fixes and improvements
   * Bump Standard Version to 3.8.1 (no further changes).
   * Bump Compat version to 5.
 

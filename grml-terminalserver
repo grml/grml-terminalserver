@@ -246,6 +246,7 @@ function startNfs
   /etc/init.d/nfs-common start
   # FIXME /etc/init.d/nfs-kernel-server start
   $USR_SHARE_/nfs-kernel-server start
+  echo
 
   createNfsConfig
 }
@@ -286,7 +287,7 @@ function actionStart
   runIptables
 
   echo "Finally starting nfs services..."
-  startNfs && echo "Sucessfully finished startup of grml-terminalserver." || echo 'Startup of grml-terminalserver failed!'
+  startNfs && echo "Successfully finished startup of grml-terminalserver." || echo 'Startup of grml-terminalserver failed!'
 }
 
 function actionStop
