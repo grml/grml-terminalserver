@@ -124,6 +124,7 @@ function actionAutoconf
 # INITRD {{{
 function actionMkInitrd
 {
+  echo
   echo -n "Creating initrd $PATH_/minirt26.gz: "
   if isExistent "$PATH_/minirt26.gz" ; then
      echo
