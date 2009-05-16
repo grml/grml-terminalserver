@@ -1,3 +1,10 @@
+grml-terminalserver (0.99.3) unstable; urgency=low
+
+  * grml-terminalserver-config: improve wording of grub's
+    network boot selection dialog.
+
+ -- Michael Prokop <mika@grml.org>  Sat, 16 May 2009 21:03:19 +0200
+
 grml-terminalserver (0.99.2) unstable; urgency=low
 
   * Fix usage of dirname if no files can be located. [Closes: issue575]

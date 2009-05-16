@@ -505,10 +505,10 @@ function grubConfigWork
 
   local grub_title_="Grub configuration"
   local grub_nic_message_="
-Give me the types of network cards you would want to boot from.
-If you networkcard is already listed press <OK>!
+Please select the types of network cards you want to boot from.
+If your networkcard is already listed just press <OK>!
 
-WARNING: DON't add all NIC's, grub could possibly stop working!!"
+WARNING: Do NOT add all NICs, grub could possibly stop working!"
   local nics_=""
 
   if [[ $2 == "" ]]; then
