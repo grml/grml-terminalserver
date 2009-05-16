@@ -540,6 +540,7 @@ WARNING: Do NOT add all NICs, grub could possibly stop working!"
   echo "\"$cmd_line_\""
 
   execute "tar xzf $GRUB_SOURCE_ -C $tmp_" warn || return 1
+  local_dir="$(pwd)"
   execute "cd $tmp_/grub*" warn || return 1
 cat >preset-menu <<EOT
 # Set up the serial terminal, first of all.
@@ -572,6 +573,8 @@ EOT
   fi
 
   execute "cat $st1_ $st2_ > $PATH_/grub.img" warn || return 1
+
+  cd "$local_dir"
 
   return 0
 }
