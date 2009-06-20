@@ -1,3 +1,13 @@
+grml-terminalserver (0.99.4) unstable; urgency=low
+
+  * Exclude udev's persistent files from initrd: Grml netboot packages
+    ship persistent files of udev. This doesn't break anything, but
+    names of network and cdrom/dvd devices might be unusual/unexpected.
+    Thanks to Christian Hofstaedtler for the bugreport!
+    [Closes: issue697]
+
+ -- Michael Prokop <mika@grml.org>  Sat, 20 Jun 2009 13:27:38 +0200
+
 grml-terminalserver (0.99.3) unstable; urgency=low
 
   * grml-terminalserver-config

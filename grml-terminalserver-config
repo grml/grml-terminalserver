@@ -141,6 +141,17 @@ function actionMkInitrd
 
 function mkInitrdNew
 {
+  # we do not want to include persistent configuration files
+  # from udev in the initrd
+  udev_tmp_=$(mktemp -d terminalserver__udev.XXXXXX)
+  persistent=false
+  if ls /etc/udev/rules.d/*persistent* >/dev/null 2>&1 ; then
+    persistent_files=true
+    for f in /etc/udev/rules.d/*persistent* ; do
+      mv "$f" "${udev_tmp_}/"
+    done
+  fi
+
   set -e
   local cfg_="/etc/initramfs-tools/initramfs.conf"
   local tmp_="`mktemp -t terminalserver__initramfsbk.XXXXXX`"
@@ -153,6 +164,12 @@ function mkInitrdNew
   mv $initrd_ $PATH_/minirt26.gz
   mv ${initrd_}.bak $initrd_
   set +e
+
+  # restore udev configuration files
+  if $persistent_files ; then
+    mv ${udev_tmp_}/* /etc/udev/rules.d/
+    rmdir "${udev_tmp_}"
+  fi
 }
 
 function mkInitrd
