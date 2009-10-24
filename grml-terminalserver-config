@@ -379,11 +379,12 @@ the internet?"
   fi
 
 
-  # grub
-  echo -n "" >"$TMP_"
-  local grub_write_="YES"
-  $DIALOG_ --clear --backtitle "$BACK_TITLE_" --title "$grub_title_" --yesno "$grub_message_" 5 75 && \
-    grubConfig || grub_write_="NO"
+  # grub -> do not use it anymore
+  # echo -n "" >"$TMP_"
+  # local grub_write_="YES"
+  # $DIALOG_ --clear --backtitle "$BACK_TITLE_" --title "$grub_title_" --yesno "$grub_message_" 5 75 && \
+  #  grubConfig || grub_write_="NO"
+  grub_write_="NO"
 
 
   # get options
