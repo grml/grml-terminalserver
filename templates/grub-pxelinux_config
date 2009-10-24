@@ -24,7 +24,7 @@ fi
 # default boot arguments used for both grub and pxelinux
 if [ -e '/live/cow' ]; then
     default_boot_args_="root=/dev/nfs rw nfsroot=$IP_:$MOUNT_POINT_ \
-boot=live $live_media_path_ nomce quiet apm=power-off nodhcp noprompt noeject"
+nodhcp noprompt noeject"
 else
     default_boot_args_="ramdisk_size=24000 root=/dev/ram0 rw \
 init=/etc/init nfsdir=$IP_:$MOUNT_POINT_ nodhcp noprompt noeject \
@@ -96,40 +96,26 @@ ret_=$?
 ###
 ## create pxelinux config
 ###
+DEST_DIR=$(mktemp -d)
+grml2usb --bootloader-only --remove-bootoption='initrd=/boot/[a-z0-9/.]*/initrd.gz' \
+    --remove-bootoption='live-media-path=[a-z0-9/.-]+/' \
+    --bootoptions="$pxe_def_boot_args_ $BOOT_ARGS_" /live/image "$DEST_DIR"
 
-cat >"$TFTPD_DATA_DIR_/pxelinux.cfg/default" <<EOT
-DEFAULT linux26
-APPEND $pxe_def_boot_args_ $def_fb_args_ $BOOT_ARGS_
-TIMEOUT 100
-PROMPT 1
-DISPLAY boot.msg
-F1 boot.msg
-LABEL grml
-KERNEL linux26
-APPEND $pxe_def_boot_args_ $def_fb_args_ $BOOT_ARGS_
-LABEL grmlnofb
-KERNEL linux26
-APPEND $pxe_def_boot_args_ $no_fb_args_ $BOOT_ARGS_
-LABEL small
-KERNEL linux26
-APPEND $pxe_def_boot_args_ small $def_fb_args_ $BOOT_ARGS_
-LABEL smallnofb
-KERNEL linux26
-APPEND $pxe_def_boot_args_ small $no_fb_args_ $BOOT_ARGS_
-LABEL debuginit
-KERNEL linux26
-APPEND $pxe_def_boot_args_ debuginit $def_fb_args_ $BOOT_ARGS_
-LABEL debuginit
-KERNEL linux26
-APPEND $pxe_def_boot_args_ debuginit $no_fb_args_ $BOOT_ARGS_
-LABEL rescue
-KERNEL linux26
-APPEND $pxe_def_boot_args_ $no_fb_args_
-LABEL memtest
-KERNEL memtest
-APPEND fix
+mv "$DEST_DIR"/boot/syslinux/* "$TFTPD_DATA_DIR_/"
+rmdir "$DEST_DIR"/boot/syslinux
 
-EOT
+mv "$DEST_DIR"/boot/ "$TFTPD_DATA_DIR_"
+
+# remove normal kernel path and use our image
+sed -i -e 's/.*kernel.*linux26/kernel linux26/' "$TFTPD_DATA_DIR_/"*.cfg 2>/dev/null
+
+# only append live-media-path if needed
+if [ ! -z "$live_media_path_" ] ; then
+    sed -i -e 's/\(.*append.*\)/\1 live-media-path='$live_media_path_'/' "$TFTPD_DATA_DIR_/"*.cfg  2>/dev/null
+fi
+
+mv "$TFTPD_DATA_DIR_/syslinux.cfg" "$TFTPD_DATA_DIR_/pxelinux.cfg/default"
+rm -rf "$DEST_DIR"
 
 let ret_=$ret_+$?
 return $ret_
