@@ -1,3 +1,10 @@
+grml-terminalserver (0.99.5) unstable; urgency=low
+
+  * Disable grub feature by default (people should use gPXE/
+    Etherboot.org nowadays).
+
+ -- Michael Prokop <mika@grml.org>  Sun, 25 Oct 2009 00:13:22 +0200
+
 grml-terminalserver (0.99.4) unstable; urgency=low
 
   * Exclude udev's persistent files from initrd: Grml netboot packages
