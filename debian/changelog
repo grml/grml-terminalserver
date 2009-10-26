@@ -6,8 +6,11 @@ grml-terminalserver (0.99.6) unstable; urgency=low
 
   [ Michael Prokop ]
   * Bump to Standards-Version 3.8.3 (no further changes).
+  * Update copyright file (reference git.grml.org and adjust path to GPL-2).
+  * Update overrides file.
+  * Build-Depend on debhelper >=5.
 
- -- Michael Prokop <mika@grml.org>  Mon, 26 Oct 2009 15:15:24 +0100
+ -- Michael Prokop <mika@grml.org>  Mon, 26 Oct 2009 15:20:05 +0100
 
 grml-terminalserver (0.99.5) unstable; urgency=low
 
