@@ -1,3 +1,10 @@
+grml-terminalserver (0.99.6) unstable; urgency=low
+
+  * Use grml2usb to generate the boot menu. This preserves all parameters in
+    the menu from original cd.
+
+ -- Ulrich Dangel <mru@grml.org>  Mon, 26 Oct 2009 11:09:31 +0100
+
 grml-terminalserver (0.99.5) unstable; urgency=low
 
   * Disable grub feature by default (people should use gPXE/
