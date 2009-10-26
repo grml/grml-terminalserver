@@ -3,17 +3,17 @@ Section: net
 Priority: optional
 Maintainer: Michael Gebetsroither <gebi@grml.org>
 Uploaders: Michael Prokop <mika@grml.org>
-Build-Depends: debhelper (>= 5), dietlibc-dev
+Build-Depends: debhelper (>= 5)
 Standards-Version: 3.8.3
 Homepage: http://grml.org/terminalserver/
 Vcs-git: git://git.grml.org/grml-terminalserver.git
 Vcs-Browser: http://git.grml.org/?p=grml-terminalserver.git
 
 Package: grml-terminalserver
-Architecture: any
-Depends: grml-shlib (>=1.02.03), grml-terminalserver-data (>=0.63), dialog, dhcp3-server, atftpd (>=0.7.dfsg-1.2), syslinux, gcc, ipcalc, ash, libc6-dev [i386], gcc-multilib [amd64], make, nfs-kernel-server, grml2usb (>=0.9.14)
-Description: terminalserver for grml
- This software should netboot grml on other computers over the
- network. The terminalserver also works with NON-PXE
- cards (compiles grub during configuration and makes a
- boot-disk).
+Architecture: all
+Depends: grml-shlib (>=1.02.03), dialog, dhcp3-server, atftpd (>=0.7.dfsg-1.2), syslinux, ipcalc, nfs-kernel-server, grml2usb (>=0.9.14)
+Description: terminalserver for grml to boot via PXE
+ This packages provides all what's needed to boot
+ grml over the network (PXE). An easy to use interface
+ does all the setup steps to get the server side up
+ and running.

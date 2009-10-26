@@ -58,12 +58,6 @@ TFTPD_PID_="/var/run/grml-tftpd.pid"
 # the dir where the templates for the configuration files are stored
 TEMPLATE_CONFIG_DIR_="$USR_SHARE_/templates"
 
-# this file provides which nic's grub is able to boot from and sane defaults
-GRUB_NIC_CONF_="$USR_SHARE_/grub_cards"
-
-# this file is provided by another debian package (grml-terminalserver-data)
-GRUB_SOURCE_="$USR_SHARE_/grub-0.97.tar.gz"
-
 # maximum initrd size
 MAX_INITRD_SIZE_=16000
 

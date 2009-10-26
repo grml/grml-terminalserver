@@ -1,6 +1,0 @@
-grml-terminalserver: wrong-path-for-interpreter ./usr/share/grml-terminalserver/cdir (#!/static/ash != /bin/ash)
-grml-terminalserver: wrong-path-for-interpreter ./usr/share/grml-terminalserver/linuxrc (#!/static/sh != /bin/sh)
-grml-terminalserver: wrong-path-for-interpreter ./usr/share/grml-terminalserver/rdir (#!/static/ash != /bin/ash)
-grml-terminalserver: wrong-path-for-interpreter ./usr/share/grml-terminalserver/udhcp-config.sh (#!/static/sh != /bin/sh)
-grml-terminalserver: arch-dependent-file-in-usr-share ./usr/share/grml-terminalserver/timeout
-grml-terminalserver: statically-linked-binary ./usr/share/grml-terminalserver/timeout

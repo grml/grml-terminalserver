@@ -1,3 +1,11 @@
+grml-terminalserver (0.99.7) unstable; urgency=low
+
+  * Drop all grub-related stuff.
+  * Drop old linuxrc and related files, resulting in architecture independent
+    package.
+
+ -- Michael Prokop <mika@grml.org>  Mon, 26 Oct 2009 16:47:35 +0100
+
 grml-terminalserver (0.99.6) unstable; urgency=low
 
   [ Ulrich Dangel ]

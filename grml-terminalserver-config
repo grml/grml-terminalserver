@@ -55,11 +55,6 @@ COMMANDS:
 
    help             This help text
    interactive      Interactive Configuration of the grml-terminalserver
-   grubConf <file>  Configure grub and create boot-image (for non-PXE NICs)
-                      Read modules for grub from file if given.
-   grubConfWrite    Configure grub and write image to floppy disk
-   grubWrite        Write compiled grub-image to floppy disk
-   grubMultiWrite   batchwrite grub-image to floppy disk
    initrd           Only create the initrd
    clean            Remove all configfiles created during user configuration
    <default>        interactive mode
@@ -131,15 +126,12 @@ function actionMkInitrd
      return 0
   fi
 
-  if [ -e '/live/cow' ]; then
-    mkInitrdNew
-  else
-    mkInitrd
-  fi
+  mkInitrd
+
   echo '... done'
 }
 
-function mkInitrdNew
+function mkInitrd
 {
   # we do not want to include persistent configuration files
   # from udev in the initrd
@@ -171,121 +163,6 @@ function mkInitrdNew
     rmdir "${udev_tmp_}"
   fi
 }
-
-function mkInitrd
-{
-  TMP_DIR_=`mktemp -td terminalserver_initrd.XXXXXX`
-  local i=''
-  local tmp_loopname=''
-
-  # copying original initrd into $INITRD
-  execute "rm -r $INITRD_" 2>/dev/null
-  execute "cp $ORIGINAL_INITRD_ $TMP_DIR_/minirt26.gz" warn || return 1
-  execute "mkdir -p $INITRD_" warn || return 1
-  execute "mkdir -p $PATH_/mini-root.orig" warn || return 1
-  execute "gunzip $TMP_DIR_/minirt26.gz" warn || return 1
-  tmp_loopname=`findNextFreeLoop die`
-  execute "mount -o loop=$tmp_loopname $TMP_DIR_/minirt26 $PATH_/mini-root.orig " warn || return 1
-  execute "cp -a $PATH_/mini-root.orig/* $INITRD_" warn || return 1
-  execute "umount $PATH_/mini-root.orig" warn || return 1
-  losetup -d $tmp_loopname &>/dev/null
-  tmp_loopname=''
-  execute "rmdir $PATH_/mini-root.orig" warn || return 1
-  execute "rm $TMP_DIR_/minirt26" warn || return 1
-
-  # implanting my initrd changes into the original initrd
-
-  # copy programs, check if there are already links with this name to busybox
-  for i in $USR_SHARE_/timeout $USR_SHARE_/udhcp-config.sh $USR_SHARE_/cdir $USR_SHARE_/rdir; do
-    tmp_name_="${i##*/}"
-    isNotExistent "$INITRD_/static/$tmp_name_" eprint || execute "rm $INITRD_/static/$tmp_name_"
-    cp $i "$INITRD_/static/$tmp_name_"
-  done
-  cp $USR_SHARE_/linuxrc $INITRD_/
-  mkdir -p $INITRD_/mylib
-  mkdir -p $INITRD_/myusr
-
-  #
-  # which modules should i put into the ramdisk
-  #
-
-  # find *all* network drivers, but do not include wlan/pcmcia/... related ones
-  # blacklist: proteon and depca as they seem to cause problems with udevsettle
-  find ${MODULES_PATH_}/${KERNEL_VERSION_}/kernel/drivers/net/ -name \*.ko | \
-    grep -v 'wireless\|wan\|hamradio\|wlan\|ppp\|irda\|pcmcia\|depca\|proteon' | \
-      sed 's#.*./## ; s#\.ko##' | sort | uniq > $CARDS_DETECTED_BY_DISCOVER
-
-  local modules="`cat $CARDS_DETECTED_BY_DISCOVER |xargs` af_packet"
-  local modules_dep=""
-
-  # get paths of modules + paths of all dependent modules
-  echo -n "" >"$TMP_"
-  for i in $modules; do
-    tmp_=`awk -F: '{if($1~/'"$i".ko'/) {print $0}}' $MODULES_PATH_/$KERNEL_VERSION_/modules.dep`
-    echo "${tmp_%%:*}"
-    # FIXME ugly sed hack :(
-    echo "${tmp_#*:}" | xargs -n1 echo | sed 's/://'
-  done \
-  | sort | uniq | while read module relax; do
-    if [ -n "$module" ]; then
-      echo "$module" >> $TMP_
-    fi
-  done
-
-  # copy modules + dependend modules into ramdisk
-  local mod_path_="$INITRD_/mylib/modules/$KERNEL_VERSION_"
-  local tmp_dst_path_="$mod_path_/kernel"
-  mkdir -p $tmp_dst_path_
-  cat $TMP_ |sort |uniq |while read module; do
-    local tmp_path=${module#*/kernel/}
-    tmp_path=$tmp_dst_path_/${tmp_path%/*.ko}
-    local module_path=$tmp_path/${module##/*/}
-
-    isNotExistent "$tmp_path" dprint && mkdir -p "$tmp_path"
-    isNotExistent "$module_path" dprint && cp "$MODULES_PATH_ROOT_DIFF_/$module" "$module_path"
-  done
-
-  # copying additional modules
-  for i in fs/nfs/nfs.ko net/sunrpc/sunrpc.ko fs/lockd/lockd.ko net/packet/af_packet.ko; do
-    local tmp_path="$tmp_dst_path_/${i%/*}"
-    mkdir -p $tmp_path
-    cp $MODULES_PATH_/$KERNEL_VERSION_/kernel/$i "$tmp_path"
-  done
-
-  # copying modules.*
-  cp $MODULES_PATH_/$KERNEL_VERSION_/modules.dep $mod_path_
-  cp $MODULES_PATH_/$KERNEL_VERSION_/modules.alias $mod_path_
-  #grep "^\/lib\/modules\/$KERNEL_VERSION_\/kernel\/" $MODULES_PATH_/$KERNEL_VERSION_/modules.dep |\
-  #  sed "s/\/lib\/modules\/$KERNEL_VERSION_\/kernel\//\/modules\//g" > $mod_path_/modules.dep
-
-  # put everything into the new initrd
-  local tmp_size=`du -s $INITRD_ |awk '{print $1}'`   # in kB
-  let tmp_size=$tmp_size+1000
-  local max_size=24000
-  if (( $tmp_size >= $max_size )); then
-    warn "Your initrd is $tmp_size kByte large => TOO BIG (should be <= ${max_size}kB)"
-    warn "Please remove a few modules from $CARDS_DETECTED_BY_DISCOVER or edit $INITRD_ manually"
-    return 1
-  fi
-
-  execute "dd if=/dev/zero of=$TMP_DIR_/minirt26 bs=${tmp_size}k count=1 &>/dev/null" warn || \
-    warn "could not create filesystem image"
-
-  tmp_loopname=`findNextFreeLoop die`
-  execute "losetup $tmp_loopname $TMP_DIR_/minirt26" die
-  execute "mke2fs -L \"GRML NETINIT\" -b 1024 -N 8192 -O none -F -q -m 0 $tmp_loopname" warn
-
-  execute "mkdir $PATH_/minirt26_mountp" warn
-  execute "mount $tmp_loopname $PATH_/minirt26_mountp" warn
-  execute "cp -a $INITRD_/* $PATH_/minirt26_mountp" warn
-  execute "umount $PATH_/minirt26_mountp" warn
-  execute "losetup -d $tmp_loopname &>/dev/null" warn
-  execute "rmdir $PATH_/minirt26_mountp" warn
-  execute "gzip -9 $TMP_DIR_/minirt26" warn
-  execute "rm -r $INITRD_" warn
-  execute "mv $TMP_DIR_/minirt26.gz $PATH_"
-  execute "rm -fr $TMP_DIR_"
-}
 # }}}
 
 
@@ -311,8 +188,6 @@ for addresses from 192.168.0.101 to (and including) 192.168.0.200.
 "
   local runconfig_title_="Networkcard config"
   local runconfig_message_="Would you like to configure your interfaces now?"
-  local grub_title_="Grub configuration"
-  local grub_message_="Do you have any NON-PXE network cards you would like to boot from?"
 
   # on witch interfaces should we listen
   local netdevices_="$(grep -ve 'lo:' -ve 'Inter-|' -ve 'face |bytes' /proc/net/dev | awk -F: '{print $1}')"
@@ -378,15 +253,6 @@ the internet?"
     fi
   fi
 
-
-  # grub -> do not use it anymore
-  # echo -n "" >"$TMP_"
-  # local grub_write_="YES"
-  # $DIALOG_ --clear --backtitle "$BACK_TITLE_" --title "$grub_title_" --yesno "$grub_message_" 5 75 && \
-  #  grubConfig || grub_write_="NO"
-  grub_write_="NO"
-
-
   # get options
   #local OPT_IPTABLES_="yes"
   #local OPT_SSH_="yes"
@@ -449,9 +315,6 @@ startx                - Boot into X
   BOOT_ARGS_="$BOOT_ARGS_ $(<$TMP_)"
 
   writeConfig
-  if [ $grub_write_ == "YES" ]; then
-    grubWrite
-  fi
   actionMkInitrd
   notice "GRML terminalserver successfully configured"
 }
@@ -504,122 +367,6 @@ function optGrml2Hd
 }
 #}}}
 
-# GRUB CONFIG  {{{
-function grubConfig
-{
-  local tmp_=`mktemp -td terminalserver_grub.XXXXXX` || warn "could not create tmp file for grubConfig"
-  if [ -z "$tmp_" ]; then return 1; fi
-
-  grubConfigWork "$tmp_" "$1"
-  local ret_=$?
-  execute "rm -rf $tmp_" warn
-
-  return $ret_
-}
-
-function grubConfigWork
-{
-  local tmp_="$1"
-
-  local grub_title_="Grub configuration"
-  local grub_nic_message_="
-Please select the types of network cards you want to boot from.
-If your networkcard is already listed just press <OK>!
-
-WARNING: Do NOT add all NICs, grub could possibly stop working!"
-  local nics_=""
-
-  if [[ $2 == "" ]]; then
-    while read module_ desc_ mode_; do
-      nics_="$nics_ $module_ $desc_ $mode_"
-    done < $GRUB_NIC_CONF_
-
-    echo -n "" >$TMP_
-    local cmd_line_=""
-    $DIALOG_ --clear --separate-output --backtitle "$BACK_TITLE_" --title "$grub_title_" --checklist \
-      "$grub_nic_message_" 10 70 0 $nics_ 2>$TMP_
-    local ret_=$?
-    if [[ $ret_ -ne 0 ]]; then
-       die "exiting as requested"
-    fi
-    if [[ `wc -l <$TMP_` -eq 0 ]]; then
-      echo $ret_
-      warn "you should specify the NICs but didn't => DEFAULT will be used"
-      awk '/ on$/{print $1}' $GRUB_NIC_CONF_ >$TMP_
-    fi
-  else
-    cat $2 >$TMP_
-  fi
-  while read module_; do
-    cmd_line_="$cmd_line_ --enable-$module_"
-  done < $TMP_
-
-  echo "\"$cmd_line_\""
-
-  execute "tar xzf $GRUB_SOURCE_ -C $tmp_" warn || return 1
-  local_dir="$(pwd)"
-  execute "cd $tmp_/grub*" warn || return 1
-cat >preset-menu <<EOT
-# Set up the serial terminal, first of all.
-#serial --unit=0 --speed=19200
-#terminal --timeout=0 serial
-
-# Initialize the network.
-#dhcp --with-configfile
-#bootp --with-configfile
-dhcp
-default 0
-timeout 0
-title Load config from Tftp server
-  configfile (nd)/menu.lst
-EOT
-
-  CC='gcc'
-  test -r /lib64 && export CC="$CC -m32"
-
-  CC="$CC" execute "./configure --enable-preset-menu=./preset-menu $cmd_line_" warn || read
-  CC="$CC" execute "make -j2" warn || read #return 1
-
-  local st1_="stage1/stage1"
-  local st2_="stage2/stage2"
-  isExistent $st1_ warn || return 1
-  isExistent $st2_ warn || return 1
-
-  if [ -r "$PATH_/grub.img" ] ; then
-     execute "mv -fb $PATH_/grub.img $PATH_/grub.img.old"
-  fi
-
-  execute "cat $st1_ $st2_ > $PATH_/grub.img" warn || return 1
-
-  cd "$local_dir"
-
-  return 0
-}
-
-function grubWrite
-{
-  local grub_title_="Grub configuration"
-  $DIALOG_ --clear --backtitle "$BACK_TITLE_" --title "$grub_title_" --yesno \
-    "Do you want to write the grub image to /dev/fd0" 5 75 || return 1
-
-  execute "dd if=$PATH_/grub.img of=/dev/fd0" warn || return 0
-  return 1
-}
-
-function grubMultiWrite
-{
-  local target_=${1:-'/dev/fd0'}
-
-  isExistent "$PATH_/grub.img" die "you have to specify an image or run \"$PROG_NAME__ grubconf\""
-  isExistent "$target_" die "$target_ is not a valied"
-  while true; do
-    echo -n "Please insert disk into $target_ and press <ENTER> (STRG-C for end)"
-    read
-    dd if=$PATH_/grub.img of="$target_"
-  done
-}
-# }}}
-
 
 function removeTmpFiles
 {
@@ -628,7 +375,7 @@ function removeTmpFiles
 
 function actionClean
 {
-  for i in dhcpd.conf grub.img minirt26.gz; do
+  for i in dhcpd.conf minirt26.gz; do
     execute "rm -f $PATH_/$i*"
   done
 
@@ -684,10 +431,6 @@ fi
 
 case "$1" in
   interactive)  actionInteractive ;;
-  grubConf)   grubConfig "$2" ;;
-  grubConfWrite)  grubConfig && grubWrite ;;
-  grubWrite)    grubWrite ;;
-  grubMultiWrite)   grubMultiWrite "$2" ;;
   initrd) actionMkInitrd ;;
   clean)  actionClean ;;
   *)    actionInteractive ;;

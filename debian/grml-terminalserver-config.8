@@ -2,7 +2,7 @@
 .\" First parameter, NAME, should be all caps
 .\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
 .\" other parameters are allowed: see man(7), man(1)
-.TH GRML-TERMINALSERVER-CONFIG 8 "March 20, 2005"
+.TH GRML-TERMINALSERVER-CONFIG 8 "October 26, 2009"
 .\" Please adjust this date whenever revising the manpage.
 .\"
 .\" Some roff macros, for reference:
@@ -16,7 +16,7 @@
 .\" .sp <n>    insert n+1 empty lines
 .\" for manpage-specific macros, see man(7)
 .SH NAME
-grml-terminalserver-config \- Config program for terminalserver coming with GRML
+grml-terminalserver-config \- Config program for terminalserver coming with Grml
 .SH SYNOPSIS
 .B grml-terminalserver-config
 .RI [ options ] " <command>
@@ -29,7 +29,7 @@ This manual page documents briefly the
 .\" \fI<whatever>\fP escape sequences to invode bold face and italics, 
 .\" respectively.
 \fBgrml-terminalserver-config\fP is a program that
-provides the configuration script for the terminalserver coming with GRML.
+provides the configuration script for the terminalserver coming with Grml.
 .SH OPTIONS
 These programs follow the long option style without dashes and 
 short options starting with one dash (`-').
@@ -40,18 +40,6 @@ Interactive configuration of the terminalserver (same as option interactive).
 .TP
 .B interactive
 Interactive configuring the terminalserver
-.TP
-.B grubConf
-Configure grub and make boot-image (for non-PXE NICs)
-.TP
-.B grubConfWrite
-Configure grub & write image to floppy disk
-.TP
-.B grubWrite
-Write compiled grub-image to floppy disk
-.TP
-.B grubMultiWrite
-batchwrite grub-image to floppy disk (exiting with strg+c)
 .TP
 .B clean
 Remove all configfiles created during user configuration
