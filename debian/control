@@ -3,7 +3,7 @@ Section: net
 Priority: optional
 Maintainer: Michael Gebetsroither <gebi@grml.org>
 Uploaders: Michael Prokop <mika@grml.org>
-Build-Depends: debhelper (>= 4.0.0), dietlibc-dev
+Build-Depends: debhelper (>= 5), dietlibc-dev
 Standards-Version: 3.8.3
 Homepage: http://grml.org/terminalserver/
 Vcs-git: git://git.grml.org/grml-terminalserver.git
