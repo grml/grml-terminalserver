@@ -1,7 +1,7 @@
 This is grml-terminalserver, written and maintained by Michael Gebetsroither <gebi@grml.org>
 on Sun, 20 Mar 2005 19:39:26 +0100.
 
-Sources available at http://grml.org/repos/ and http://hg.grml.org/
+Sources available at http://git.grml.org/
 
 The timeout binary has been extracted from package tct (Forensics related utilities) version 1.11-6.3.
 
@@ -22,4 +22,4 @@ Copyright (C) 2003++ Michael Gebetsroither <gebi@grml.org> and Michael Prokop <m
    02110-1301, USA.
 
 On Debian systems, the complete text of the GNU General
-Public License can be found in `/usr/share/common-licenses/GPL'.
+Public License can be found in `/usr/share/common-licenses/GPL-2'.
