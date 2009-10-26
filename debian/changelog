@@ -1,9 +1,13 @@
 grml-terminalserver (0.99.6) unstable; urgency=low
 
+  [ Ulrich Dangel ]
   * Use grml2usb to generate the boot menu. This preserves all parameters in
     the menu from original cd.
 
- -- Ulrich Dangel <mru@grml.org>  Mon, 26 Oct 2009 11:09:31 +0100
+  [ Michael Prokop ]
+  * Bump to Standards-Version 3.8.3 (no further changes).
+
+ -- Michael Prokop <mika@grml.org>  Mon, 26 Oct 2009 15:15:24 +0100
 
 grml-terminalserver (0.99.5) unstable; urgency=low
 
