@@ -114,6 +114,12 @@ if [ ! -z "$live_media_path_" ] ; then
     sed -i -e 's/\(.*append.*\)/\1 live-media-path='$live_media_path_'/' "$TFTPD_DATA_DIR_/"*.cfg  2>/dev/null
 fi
 
+# adjust ldbsd.com bootline
+sed -i -e 's#\(.*kernel .*/ldbsd.com\)#\1 set image /boot/addons/bsd4grml/bsd.rd`echo Type "boot" to load MirOS bsd4grml via keeppxe#' "$TFTPD_DATA_DIR_/"addon_*_bsd.cfg
+
+# remove grub entries
+rm "$TFTPD_DATA_DIR_/"addon_*grub*.cfg
+
 mv "$TFTPD_DATA_DIR_/syslinux.cfg" "$TFTPD_DATA_DIR_/pxelinux.cfg/default"
 rm -rf "$DEST_DIR"
 
