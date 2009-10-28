@@ -1,3 +1,9 @@
+grml-terminalserver (0.99.9) UNRELEASED; urgency=low
+
+  * Make templates/grub-pxelinux_config more robust and use rm -f instead of rm.
+
+ -- Ulrich Dangel <mru@grml.org>  Thu, 29 Oct 2009 00:20:41 +0100
+
 grml-terminalserver (0.99.8) unstable; urgency=low
 
   * Adjust bsd arguments for network boot.
