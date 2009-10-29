@@ -1,8 +1,9 @@
-grml-terminalserver (0.99.9) UNRELEASED; urgency=low
+grml-terminalserver (0.99.9) unstable; urgency=low
 
+  [ Ulrich Dangel ]
   * Make templates/grub-pxelinux_config more robust and use rm -f instead of rm.
 
- -- Ulrich Dangel <mru@grml.org>  Thu, 29 Oct 2009 00:20:41 +0100
+ -- Michael Prokop <mika@grml.org>  Thu, 29 Oct 2009 01:10:49 +0100
 
 grml-terminalserver (0.99.8) unstable; urgency=low
 
