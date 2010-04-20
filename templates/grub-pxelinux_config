@@ -35,7 +35,7 @@ fi
 grub_def_boot_args_="/linux26 $default_boot_args_"
 
 # special boot arguments required by pxelinux
-pxe_def_boot_args_="$default_boot_args_ initrd=minirt26.gz"
+pxe_def_boot_args_="$default_boot_args_"
 
 # default arguments for framebuffer console
 def_fb_args_="vga=791"
@@ -97,8 +97,7 @@ ret_=$?
 ## create pxelinux config
 ###
 DEST_DIR=$(mktemp -d)
-grml2usb --bootloader-only --remove-bootoption='initrd=/boot/[a-z0-9/.]*/initrd.gz' \
-    --remove-bootoption='live-media-path=[a-z0-9/.-]+/' \
+grml2usb --bootloader-only \
     --bootoptions="$pxe_def_boot_args_ $BOOT_ARGS_" /live/image "$DEST_DIR"
 
 mv "$DEST_DIR"/boot/syslinux/* "$TFTPD_DATA_DIR_/"
@@ -106,14 +105,23 @@ rmdir "$DEST_DIR"/boot/syslinux
 
 mv "$DEST_DIR"/boot/ "$TFTPD_DATA_DIR_"
 
-# remove normal kernel path and use our image
-sed -i -e 's/.*kernel.*linux26/kernel linux26/' "$TFTPD_DATA_DIR_/"*.cfg 2>/dev/null
 
-# only append live-media-path if needed
-if [ ! -z "$live_media_path_" ] ; then
-    sed -i -e 's/\(.*append.*\)/\1 live-media-path='$live_media_path_'/' "$TFTPD_DATA_DIR_/"*.cfg  2>/dev/null
+# cd is multi iso, grml2usb got it right ;0
+if [ -d "$MOUNT_POINT_"/boot/release ] ; then
+   sed -i -e 's#\(.*\)/boot/\(.*\)#\1\2#' "$TFTPD_DATA_DIR_/"*.cfg  2>/dev/null
+else
+    # remove normal kernel path and use our image
+    sed -i -e 's/.*kernel.*linux26/kernel linux26/' "$TFTPD_DATA_DIR_/"*.cfg 2>/dev/null
+    sed -i -e 's/\(initrd\)=[[:alnum:]/._-]*/\1=minirt26.gz/' "$TFTPD_DATA_DIR_/"*.cfg 2>/dev/null
+
+    # only append live-media-path if needed
+    if [ ! -z "$live_media_path_" ] ; then
+        sed -i -e 's/\(live-media-path\)=[[:alnum:]/._-]*/\1='$live_media_path_'/' "$TFTPD_DATA_DIR_/"*.cfg  2>/dev/null
+    else
+        sed -i -e 's/live-media-path=[[:alnum:]/._-]*//' "$TFTPD_DATA_DIR_/"*.cfg  2>/dev/nul
+    fi
+
 fi
-
 # adjust ldbsd.com bootline
 sed -i -e 's#\(.*kernel .*/ldbsd.com\)#\1 set image /boot/addons/bsd4grml/bsd.rd`echo Type "boot" to load MirOS bsd4grml via keeppxe#' "$TFTPD_DATA_DIR_/"addon_*_bsd.cfg
 
