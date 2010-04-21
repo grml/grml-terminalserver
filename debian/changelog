@@ -5,8 +5,9 @@ grml-terminalserver (0.99.10) unstable; urgency=low
 
   [ Michael Prokop ]
   * Bump Standards-Version to 3.8.4 (no further changes).
+  * Minor packaging updates to make lintian happy.
 
- -- Michael Prokop <mika@grml.org>  Wed, 21 Apr 2010 14:05:19 +0200
+ -- Michael Prokop <mika@grml.org>  Wed, 21 Apr 2010 14:07:30 +0200
 
 grml-terminalserver (0.99.9) unstable; urgency=low
 

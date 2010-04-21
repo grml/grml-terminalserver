@@ -11,9 +11,9 @@ Vcs-Browser: http://git.grml.org/?p=grml-terminalserver.git
 
 Package: grml-terminalserver
 Architecture: all
-Depends: grml-shlib (>=1.02.03), dialog, dhcp3-server, atftpd (>=0.7.dfsg-1.2), syslinux, ipcalc, nfs-kernel-server, grml2usb (>=0.9.14)
+Depends: ${misc:Depends}, grml-shlib (>=1.02.03), dialog, dhcp3-server, atftpd (>=0.7.dfsg-1.2), syslinux, ipcalc, nfs-kernel-server, grml2usb (>=0.9.14)
 Description: terminalserver for grml to boot via PXE
- This packages provides all what's needed to boot
+ These packages provides all what's needed to boot
  grml over the network (PXE). An easy to use interface
  does all the setup steps to get the server side up
  and running.
