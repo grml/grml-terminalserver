@@ -110,8 +110,12 @@ function stopDhcp
 {
   start-stop-daemon --stop --quiet --pidfile "$DHCPD_PID_"
   rm -f $DHCPD_PID_
+  # ugly but necessary :-/
   find  /var/lib/dhcp* -type f -name dhcpd.leases -delete
-  touch /var/lib/dhcp*/dhcpd.leases
+  local dhcpdir
+  for dhcpdir in /var/lib/dhcp* ; do
+    touch ${dhcpdir}/dhcpd.leases
+  done
 }
 
 function startDhcp
