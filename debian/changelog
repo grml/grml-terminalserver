@@ -1,3 +1,19 @@
+grml-terminalserver (0.99.11) unstable; urgency=low
+
+  * [acc441d] Adapt dhcp configuration for the dhcp3-server ->
+    isc-dhcp-server transition.
+  * [40f2a27] grml-terminalserver-config: do not rebuild initrd but use
+    the existing one.
+  * [766664b] grml-terminalserver-config: always update minirtd26.gz
+    using cp -u.
+  * [b3b2bf9] Use find command for removing dhcpd.leases file.
+  * [fedf73b] Depend on isc-dhcp-server | dhcp3-server.
+  * [dcf5405] Bump Standards-Version to 3.9.1.
+  * [ab36bc7] Iterate over /var/lib/dhcp* directories for touch command.
+  * [edd63e9] Minor: Fix typo (witch/which) and indent one line of code.
+
+ -- Michael Prokop <mika@grml.org>  Wed, 29 Sep 2010 23:47:29 +0200
+
 grml-terminalserver (0.99.10) unstable; urgency=low
 
   [ Ulrich Dangel ]
