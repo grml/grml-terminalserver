@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Michael Gebetsroither <gebi@grml.org>
 Uploaders: Michael Prokop <mika@grml.org>
 Build-Depends: debhelper (>= 5)
-Standards-Version: 3.8.4
+Standards-Version: 3.9.1
 Homepage: http://grml.org/terminalserver/
 Vcs-git: git://git.grml.org/grml-terminalserver.git
 Vcs-Browser: http://git.grml.org/?p=grml-terminalserver.git
