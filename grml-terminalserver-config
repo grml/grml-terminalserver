@@ -114,57 +114,23 @@ function actionAutoconf
 }
 # }}}
 
-
 # INITRD {{{
 function actionMkInitrd
 {
-  echo
-  echo "Creating initrd $PATH_/minirt26.gz:"
-  if isExistent "$PATH_/minirt26.gz" ; then
-     echo
-     echo "$PATH_/minirt26.gz exists already, skipping initrd creation"
-     return 0
-  fi
-
-  mkInitrd
-
-  echo '... done'
+  echo "Installing initrd $PATH_/minirt26.gz:"
+  # until we have a stable file location API let's use
+  # an according heuristic
+  for file in "$(find /live/image/boot -name initrd.gz)"; do
+    dir="$(dirname $file)"
+    if file "$dir"/linux26 | grep -q "$(uname -r)" ; then
+      cp -u "$dir"/initrd.gz "$PATH_"/minirt26.gz
+      echo '... done'
+      return 0
+    fi
+  done
 }
 
-function mkInitrd
-{
-  # we do not want to include persistent configuration files
-  # from udev in the initrd
-  udev_tmp_=$(mktemp -d terminalserver__udev.XXXXXX)
-  persistent=false
-  if ls /etc/udev/rules.d/*persistent* >/dev/null 2>&1 ; then
-    persistent_files=true
-    for f in /etc/udev/rules.d/*persistent* ; do
-      mv "$f" "${udev_tmp_}/"
-    done
-  fi
-
-  set -e
-  local cfg_="/etc/initramfs-tools/initramfs.conf"
-  local tmp_="`mktemp -t terminalserver__initramfsbk.XXXXXX`"
-  cp $cfg_ $tmp_
-  sed -i 's/^MODULES=.*/MODULES=netboot/' $cfg_
-  update-initramfs -u -t 1>/dev/null
-  mv $tmp_ $cfg_
-
-  local initrd_="/boot/initrd.img-$KERNEL_VERSION_"
-  mv $initrd_ $PATH_/minirt26.gz
-  mv ${initrd_}.bak $initrd_
-  set +e
-
-  # restore udev configuration files
-  if $persistent_files ; then
-    mv ${udev_tmp_}/* /etc/udev/rules.d/
-    rmdir "${udev_tmp_}"
-  fi
-}
 # }}}
-
 
 # INTERACTIVE CONFIGURATION  {{{
 
