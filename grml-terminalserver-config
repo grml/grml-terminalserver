@@ -117,20 +117,13 @@ function actionAutoconf
 # INITRD {{{
 function actionMkInitrd
 {
-  echo
   echo "Installing initrd $PATH_/minirt26.gz:"
-  if isExistent "$PATH_/minirt26.gz" ; then
-     echo
-     echo "$PATH_/minirt26.gz exists already, nothing to do"
-     return 0
-  fi
-
   # until we have a stable file location API let's use
   # an according heuristic
   for file in "$(find /live/image/boot -name initrd.gz)"; do
     dir="$(dirname $file)"
     if file "$dir"/linux26 | grep -q "$(uname -r)" ; then
-      cp "$dir"/initrd.gz "$PATH_"/minirt26.gz
+      cp -u "$dir"/initrd.gz "$PATH_"/minirt26.gz
       echo '... done'
       return 0
     fi
