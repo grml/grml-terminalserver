@@ -143,7 +143,7 @@ function actionInteractive
   local card_title_="Choose network device connected to client network"
   local card_message_="Available network devices:"
   local iprange_title_="IP Address range for clients"
-local iprange_message_="
+  local iprange_message_="
 Please enter the desired IP-Range of addresses that should be allocated by clients, separated by a single space.
 
 Example:
@@ -155,7 +155,7 @@ for addresses from 192.168.0.101 to (and including) 192.168.0.200.
   local runconfig_title_="Networkcard config"
   local runconfig_message_="Would you like to configure your interfaces now?"
 
-  # on witch interfaces should we listen
+  # on which interfaces should we listen
   local netdevices_="$(grep -ve 'lo:' -ve 'Inter-|' -ve 'face |bytes' /proc/net/dev | awk -F: '{print $1}')"
   local device_list_=""
   for INTERFACE_ in $netdevices_; do device_list_="$device_list_ ${INTERFACE_} Networkcard_${INTERFACE_##eth}"; done
