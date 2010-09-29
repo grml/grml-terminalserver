@@ -41,7 +41,12 @@ DIALOG_="dialog"
 CONFIG_PROG_="/usr/sbin/grml-terminalserver-config"
 
 # vars for dhcpd
-DHCPD_BIN_="/usr/sbin/dhcpd3"
+if [ -x /usr/sbin/dhcpd3 ] ; then
+  DHCPD_BIN_="/usr/sbin/dhcpd3"
+else
+  DHCPD_BIN_="/usr/sbin/dhcpd"
+fi
+
 DHCPD_CONFIG_FILE_="$PATH_/dhcpd.conf"
 DHCPD_PID_="/var/run/dhcpd.pid"
 
