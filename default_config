@@ -51,9 +51,16 @@ fi
 
 KERNEL_IMAGE_="$MULTIBOOT_PATH_/linux26"
 
+if [[ ! -f "$KERNEL_IMAGE_" ]] ; then
+  KERNEL_IMAGE_="/boot/vmlinuz-$KERNEL_VERSION_"
+fi
+
 ORIGINAL_INITRD_="$MULTIBOOT_PATH_/initrd.gz"
 
 MEMTEST_IMAGE_="$ADDONS_PATH_/memtest"
+if [ ! -f "$MEMTEST_IMAGE_" ] ; then
+  MEMTEST_IMAGE_=$(find /boot -name memtest*.bin | head -n1)
+fi
 
 PXE_BOOT_MSG_="$ISOLIN_PATH_/boot.msg"
 # grml2usb with grub doesn't provide boot.msg, so generate a default one

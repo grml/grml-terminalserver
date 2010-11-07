@@ -211,9 +211,9 @@ function createTftpConf
   else
     execute "install -m 644 $KERNEL_IMAGE_ $TFTPD_DATA_DIR_/linux26" die
   fi
-  execute "install -m 644 $MEMTEST_IMAGE_ $TFTPD_DATA_DIR_/memtest" die
+  [ -f "$MEMTEST_IMAGE" ] && execute "install -m 644 $MEMTEST_IMAGE_ $TFTPD_DATA_DIR_/memtest" die
   execute "install -m 644 $PXE_BOOT_MSG_ $TFTPD_DATA_DIR_" die
-  execute "install -m 644 $PXE_BOOT_LOGO_ $TFTPD_DATA_DIR_" die
+  [ -f "$PXE_BOOT_LOGO_" ] && execute "install -m 644 $PXE_BOOT_LOGO_ $TFTPD_DATA_DIR_" die
 
   execute "source $TEMPLATE_CONFIG_DIR_/grub-pxelinux_config" die
 }
@@ -240,12 +240,12 @@ function runTftp
 # NFS  {{{
 function createNfsConfig
 {
-  execute "exportfs -o ro,no_root_squash,async,nohide $NETWORK_/$NETMASK_:$MOUNT_POINT_" warn
+  execute "exportfs -o ro,no_root_squash,async,nohide,fsid=42 $NETWORK_/$NETMASK_:$MOUNT_POINT_" warn
 }
 
 function removeNfsConfig
 {
-  execute "exportfs -u -o ro,no_root_squash,async,nohide $NETWORK_/$NETMASK_:$MOUNT_POINT_" warn
+  execute "exportfs -u -o ro,no_root_squash,async,nohide,fsid=42 $NETWORK_/$NETMASK_:$MOUNT_POINT_" warn
 }
 
 function startNfs
