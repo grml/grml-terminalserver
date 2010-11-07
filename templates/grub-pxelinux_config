@@ -18,7 +18,10 @@
 # GLOBAL_README_END
 
 if grep -q live-media-path= /proc/cmdline 2>/dev/null ; then
-    live_media_path_="live-media-path=$(awk -F live-media-path= '{print $2}' /proc/cmdline)"
+  live_media_path_="live-media-path=$(awk -F live-media-path= '{print $2}' /proc/cmdline)"
+fi
+if [ ! -d /live/image/boot ] ; then
+  live_media_path_="live-media-path=/"
 fi
 
 # default boot arguments used for both grub and pxelinux
@@ -32,7 +35,7 @@ apm=power-off nomce"
 fi
 
 # special boot arguments required by grub
-grub_def_boot_args_="/linux26 $default_boot_args_"
+grub_def_boot_args_="/linux26 $default_boot_args_ $live_media_path_"
 
 # special boot arguments required by pxelinux
 pxe_def_boot_args_="$default_boot_args_"
@@ -148,12 +151,12 @@ else
   # remove normal kernel path and use our image
   sed -i -e 's/.*kernel.*linux26/kernel linux26/' $config_files_
   sed -i -e 's/\(initrd\)=[[:alnum:]/._-]*/\1=minirt26.gz/' $config_files_
+  # remove live-media-path per default
+  sed -i -e 's#live-media-path=[[:alnum:]/._-]*##' $config_files_
 
-  # only append live-media-path if needed
+  # append live-media-path if needed
   if [ ! -z "$live_media_path_" ] ; then
-    sed -i -e 's#\(live-media-path\)=[[:alnum:]/._-]*#\1='$live_media_path_'#' $config_files_
-  else
-    sed -i -e 's#live-media-path=[[:alnum:]/._-]*##' $config_files_
+    sed -i -e "s#\(^.*append.*initrd.*$\)#\1 $live_media_path_#" $config_files_
   fi
 
 fi
