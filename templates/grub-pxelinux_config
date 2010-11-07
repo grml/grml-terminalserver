@@ -139,21 +139,22 @@ EOT
 fi
 
 
+config_files_=$(find "$TFTPD_DATA_DIR_/" -name "*.cfg" -type f)
 
 # cd is multi iso, grml2usb got it right ;0
 if [ -d "$MOUNT_POINT_"/boot/release ] ; then
-   sed -i -e 's#\(.*\)/boot/\(.*\)#\1\2#' "$TFTPD_DATA_DIR_/"*.cfg  2>/dev/null
+   sed -i -e 's#\(.*\)/boot/\(.*\)#\1\2#' $config_files_
 else
-    # remove normal kernel path and use our image
-    sed -i -e 's/.*kernel.*linux26/kernel linux26/' "$TFTPD_DATA_DIR_/"*.cfg 2>/dev/null
-    sed -i -e 's/\(initrd\)=[[:alnum:]/._-]*/\1=minirt26.gz/' "$TFTPD_DATA_DIR_/"*.cfg 2>/dev/null
+  # remove normal kernel path and use our image
+  sed -i -e 's/.*kernel.*linux26/kernel linux26/' $config_files_
+  sed -i -e 's/\(initrd\)=[[:alnum:]/._-]*/\1=minirt26.gz/' $config_files_
 
-    # only append live-media-path if needed
-    if [ ! -z "$live_media_path_" ] ; then
-        sed -i -e 's/\(live-media-path\)=[[:alnum:]/._-]*/\1='$live_media_path_'/' "$TFTPD_DATA_DIR_/"*.cfg  2>/dev/null
-    else
-        sed -i -e 's/live-media-path=[[:alnum:]/._-]*//' "$TFTPD_DATA_DIR_/"*.cfg  2>/dev/nul
-    fi
+  # only append live-media-path if needed
+  if [ ! -z "$live_media_path_" ] ; then
+    sed -i -e 's#\(live-media-path\)=[[:alnum:]/._-]*#\1='$live_media_path_'#' $config_files_
+  else
+    sed -i -e 's#live-media-path=[[:alnum:]/._-]*##' $config_files_
+  fi
 
 fi
 # adjust ldbsd.com bootline
