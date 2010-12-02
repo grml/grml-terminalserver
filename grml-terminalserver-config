@@ -120,14 +120,8 @@ function actionMkInitrd
   echo "Installing initrd $PATH_/minirt26.gz:"
   # until we have a stable file location API let's use
   # an according heuristic
-  for file in "$(find /live/image/boot -name initrd.gz)"; do
-    dir="$(dirname $file)"
-    if file "$dir"/linux26 | grep -q "$(uname -r)" ; then
-      cp -u "$dir"/initrd.gz "$PATH_"/minirt26.gz
-      echo '... done'
-      return 0
-    fi
-  done
+  initrd_=initrd.img-"$(uname -r)"
+  cp /boot/"$initrd_" "$PATH_"/minirt26.gz || die "Could not copy /boot/$initrd_"
 }
 
 # }}}

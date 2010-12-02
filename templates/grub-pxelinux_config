@@ -18,7 +18,10 @@
 # GLOBAL_README_END
 
 if grep -q live-media-path= /proc/cmdline 2>/dev/null ; then
-    live_media_path_="live-media-path=$(awk -F live-media-path= '{print $2}' /proc/cmdline)"
+  live_media_path_="live-media-path=$(awk -F live-media-path= '{print $2}' /proc/cmdline)"
+fi
+if [ ! -d /live/image/boot ] ; then
+  live_media_path_="live-media-path=/"
 fi
 
 # default boot arguments used for both grub and pxelinux
@@ -32,7 +35,7 @@ apm=power-off nomce"
 fi
 
 # special boot arguments required by grub
-grub_def_boot_args_="/linux26 $default_boot_args_"
+grub_def_boot_args_="/linux26 $default_boot_args_ $live_media_path_"
 
 # special boot arguments required by pxelinux
 pxe_def_boot_args_="$default_boot_args_"
@@ -97,29 +100,64 @@ ret_=$?
 ## create pxelinux config
 ###
 DEST_DIR=$(mktemp -d)
-grml2usb --bootloader-only \
-    --bootoptions="$pxe_def_boot_args_ $BOOT_ARGS_" /live/image "$DEST_DIR"
+if [ -d /live/image/boot ] ; then
+  grml2usb --bootloader-only \
+      --bootoptions="$pxe_def_boot_args_ $BOOT_ARGS_" /live/image "$DEST_DIR"
 
-mv "$DEST_DIR"/boot/syslinux/* "$TFTPD_DATA_DIR_/"
-rmdir "$DEST_DIR"/boot/syslinux
+  mv "$DEST_DIR"/boot/syslinux/* "$TFTPD_DATA_DIR_/"
+  rmdir "$DEST_DIR"/boot/syslinux
 
-mv "$DEST_DIR"/boot/ "$TFTPD_DATA_DIR_"
+  mv "$DEST_DIR"/boot/ "$TFTPD_DATA_DIR_"
+else # there is no kernel inside /live/image copy it from /boot
+  if [ ! -d /usr/share/grml-live/templates/boot/isolinux ] ; then
+    echo "E: Could not find isolinux template directory" >&2
+    exit 2
+  fi
 
+  array=( $(cat /etc/grml_version) )
+  grml_name_=${array[0]}
+  grml_version_=${array[1]}
+
+  cp /usr/share/grml-live/templates/boot/isolinux/* "$TFTPD_DATA_DIR_/"
+
+  config_files_=$(find "$TFTPD_DATA_DIR_/" -name "*.cfg" -type f)
+  sed -i "s/%ARCH%/$(uname -m)/" $config_files_
+  sed -i "s/%BOOTID%/$RANDOM/" $config_files_
+  sed -i "s/%SHORT_NAME%/dummy/" $config_files_
+  sed -i "s/%VERSION%/$grml_version_/" $config_files_
+  sed -i "s/%GRML_NAME%/$grml_name_/" $config_files_
+  sed -i "s/%DISTRI_SPLASH%/grml.png/" $config_files_
+  sed -i "s/%DISTRI_INFO%/Grml/" $config_files_
+  sed -i "s#\(^.*append.*initrd.*$\)#\1 $pxe_def_boot_args_ $BOOT_ARGS_#" $config_files_
+  cat > "$TFTPD_DATA_DIR_/grmlmain.cfg"<<EOT
+  include default.cfg
+include menuoptions.cfg
+include grml.cfg
+include options.cfg
+include isoprompt.cfg
+include hd.cfg
+include hidden.cfg
+EOT
+
+fi
+
+
+config_files_=$(find "$TFTPD_DATA_DIR_/" -name "*.cfg" -type f)
 
 # cd is multi iso, grml2usb got it right ;0
 if [ -d "$MOUNT_POINT_"/boot/release ] ; then
-   sed -i -e 's#\(.*\)/boot/\(.*\)#\1\2#' "$TFTPD_DATA_DIR_/"*.cfg  2>/dev/null
+   sed -i -e 's#\(.*\)/boot/\(.*\)#\1\2#' $config_files_
 else
-    # remove normal kernel path and use our image
-    sed -i -e 's/.*kernel.*linux26/kernel linux26/' "$TFTPD_DATA_DIR_/"*.cfg 2>/dev/null
-    sed -i -e 's/\(initrd\)=[[:alnum:]/._-]*/\1=minirt26.gz/' "$TFTPD_DATA_DIR_/"*.cfg 2>/dev/null
+  # remove normal kernel path and use our image
+  sed -i -e 's/.*kernel.*linux26/kernel linux26/' $config_files_
+  sed -i -e 's/\(initrd\)=[[:alnum:]/._-]*/\1=minirt26.gz/' $config_files_
+  # remove live-media-path per default
+  sed -i -e 's#live-media-path=[[:alnum:]/._-]*##' $config_files_
 
-    # only append live-media-path if needed
-    if [ ! -z "$live_media_path_" ] ; then
-        sed -i -e 's/\(live-media-path\)=[[:alnum:]/._-]*/\1='$live_media_path_'/' "$TFTPD_DATA_DIR_/"*.cfg  2>/dev/null
-    else
-        sed -i -e 's/live-media-path=[[:alnum:]/._-]*//' "$TFTPD_DATA_DIR_/"*.cfg  2>/dev/nul
-    fi
+  # append live-media-path if needed
+  if [ ! -z "$live_media_path_" ] ; then
+    sed -i -e "s#\(^.*append.*initrd.*$\)#\1 $live_media_path_#" $config_files_
+  fi
 
 fi
 # adjust ldbsd.com bootline
