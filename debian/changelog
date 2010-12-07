@@ -1,3 +1,14 @@
+grml-terminalserver (0.99.12) unstable; urgency=low
+
+  [ Ulrich Dangel ]
+  * [fdea9e5] Support grml-terminalserver from no boot medium present.
+    [Closes: issue733]
+  * [162ecbe] Use config files instead of globbing, adjust indention.
+  * [9ac3854] Adjust live-media-path if /live/image is not the
+    bootmedium.
+
+ -- Michael Prokop <mika@grml.org>  Tue, 07 Dec 2010 12:35:50 +0100
+
 grml-terminalserver (0.99.11) unstable; urgency=low
 
   * [acc441d] Adapt dhcp configuration for the dhcp3-server ->
