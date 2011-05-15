@@ -1,3 +1,10 @@
+grml-terminalserver (0.99.13) unstable; urgency=low
+
+  [ Ulrich Dangel ]
+  * [eb79aa4] Support either portmap or rpcbind in grml-terminalserver.
+
+ -- Christian Hofstaedtler <ch@grml.org>  Mon, 16 May 2011 01:03:58 +0200
+
 grml-terminalserver (0.99.12) unstable; urgency=low
 
   [ Ulrich Dangel ]
