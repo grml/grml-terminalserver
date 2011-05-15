@@ -66,8 +66,13 @@ EOT
 
 function killPortmapper
 {
+  if [ -f /etc/init.d/portmap ] ; then
     /etc/init.d/portmap stop >/dev/null &>/dev/null
-    killall -9 portmap &>/dev/null
+  elif [ -f /etc/init.d/rpcbind ] ; then
+    /etc/init.d/rpcbind stop >/dev/null &>/dev/null
+  fi
+  killall -9 portmap &>/dev/null
+  killall -9 rpcbind &>/dev/null
 }
 
 # DHCP SERVICE {{{
@@ -250,7 +255,13 @@ function removeNfsConfig
 
 function startNfs
 {
-  /etc/init.d/portmap start
+  if [ -f /etc/init.d/portmap ] ; then
+    /etc/init.d/portmap start
+  elif [ -f /etc/init.d/rpcbind ] ; then
+    /etc/init.d/rpcbind start
+  else
+    echo "Warning: Could not start portmapper/rpcbind" >&2
+  fi
   /etc/init.d/nfs-common start
   # FIXME /etc/init.d/nfs-kernel-server start
   $USR_SHARE_/nfs-kernel-server start
