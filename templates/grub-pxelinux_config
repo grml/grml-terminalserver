@@ -27,7 +27,7 @@ fi
 # default boot arguments used for both grub and pxelinux
 if [ -e '/live/cow' ]; then
     default_boot_args_="root=/dev/nfs rw nfsroot=$IP_:$MOUNT_POINT_ \
-nodhcp noprompt noeject"
+noprompt noeject"
 else
     default_boot_args_="ramdisk_size=24000 root=/dev/ram0 rw \
 init=/etc/init nfsdir=$IP_:$MOUNT_POINT_ nodhcp noprompt noeject \
@@ -102,7 +102,9 @@ ret_=$?
 DEST_DIR=$(mktemp -d)
 if [ -d /live/image/boot ] ; then
   grml2usb --bootloader-only \
-      --bootoptions="$pxe_def_boot_args_ $BOOT_ARGS_" /live/image "$DEST_DIR"
+      --bootoptions="$pxe_def_boot_args_ $BOOT_ARGS_" \
+      --remove-bootoption=nodhcp \
+      /live/image "$DEST_DIR"
 
   mv "$DEST_DIR"/boot/syslinux/* "$TFTPD_DATA_DIR_/"
   rmdir "$DEST_DIR"/boot/syslinux
