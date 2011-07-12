@@ -1,3 +1,11 @@
+grml-terminalserver (0.99.14) unstable; urgency=low
+
+  * [0f45dd8] Bump Standards-Version to 3.9.2.
+  * [2614b90] Do not use "nodhcp" bootoption anymore,
+    since recent ISOs have new way of network configuration.
+
+ -- Michael Prokop <mika@grml.org>  Tue, 12 Jul 2011 11:41:31 +0200
+
 grml-terminalserver (0.99.13) unstable; urgency=low
 
   [ Ulrich Dangel ]
