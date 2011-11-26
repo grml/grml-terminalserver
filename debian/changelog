@@ -1,3 +1,10 @@
+grml-terminalserver (0.99.15) unstable; urgency=low
+
+  [ Christian Hofstaedtler ]
+  * [ed1a7fb] Add debian/control headers Origin, Bugs
+
+ -- Michael Prokop <mika@grml.org>  Sat, 26 Nov 2011 20:04:28 +0100
+
 grml-terminalserver (0.99.14) unstable; urgency=low
 
   * [0f45dd8] Bump Standards-Version to 3.9.2.
