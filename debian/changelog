@@ -1,3 +1,10 @@
+grml-terminalserver (0.99.16) grml-testing; urgency=low
+
+  [ Michael Prokop ]
+  * [ed31825] grml-terminalserver-config: use x.x.x.10 as starting IP address range
+
+ -- Christian Hofstaedtler <ch@grml.org>  Tue, 06 Dec 2011 22:43:08 +0100
+
 grml-terminalserver (0.99.15) unstable; urgency=low
 
   [ Christian Hofstaedtler ]
