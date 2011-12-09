@@ -1,3 +1,9 @@
+grml-terminalserver (0.99.17) grml-testing; urgency=low
+
+  * [09f2718] grml-terminalserver-config: fix syntax error
+
+ -- Michael Prokop <mika@grml.org>  Fri, 09 Dec 2011 11:04:16 +0100
+
 grml-terminalserver (0.99.16) grml-testing; urgency=low
 
   [ Michael Prokop ]
