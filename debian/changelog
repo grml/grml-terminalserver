@@ -1,3 +1,10 @@
+grml-terminalserver (0.99.18) grml-testing; urgency=low
+
+  * [41c1fa7] Get rid of grml2hd specific dialog and code
+    [Closes: issue1117]
+
+ -- Michael Prokop <mika@grml.org>  Wed, 11 Jan 2012 18:32:15 +0100
+
 grml-terminalserver (0.99.17) grml-testing; urgency=low
 
   * [09f2718] grml-terminalserver-config: fix syntax error
