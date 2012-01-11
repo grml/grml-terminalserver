@@ -219,51 +219,6 @@ the internet?"
     fi
   fi
 
-  # get options
-  #local OPT_IPTABLES_="yes"
-  #local OPT_SSH_="yes"
-  #local OPT_DISTCC_="yes"
-  #local OPT_SQUID_=""
-
-  local OPTIONS_TITLE_="Options"
-  local OPTIONS_MESSAGE_="Please give the appropriate options you want the clients to use:
-
-grml2hd   - Make a non-interactive remote installation
-
-
-
-"
-#  local OPTIONS_MESSAGE_="Please give the appropriate options you want the clients to use:
-#
-#iptables  - Only the server should be able to access the clients
-#ssh       - A ssh-key will be created on the server and distributed to the clients
-#distcc    - You want to use the clients as compile-farm (ssh options recommned)
-#
-#"
-
-  local OPT_IPTABLES_DESC_="Start iptables on the clients"
-  local OPT_SSH_DESC_="Start ssh on the clients"
-  local OPT_DISTCC_DESC_="Start distcc on the clients"
-  local OPT_GRML2HD_DESC_="Remote install grml on the network clients"
-  # dialog options (enable if implemented)
-  #iptables "$OPT_IPTABLES_DESC_" off \
-  #ssh "$OPT_SSH_DESC_" off \
-  #distcc "$OPT_DISTCC_DESC_" off \
-  echo -n "" >"$TMP_"
-  $DIALOG_ --clear --separate-output --backtitle "$BACK_TITLE_" --title "$OPTIONS_TITLE_" --checklist "$OPTIONS_MESSAGE_" 25 80 10 \
-  grml2hd "$OPT_GRML2HD_DESC_" off \
-    2>$TMP_ || die "could not get terminalserver options" $?
-  while read tmp_option_; do
-    OPTIONS_="$OPTIONS_ $tmp_option_"
-  done <$TMP_
-
-  # parse options
-  for i in $OPTIONS_; do
-    case "$i" in
-      grml2hd)  optGrml2Hd || return 1 ;;
-    esac
-  done
-
   echo -n "" >"$TMP_"
   local OPTIONS_BOOTARG_MESSAGE_="Here you can add additional boot arguments for the clients seperated by spaces:
 
@@ -285,54 +240,6 @@ startx                - Boot into X
   notice "GRML terminalserver successfully configured"
 }
 # }}}
-
-# OPTIONS GETTING DIALOG {{{
-function optGrml2Hd
-{
-  local GRML2HD_TITLE_='Grml2hd options dialog'
-  local tmp_=''
-  local options_='BOOT_IMAGE=grml2hd'
-
-  # get partition to install grml2hd on
-  OPTIONS_PARTITION_MSG_='Please specify the target partition where to install grml'
-  PARTITION_TITLE_='Partition selection'
-  echo -n "" >"$TMP_"
-  $DIALOG_ --clear --backtitle "$BACK_TITLE_" --title "$PARTITION_TITLE_" --inputbox \
-    "$OPTIONS_PARTITION_MSG_" 0 75 '/dev/hda1' 2>$TMP_ || die "problems getting partition"
-  tmp_="partition=$(<$TMP_)"
-  options_="$options_ $tmp_"
-
-  # get filesystem type
-  OPTION_FS_TYPE_='Please specify the filesystem type'
-  FS_TITLE_='Filesystem selection'
-  echo -n "" >"$TMP_"
-  $DIALOG_ --clear --backtitle "$BACK_TITLE_" --title "$FS_TITLE_" --inputbox \
-  "$OPTION_FS_TYPE_" 0 75 'ext3' 2>$TMP_ || die "problems getting filesystem type"
-  tmp_="filesystem=$(<$TMP_)"
-  options_="$options_ $tmp_"
-
-  # get where to save mbr
-  OPTION_MBR_='Please specify the location where to save the mbr'
-  MBR_TITLE_='Select location of mbr'
-  echo -n "" >"$TMP_"
-  $DIALOG_ --clear --backtitle "$BACK_TITLE_" --title "$MBR_TITLE_" --inputbox \
-    "$OPTION_MBR_" 0 75 '/dev/hda' 2>$TMP_ || die "problems getting location where to write mbr"
-  tmp_="mbr=$(<$TMP_)"
-  options_="$options_ $tmp_"
-
-  # get first user
-  OPTION_USER_='Who should be the first user on the system'
-  USER_TITLE_='User selection'
-  echo -n "" >"$TMP_"
-  $DIALOG_ --clear --backtitle "$BACK_TITLE_" --title "$USER_TITLE_" --inputbox \
-    "$OPTION_USER_" 0 75 'grml' 2>$TMP_ || die "problems getting first user of system"
-  tmp_="user=$(<$TMP_)"
-  options_="$options_ $tmp_"
-
-  BOOT_ARGS_="$options_"
-}
-#}}}
-
 
 function removeTmpFiles
 {
