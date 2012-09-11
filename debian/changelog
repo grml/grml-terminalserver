@@ -1,3 +1,12 @@
+grml-terminalserver (0.99.19) grml-testing; urgency=low
+
+  * [17edea1] Use /live/image as default + vmlinuz/initrd.img to support
+    new releases. Thanks to Ulrich Dangel for helping
+  * [a1d4eea] Drop outdated NOTES file
+  * [00ee294] NAT setup: do not fail if local route is present
+
+ -- Michael Prokop <mika@grml.org>  Tue, 11 Sep 2012 19:27:58 +0200
+
 grml-terminalserver (0.99.18) grml-testing; urgency=low
 
   * [41c1fa7] Get rid of grml2hd specific dialog and code
