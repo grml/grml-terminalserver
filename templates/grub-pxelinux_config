@@ -18,14 +18,14 @@
 # GLOBAL_README_END
 
 if grep -q live-media-path= /proc/cmdline 2>/dev/null ; then
-  live_media_path_="live-media-path=$(awk -F live-media-path= '{print $2}' /proc/cmdline)"
+  live_media_path_="live-media-path=$(awk -F live-media-path= '{print $2}' /proc/cmdline | awk '{print $1}')"
 fi
 if [ ! -d /live/image/boot ] ; then
   live_media_path_="live-media-path=/"
 fi
 
 # default boot arguments used for both grub and pxelinux
-if [ -e '/live/cow' ]; then
+if [ -e "$MOUNT_POINT_" ]; then
     default_boot_args_="root=/dev/nfs rw nfsroot=$IP_:$MOUNT_POINT_ \
 noprompt noeject"
 else
@@ -35,7 +35,7 @@ apm=power-off nomce"
 fi
 
 # special boot arguments required by grub
-grub_def_boot_args_="/linux26 $default_boot_args_ $live_media_path_"
+grub_def_boot_args_="/vmlinuz $default_boot_args_ $live_media_path_"
 
 # special boot arguments required by pxelinux
 pxe_def_boot_args_="$default_boot_args_"
@@ -54,7 +54,7 @@ timeout=10
 title GRML
   root (nd)
   kernel $grub_def_boot_args_ $def_fb_args_ $BOOT_ARGS_
-  initrd /minirt26.gz
+  initrd /initrd.img
 
 title GRML no framebuffer
   root (nd)
@@ -63,27 +63,27 @@ title GRML no framebuffer
 title GRML small
   root (nd)
   kernel $grub_def_boot_args_ small $def_fb_args_ $BOOT_ARGS_
-  initrd /minirt26.gz
+  initrd /initrd.img
 
 title GRML small nofb
   root (nd)
   kernel $grub_def_boot_args_ small $no_fb_args_ $BOOT_ARGS_
-  initrd /minirt26.gz
+  initrd /initrd.img
 
 title GRML debuginit
   root (nd)
   kernel $grub_def_boot_args_ debuginitrd $def_fb_args_ $BOOT_ARGS_
-  initrd /minirt26.gz
+  initrd /initrd.img
 
 title GRML debuginit nofb
   root (nd)
   kernel $grub_def_boot_args_ debuginitrd $no_fb_args_ $BOOT_ARGS_
-  initrd /minirt26.gz
+  initrd /initrd.img
 
 title GRML rescue
   root (nd)
   kernel $grub_def_boot_args_ $no_fb_args_
-  initrd /minirt26.gz
+  initrd /initrd.img
 
 title memtest
   root (nd)
@@ -151,8 +151,8 @@ if [ -d "$MOUNT_POINT_"/boot/release ] ; then
    sed -i -e 's#\(.*\)/boot/\(.*\)#\1\2#' $config_files_
 else
   # remove normal kernel path and use our image
-  sed -i -e 's/.*kernel.*linux26/kernel linux26/' $config_files_
-  sed -i -e 's/\(initrd\)=[[:alnum:]/._-]*/\1=minirt26.gz/' $config_files_
+  sed -i -e 's/.*kernel.*vmlinuz/  kernel vmlinuz/' $config_files_
+  sed -i -e 's/\(initrd\)=[[:alnum:]/._-]*/\1=initrd.img/' $config_files_
   # remove live-media-path per default
   sed -i -e 's#live-media-path=[[:alnum:]/._-]*##' $config_files_
 

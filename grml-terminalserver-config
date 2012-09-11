@@ -117,11 +117,11 @@ function actionAutoconf
 # INITRD {{{
 function actionMkInitrd
 {
-  echo "Installing initrd $PATH_/minirt26.gz:"
+  echo "Installing initrd $PATH_/initrd.img:"
   # until we have a stable file location API let's use
   # an according heuristic
   initrd_=initrd.img-"$(uname -r)"
-  cp /boot/"$initrd_" "$PATH_"/minirt26.gz || die "Could not copy /boot/$initrd_"
+  cp /boot/"$initrd_" "$PATH_"/initrd.img || die "Could not copy /boot/$initrd_"
 }
 
 # }}}
@@ -248,7 +248,7 @@ function removeTmpFiles
 
 function actionClean
 {
-  for i in dhcpd.conf minirt26.gz; do
+  for i in dhcpd.conf initrd.img; do
     execute "rm -f $PATH_/$i*"
   done
 

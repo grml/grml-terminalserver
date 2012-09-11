@@ -210,11 +210,11 @@ function createTftpConf
 
   execute "mkdir -p $TFTPD_DATA_DIR_/pxelinux.cfg" die
   execute "install -m 644 /usr/lib/syslinux/pxelinux.0 $TFTPD_DATA_DIR_" die
-  execute "install -m 644 $PATH_/minirt26.gz $TFTPD_DATA_DIR_" die
+  execute "install -m 644 $PATH_/initrd.img $TFTPD_DATA_DIR_" die
   if [ -d "$MOUNT_POINT_"/boot/release ] ; then
     cp -r "$MOUNT_POINT_"/boot/release "$TFTPD_DATA_DIR_"
   else
-    execute "install -m 644 $KERNEL_IMAGE_ $TFTPD_DATA_DIR_/linux26" die
+    execute "install -m 644 $KERNEL_IMAGE_ $TFTPD_DATA_DIR_/vmlinuz" die
   fi
   [ -f "$MEMTEST_IMAGE" ] && execute "install -m 644 $MEMTEST_IMAGE_ $TFTPD_DATA_DIR_/memtest" die
   execute "install -m 644 $PXE_BOOT_MSG_ $TFTPD_DATA_DIR_" die
@@ -437,7 +437,7 @@ fi
 if [ $check_necessary_files_ == 'yes' ]; then
   # test for files absolutly necessary for grml-terminalserver and created from -config
   problem_=0
-  for i in $PATH_/minirt26.gz; do
+  for i in $PATH_/initrd.img; do
     isExistent $i warn || problem_=1
   done
   if [ $problem_ -eq 1 ]; then

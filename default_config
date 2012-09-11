@@ -8,7 +8,7 @@ MODULES_PATH_="/lib/modules"
 
 KERNEL_VERSION_=`uname -r`
 
-if [ -e '/live/cow' ]; then
+if [ -e '/live/image' ]; then
   MOUNT_POINT_="/live/image"
 else
   MOUNT_POINT_="/cdrom"
@@ -39,8 +39,8 @@ if [[ $ADDONS_PATH_ == "" ]]; then
   ADDONS_PATH_="$MOUNT_POINT_"
 fi
 
-if [[ "$(find $DATA_PATH_/ -maxdepth 2 -name linux26 |head -n1)" != "" ]] ; then
-  MULTIBOOT_PATH_="$(dirname $(find $DATA_PATH_ -maxdepth 2 -name linux26 |head -n1))"
+if [[ "$(find $DATA_PATH_/ -maxdepth 2 -name vmlinuz |head -n1)" != "" ]] ; then
+  MULTIBOOT_PATH_="$(dirname $(find $DATA_PATH_ -maxdepth 2 -name vmlinuz |head -n1))"
 else
   MULTIBOOT_PATH_="$MOUNT_POINT_"
 fi
@@ -49,13 +49,13 @@ if [[ $MULTIBOOT_PATH_ == "" ]]; then
   MULTIBOOT_PATH_="$MOUNT_POINT_"
 fi
 
-KERNEL_IMAGE_="$MULTIBOOT_PATH_/linux26"
+KERNEL_IMAGE_="$MULTIBOOT_PATH_/vmlinuz"
 
 if [[ ! -f "$KERNEL_IMAGE_" ]] ; then
   KERNEL_IMAGE_="/boot/vmlinuz-$KERNEL_VERSION_"
 fi
 
-ORIGINAL_INITRD_="$MULTIBOOT_PATH_/initrd.gz"
+ORIGINAL_INITRD_="$MULTIBOOT_PATH_/initrd.img"
 
 MEMTEST_IMAGE_="$ADDONS_PATH_/memtest"
 if [ ! -f "$MEMTEST_IMAGE_" ] ; then
