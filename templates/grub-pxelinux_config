@@ -112,7 +112,11 @@ if [ -d /live/image/boot ] ; then
   mv "$DEST_DIR"/boot/ "$TFTPD_DATA_DIR_"
 else # there is no kernel inside /live/image copy it from /boot
   if [ ! -d /usr/share/grml-live/templates/boot/isolinux ] ; then
-    echo "E: Could not find isolinux template directory" >&2
+    echo "E: Could not find isolinux directory, can not operate without.
+
+Did you boot the system with the toram=... boot option? If so please
+either do not use the toram boot option at all or use boot option toram
+without any arguments (just \"toram\" instead of \"toram=...\")." >&2
     exit 2
   fi
 
