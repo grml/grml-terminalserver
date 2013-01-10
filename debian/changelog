@@ -1,3 +1,10 @@
+grml-terminalserver (0.100.0) grml-testing; urgency=low
+
+  * [77804b1] Adjust live media path for new live-boot version
+  * [bab8ef8] Bump Standards-Version to 3.9.4
+
+ -- Michael Prokop <mika@grml.org>  Thu, 10 Jan 2013 13:22:46 +0100
+
 grml-terminalserver (0.99.20) grml-testing; urgency=low
 
   * [65cff88] If isolinux template directory is not present inform user
