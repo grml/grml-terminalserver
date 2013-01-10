@@ -8,10 +8,12 @@ MODULES_PATH_="/lib/modules"
 
 KERNEL_VERSION_=`uname -r`
 
-if [ -e '/live/image' ]; then
-  MOUNT_POINT_="/live/image"
+if [ -e /lib/live/mount/medium ] ; then
+  MOUNT_POINT_="/lib/live/mount/medium" # since around December 2012
+elif [ -e '/live/image' ]; then
+  MOUNT_POINT_="/live/image" # until around December 2012
 else
-  MOUNT_POINT_="/cdrom"
+  MOUNT_POINT_="/cdrom" # very old
 fi
 
 # assume we have a grml2usb system

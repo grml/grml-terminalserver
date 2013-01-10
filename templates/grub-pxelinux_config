@@ -100,7 +100,17 @@ ret_=$?
 ## create pxelinux config
 ###
 DEST_DIR=$(mktemp -d)
-if [ -d /live/image/boot ] ; then
+if [ -d /lib/live/mount/medium/boot ] ; then # since around December 2012
+  grml2usb --bootloader-only \
+      --bootoptions="$pxe_def_boot_args_ $BOOT_ARGS_" \
+      --remove-bootoption=nodhcp \
+      /lib/live/mount/medium "$DEST_DIR"
+
+  mv "$DEST_DIR"/boot/syslinux/* "$TFTPD_DATA_DIR_/"
+  rmdir "$DEST_DIR"/boot/syslinux
+
+  mv "$DEST_DIR"/boot/ "$TFTPD_DATA_DIR_"
+elif [ -d /live/image/boot ] ; then # until around December 2012
   grml2usb --bootloader-only \
       --bootoptions="$pxe_def_boot_args_ $BOOT_ARGS_" \
       --remove-bootoption=nodhcp \

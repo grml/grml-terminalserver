@@ -26,28 +26,28 @@
 #KERNEL_VERSION_=""
 
 # this is the path where the grml image/cdrom is placed (mounted)
-# default: /live/image
+# default: /lib/live/mount/medium
 #MOUNT_POINT_=""
 
 # path + name of the linux kernel you would want to boot
-# default: /live/image/boot/$GRML_NAME/vmlinuz
+# default: /lib/live/mount/medium/boot/$GRML_NAME/vmlinuz
 #KERNEL_IMAGE_=""
 
 # this is the initrd the grml-terminalserver-config edits
 # if the file is not found, default will be used
-# default: /live/image/boot/$GRML_NAME/initrd.img
+# default: /lib/live/mount/medium/boot/$GRML_NAME/initrd.img
 #ORIGINAL_INITRD_=""
 
 # path + name of the memtest image
-# default: /live/image/boot/addons/memtest
+# default: /lib/live/mount/medium/boot/addons/memtest
 #MEMTEST_IMAGE_=""
 
 # path to pxelinux boot message
-# default: /live/image/boot/isolinux/boot.msg
+# default: /lib/live/mount/medium/boot/isolinux/boot.msg
 #PXE_BOOT_MSG_=""
 
 # path to pxelinux boot logo
-# default: /live/image/boot/isolinux/logo.16
+# default: /lib/live/mount/medium/boot/isolinux/logo.16
 #PXE_BOOT_LOGO_=""
 
 # should the terminalserver activate snat for the clients to his default gateway?
