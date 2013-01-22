@@ -20,7 +20,7 @@
 if grep -q live-media-path= /proc/cmdline 2>/dev/null ; then
   live_media_path_="live-media-path=$(awk -F live-media-path= '{print $2}' /proc/cmdline | awk '{print $1}')"
 fi
-if [ ! -d /live/image/boot ] ; then
+if [ ! -d /live/image/boot ] && [ ! -d /lib/live/mount/medium/boot ] ; then
   live_media_path_="live-media-path=/"
 fi
 
