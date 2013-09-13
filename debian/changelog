@@ -1,3 +1,11 @@
+grml-terminalserver (0.100.2) grml-testing; urgency=low
+
+  * [608a4ec] Fix usage of rpcinfo being available inside /usr/sbin
+    nowadays [Closes: issue1274] Thanks to Joe Stingel for the initial bug
+    report
+
+ -- Michael Prokop <mika@grml.org>  Fri, 13 Sep 2013 12:49:56 +0200
+
 grml-terminalserver (0.100.1) grml-testing; urgency=low
 
   * [3bcb86f] Make sure we don't override live-media-path if
