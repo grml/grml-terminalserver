@@ -36,7 +36,7 @@ if [[ $ADDONS_PATH_ == "" ]]; then
 fi
 
 if [[ "$(find $DATA_PATH_/ -maxdepth 2 -name vmlinuz |head -n1)" != "" ]] ; then
-  MULTIBOOT_PATH_="$(dirname $(find $DATA_PATH_ -maxdepth 2 -name vmlinuz |head -n1))"
+  MULTIBOOT_PATH_="${DATA_PATH_}"
 else
   MULTIBOOT_PATH_="$MOUNT_POINT_"
 fi

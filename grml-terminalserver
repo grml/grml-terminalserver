@@ -212,6 +212,7 @@ function createTftpConf
   execute "install -m 644 /usr/lib/syslinux/pxelinux.0 $TFTPD_DATA_DIR_" die
   if [ -d "$MOUNT_POINT_"/boot/release ] ; then
     cp -r "$MOUNT_POINT_"/boot/release "$TFTPD_DATA_DIR_"
+  fi
   [ -f "$MEMTEST_IMAGE" ] && execute "install -m 644 $MEMTEST_IMAGE_ $TFTPD_DATA_DIR_/memtest" die
   execute "install -m 644 $PXE_BOOT_MSG_ $TFTPD_DATA_DIR_" die
   [ -f "$PXE_BOOT_LOGO_" ] && execute "install -m 644 $PXE_BOOT_LOGO_ $TFTPD_DATA_DIR_" die
