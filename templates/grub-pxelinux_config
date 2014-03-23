@@ -157,25 +157,20 @@ EOT
 
 fi
 
+# Copy initrd.img and vmlinuz from all directories which name begins
+# with grml, e.g. grml32full and grml64full
+# This way we can boot multiple ISOs
+for filename in $(ls -d ${MULTIBOOT_PATH_}/grml*); do
+  cp -r ${filename} ${TFTPD_DATA_DIR_}/boot/
+done 
 
 config_files_=$(find "$TFTPD_DATA_DIR_/" -name "*.cfg" -type f)
 
 # cd is multi iso, grml2usb got it right ;0
 if [ -d "$MOUNT_POINT_"/boot/release ] ; then
    sed -i -e 's#\(.*\)/boot/\(.*\)#\1\2#' $config_files_
-else
-  # remove normal kernel path and use our image
-  sed -i -e 's/.*kernel.*vmlinuz/  kernel vmlinuz/' $config_files_
-  sed -i -e 's/\(initrd\)=[[:alnum:]/._-]*/\1=initrd.img/' $config_files_
-  # remove live-media-path per default
-  sed -i -e 's#live-media-path=[[:alnum:]/._-]*##' $config_files_
-
-  # append live-media-path if needed
-  if [ ! -z "$live_media_path_" ] ; then
-    sed -i -e "s#\(^.*append.*initrd.*$\)#\1 $live_media_path_#" $config_files_
-  fi
-
 fi
+
 # adjust ldbsd.com bootline
 sed -i -e 's#\(.*kernel .*/ldbsd.com\)#\1 set image /boot/addons/bsd4grml/bsd.rd`echo Type "boot" to load MirOS bsd4grml via keeppxe#' "$TFTPD_DATA_DIR_/"addon_*_bsd.cfg
 
