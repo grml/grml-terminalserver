@@ -222,7 +222,7 @@ the internet?"
   echo -n "" >"$TMP_"
   local OPTIONS_BOOTARG_MESSAGE_="Here you can add additional boot arguments for the clients seperated by spaces:
 
-Quite usefull examples:
+Quite useful examples:
 
 ssh=<pw>              - Start ssh server and set password of user grml to pw
 services=<1,2,3>      - Execute /etc/init.d/{1,2,3} start
@@ -289,18 +289,6 @@ setExitFunction 'removeTmpFiles'
 
 . $DEFAULT_CONFIG_
 . $CONFIG_
-# used config vars:
-# MODULES_PATH_
-# MODULES_PATH_ROOT_DIFF_
-# KERNEL_VERSION_
-# ORIGINAL_INITRD_
-if [[ $MODULES_PATH_ == "" || $KERNEL_VERSION_ == "" || $ORIGINAL_INITRD_ == "" ]]; then
-  warn "MODULES_PATH_=\"$MODULES_PATH_\" \
-KERNEL_VERSION_=\"$KERNEL_VERSION_\" \
-ORIGINAL_INITRD_=\"$ORIGINAL_INITRD_\""
-  die "False configuration, please update $CONFIG_"
-fi
-
 
 case "$1" in
   interactive)  actionInteractive ;;

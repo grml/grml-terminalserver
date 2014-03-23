@@ -2,7 +2,7 @@ grml-terminalserver for Debian
 ------------------------------
 
 Because of our switch to live-initramfs and default initramfs in general it's
-unfortunately not possibel anymore to run grml-terminalserver on anything other
+unfortunately not possible anymore to run grml-terminalserver on anything other
 than the system you want to netboot.
 
 So you have to create the initrd directly within the grml system you want to
