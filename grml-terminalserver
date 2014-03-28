@@ -210,11 +210,8 @@ function createTftpConf
 
   execute "mkdir -p $TFTPD_DATA_DIR_/pxelinux.cfg" die
   execute "install -m 644 /usr/lib/syslinux/pxelinux.0 $TFTPD_DATA_DIR_" die
-  execute "install -m 644 $PATH_/initrd.img $TFTPD_DATA_DIR_" die
   if [ -d "$MOUNT_POINT_"/boot/release ] ; then
     cp -r "$MOUNT_POINT_"/boot/release "$TFTPD_DATA_DIR_"
-  else
-    execute "install -m 644 $KERNEL_IMAGE_ $TFTPD_DATA_DIR_/vmlinuz" die
   fi
   [ -f "$MEMTEST_IMAGE" ] && execute "install -m 644 $MEMTEST_IMAGE_ $TFTPD_DATA_DIR_/memtest" die
   execute "install -m 644 $PXE_BOOT_MSG_ $TFTPD_DATA_DIR_" die
@@ -396,14 +393,12 @@ isExistent $DEFAULT_CONFIG_ die
 . $CONFIG_
 # used config vars:
 # MOUNT_POINT_
-# KERNEL_IMAGE_
 # MEMTEST_IMAGE_
 # PXE_BOOT_MSG_
 # PXE_BOOT_LOGO_
-if [[ $MOUNT_POINT_ == "" || $KERNEL_IMAGE_ == "" || $MEMTEST_IMAGE_ == "" || \
+if [[ $MOUNT_POINT_ == "" || $MEMTEST_IMAGE_ == "" || \
   $PXE_BOOT_MSG_ == "" || $PXE_BOOT_MSG_ == "" ]]; then
   warn "MOUNT_POINT_=\"$MOUNT_POINT_\" \
-KERNEL_IMAGE_=\"$KERNEL_IMAGE_\" \
 MEMTEST_IMAGE_=\"$MEMTEST_IMAGE_\"
 PXE_BOOT_MSG_=\"$PXE_BOOT_MSG_\"
 PXE_BOOT_LOGO_=\"$PXE_BOOT_LOGO_\""

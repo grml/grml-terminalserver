@@ -17,13 +17,6 @@
 #
 # GLOBAL_README_END
 
-if grep -q live-media-path= /proc/cmdline 2>/dev/null ; then
-  live_media_path_="live-media-path=$(awk -F live-media-path= '{print $2}' /proc/cmdline | awk '{print $1}')"
-fi
-if [ ! -d /live/image/boot ] && [ ! -d /lib/live/mount/medium/boot ] ; then
-  live_media_path_="live-media-path=/"
-fi
-
 # default boot arguments used for both grub and pxelinux
 if [ -e "$MOUNT_POINT_" ]; then
     default_boot_args_="root=/dev/nfs rw nfsroot=$IP_:$MOUNT_POINT_ \
@@ -34,67 +27,8 @@ init=/etc/init nfsdir=$IP_:$MOUNT_POINT_ nodhcp noprompt noeject \
 apm=power-off nomce"
 fi
 
-# special boot arguments required by grub
-grub_def_boot_args_="/vmlinuz $default_boot_args_ $live_media_path_"
-
 # special boot arguments required by pxelinux
 pxe_def_boot_args_="$default_boot_args_"
-
-# default arguments for framebuffer console
-def_fb_args_="vga=791"
-no_fb_args_="vga=normal"
-
-###
-## create grub config
-###
-
-cat >"$TFTPD_DATA_DIR_/menu.lst" <<EOT
-default=0
-timeout=10
-title GRML
-  root (nd)
-  kernel $grub_def_boot_args_ $def_fb_args_ $BOOT_ARGS_
-  initrd /initrd.img
-
-title GRML no framebuffer
-  root (nd)
-  kernel $grub_def_boot_args_ $no_fb_args_ $BOOT_ARGS_
-
-title GRML small
-  root (nd)
-  kernel $grub_def_boot_args_ small $def_fb_args_ $BOOT_ARGS_
-  initrd /initrd.img
-
-title GRML small nofb
-  root (nd)
-  kernel $grub_def_boot_args_ small $no_fb_args_ $BOOT_ARGS_
-  initrd /initrd.img
-
-title GRML debuginit
-  root (nd)
-  kernel $grub_def_boot_args_ debuginitrd $def_fb_args_ $BOOT_ARGS_
-  initrd /initrd.img
-
-title GRML debuginit nofb
-  root (nd)
-  kernel $grub_def_boot_args_ debuginitrd $no_fb_args_ $BOOT_ARGS_
-  initrd /initrd.img
-
-title GRML rescue
-  root (nd)
-  kernel $grub_def_boot_args_ $no_fb_args_
-  initrd /initrd.img
-
-title memtest
-  root (nd)
-  kernel /memtest
-
-title Reload config
-  configfile (nd)/menu.lst
-EOT
-
-ret_=$?
-
 
 ###
 ## create pxelinux config
@@ -157,25 +91,20 @@ EOT
 
 fi
 
+# Copy initrd.img and vmlinuz from all directories which name begins
+# with grml, e.g. grml32full and grml64full
+# This way we can boot multiple ISOs
+for filename in $(ls -d ${MULTIBOOT_PATH_}/grml*); do
+  cp -r ${filename} ${TFTPD_DATA_DIR_}/boot/
+done 
 
 config_files_=$(find "$TFTPD_DATA_DIR_/" -name "*.cfg" -type f)
 
 # cd is multi iso, grml2usb got it right ;0
 if [ -d "$MOUNT_POINT_"/boot/release ] ; then
    sed -i -e 's#\(.*\)/boot/\(.*\)#\1\2#' $config_files_
-else
-  # remove normal kernel path and use our image
-  sed -i -e 's/.*kernel.*vmlinuz/  kernel vmlinuz/' $config_files_
-  sed -i -e 's/\(initrd\)=[[:alnum:]/._-]*/\1=initrd.img/' $config_files_
-  # remove live-media-path per default
-  sed -i -e 's#live-media-path=[[:alnum:]/._-]*##' $config_files_
-
-  # append live-media-path if needed
-  if [ ! -z "$live_media_path_" ] ; then
-    sed -i -e "s#\(^.*append.*initrd.*$\)#\1 $live_media_path_#" $config_files_
-  fi
-
 fi
+
 # adjust ldbsd.com bootline
 sed -i -e 's#\(.*kernel .*/ldbsd.com\)#\1 set image /boot/addons/bsd4grml/bsd.rd`echo Type "boot" to load MirOS bsd4grml via keeppxe#' "$TFTPD_DATA_DIR_/"addon_*_bsd.cfg
 
