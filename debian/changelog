@@ -1,3 +1,16 @@
+grml-terminalserver (0.101.0) grml-testing; urgency=medium
+
+  [ Andreas "Jimmy" Gredler ]
+  * [a843783] Get rid of code which breaks Multi-ISO boot
+    [Testing: issue1273]
+  * [876ee70] Remove old grub support
+
+  [ Michael Prokop ]
+  * [f47343b] grub-pxelinux_config: use shell features for directory
+    browsing
+
+ -- Michael Prokop <mika@grml.org>  Fri, 28 Mar 2014 10:31:35 +0100
+
 grml-terminalserver (0.100.2) grml-testing; urgency=low
 
   * [608a4ec] Fix usage of rpcinfo being available inside /usr/sbin
