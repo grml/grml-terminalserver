@@ -94,9 +94,10 @@ fi
 # Copy initrd.img and vmlinuz from all directories which name begins
 # with grml, e.g. grml32full and grml64full
 # This way we can boot multiple ISOs
-for filename in $(ls -d ${MULTIBOOT_PATH_}/grml*); do
-  cp -r ${filename} ${TFTPD_DATA_DIR_}/boot/
-done 
+for filename in "${MULTIBOOT_PATH_}"/grml* ; do
+  [ -d "$filename" ] || continue
+  cp -r "${filename}" "${TFTPD_DATA_DIR_}/boot/"
+done
 
 config_files_=$(find "$TFTPD_DATA_DIR_/" -name "*.cfg" -type f)
 
