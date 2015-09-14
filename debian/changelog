@@ -1,3 +1,11 @@
+grml-terminalserver (0.101.1) grml-testing; urgency=medium
+
+  * [cffa0e2] Set Grml Team as Maintainer
+  * [025a5ef] Bump Standards-Version to 3.9.6
+  * [f9a3d31] wrap-and-sort debian directory
+
+ -- Michael Prokop <mika@grml.org>  Mon, 14 Sep 2015 16:22:11 +0200
+
 grml-terminalserver (0.101.0) grml-testing; urgency=medium
 
   [ Andreas "Jimmy" Gredler ]
