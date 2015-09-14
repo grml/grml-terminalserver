@@ -13,7 +13,15 @@ Bugs: mailto:bugs@grml.org
 
 Package: grml-terminalserver
 Architecture: all
-Depends: ${misc:Depends}, grml-shlib (>=1.02.03), dialog, isc-dhcp-server | dhcp3-server, atftpd (>=0.7.dfsg-1.2), syslinux, ipcalc, nfs-kernel-server, grml2usb (>=0.9.14)
+Depends: atftpd (>=0.7.dfsg-1.2),
+         dialog,
+         grml-shlib (>=1.02.03),
+         grml2usb (>=0.9.14),
+         ipcalc,
+         isc-dhcp-server | dhcp3-server,
+         nfs-kernel-server,
+         syslinux,
+         ${misc:Depends}
 Description: terminalserver for grml to boot via PXE
  These packages provides all what's needed to boot
  grml over the network (PXE). An easy to use interface
