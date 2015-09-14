@@ -1,7 +1,7 @@
 Source: grml-terminalserver
 Section: net
 Priority: optional
-Maintainer: Michael Gebetsroither <gebi@grml.org>
+Maintainer: Grml Team <team@grml.org>
 Uploaders: Michael Prokop <mika@grml.org>
 Build-Depends: debhelper (>= 5)
 Standards-Version: 3.9.4
