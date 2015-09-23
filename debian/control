@@ -20,7 +20,7 @@ Depends: atftpd (>=0.7.dfsg-1.2),
          ipcalc,
          isc-dhcp-server | dhcp3-server,
          nfs-kernel-server,
-         syslinux,
+         pxelinux | syslinux-common (<= 2:4.05+dfsg-6+deb7u1),
          ${misc:Depends}
 Description: terminalserver for grml to boot via PXE
  These packages provides all what's needed to boot

@@ -209,7 +209,11 @@ function createTftpConf
   removeTftpConf
 
   execute "mkdir -p $TFTPD_DATA_DIR_/pxelinux.cfg" die
-  execute "install -m 644 /usr/lib/syslinux/pxelinux.0 $TFTPD_DATA_DIR_" die
+  if [ -r /usr/lib/PXELINUX/pxelinux.0 ] ; then
+    execute "install -m 644 /usr/lib/PXELINUX/pxelinux.0 $TFTPD_DATA_DIR_" die
+  else # older versions of syslinux-common (<= 2:4.05+dfsg-6+deb7u1):
+    execute "install -m 644 /usr/lib/syslinux/pxelinux.0 $TFTPD_DATA_DIR_" die
+  fi
   if [ -d "$MOUNT_POINT_"/boot/release ] ; then
     cp -r "$MOUNT_POINT_"/boot/release "$TFTPD_DATA_DIR_"
   fi
