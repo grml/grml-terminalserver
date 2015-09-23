@@ -1,3 +1,10 @@
+grml-terminalserver (0.101.2) grml-testing; urgency=medium
+
+  * [d50dcea] syslinux(-common) no longer ships pxelinux.0, included in
+    pxelinux now
+
+ -- Michael Prokop <mika@grml.org>  Wed, 23 Sep 2015 22:00:33 +0200
+
 grml-terminalserver (0.101.1) grml-testing; urgency=medium
 
   * [cffa0e2] Set Grml Team as Maintainer
