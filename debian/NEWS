@@ -1,10 +1,10 @@
 grml-terminalserver (0.99.7) unstable; urgency=low
 
-  * This release drops support for generating PXE enabled grub images.
-    The grml team recommends usage of Etherboot/gPXE instead. According
-    images are available on http://www.etherboot.org/ as well as
-    directly within grml's bootmenu (Addons -> Run GPXE) starting with
-    release 2009.10.
+  This release drops support for generating PXE enabled grub images.
+  The grml team recommends usage of Etherboot/gPXE instead. According
+  images are available on http://www.etherboot.org/ as well as
+  directly within grml's bootmenu (Addons -> Run GPXE) starting with
+  release 2009.10.
 
  -- Michael Prokop <mika@grml.org>  Mon, 26 Oct 2009 17:41:29 +0100
 
