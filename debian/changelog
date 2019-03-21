@@ -1,3 +1,15 @@
+grml-terminalserver (0.102.0) grml-testing; urgency=medium
+
+  * [2fee4eb] Switch default mount point from /lib/live/mount/medium to
+    /run/live/medium
+  * [550dfb9] Use https version for Homepage and Vcs-Browser fields
+  * [8670a34] Bump Standards-Version to 4.3.0
+  * [47ce2a7] Bump debian/compat to 10 and adjust Build-Depends on
+    debhelper accordingly
+  * [39e831f] Refresh Debian packaging, switching to minimal dh style
+
+ -- Michael Prokop <mika@grml.org>  Thu, 21 Mar 2019 12:18:09 +0100
+
 grml-terminalserver (0.101.2) grml-testing; urgency=medium
 
   * [d50dcea] syslinux(-common) no longer ships pxelinux.0, included in
