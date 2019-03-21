@@ -7,19 +7,19 @@
 # grml-terminalserver AND grml-terminalserver-config
 
 # this is the path where the grml image/cdrom is placed (mounted)
-# default: /lib/live/mount/medium
+# default: /run/live/medium
 #MOUNT_POINT_=""
 
 # path + name of the memtest image
-# default: /lib/live/mount/medium/boot/addons/memtest
+# default: /run/live/medium/boot/addons/memtest
 #MEMTEST_IMAGE_=""
 
 # path to pxelinux boot message
-# default: /lib/live/mount/medium/boot/isolinux/boot.msg
+# default: /run/live/medium/boot/isolinux/boot.msg
 #PXE_BOOT_MSG_=""
 
 # path to pxelinux boot logo
-# default: /lib/live/mount/medium/boot/isolinux/logo.16
+# default: /run/live/medium/boot/isolinux/logo.16
 #PXE_BOOT_LOGO_=""
 
 # should the terminalserver activate snat for the clients to his default gateway?

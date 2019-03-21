@@ -34,7 +34,17 @@ pxe_def_boot_args_="$default_boot_args_"
 ## create pxelinux config
 ###
 DEST_DIR=$(mktemp -d)
-if [ -d /lib/live/mount/medium/boot ] ; then # since around December 2012
+if [ -d /run/live/medium ] ; then # since December 2018
+  grml2usb --bootloader-only \
+      --bootoptions="$pxe_def_boot_args_ $BOOT_ARGS_" \
+      --remove-bootoption=nodhcp \
+      /run/live/medium "$DEST_DIR"
+
+  mv "$DEST_DIR"/boot/syslinux/* "$TFTPD_DATA_DIR_/"
+  rmdir "$DEST_DIR"/boot/syslinux
+
+  mv "$DEST_DIR"/boot/ "$TFTPD_DATA_DIR_"
+elif [ -d /lib/live/mount/medium ] ; then
   grml2usb --bootloader-only \
       --bootoptions="$pxe_def_boot_args_ $BOOT_ARGS_" \
       --remove-bootoption=nodhcp \
@@ -44,17 +54,7 @@ if [ -d /lib/live/mount/medium/boot ] ; then # since around December 2012
   rmdir "$DEST_DIR"/boot/syslinux
 
   mv "$DEST_DIR"/boot/ "$TFTPD_DATA_DIR_"
-elif [ -d /live/image/boot ] ; then # until around December 2012
-  grml2usb --bootloader-only \
-      --bootoptions="$pxe_def_boot_args_ $BOOT_ARGS_" \
-      --remove-bootoption=nodhcp \
-      /live/image "$DEST_DIR"
-
-  mv "$DEST_DIR"/boot/syslinux/* "$TFTPD_DATA_DIR_/"
-  rmdir "$DEST_DIR"/boot/syslinux
-
-  mv "$DEST_DIR"/boot/ "$TFTPD_DATA_DIR_"
-else # there is no kernel inside /live/image copy it from /boot
+else
   if [ ! -d /usr/share/grml-live/templates/boot/isolinux ] ; then
     echo "E: Could not find isolinux directory, can not operate without.
 
