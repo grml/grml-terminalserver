@@ -1,3 +1,9 @@
+grml-terminalserver (0.102.2) grml-testing; urgency=medium
+
+  * [ac0dc03] addon_*_bsd.cfg: don't try to modify if file doesn't exist
+
+ -- Michael Prokop <mika@grml.org>  Tue, 22 Oct 2019 15:54:09 +0200
+
 grml-terminalserver (0.102.1) grml-testing; urgency=medium
 
   * [9baad85] default_config: fix syntax error
