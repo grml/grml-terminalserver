@@ -17,11 +17,13 @@ Depends: atftpd (>=0.7.dfsg-1.2),
          dialog,
          grml-shlib (>=1.02.03),
          grml2usb (>=0.9.14),
+         grub-efi-amd64-signed | grub-efi-amd64-bin | pxelinux,
          ipcalc,
          isc-dhcp-server | dhcp3-server,
          nfs-kernel-server,
          pxelinux | syslinux-common (<= 2:4.05+dfsg-6+deb7u1),
-         ${misc:Depends}
+         shim-signed:amd64 | pxelinux,
+         ${misc:Depends},
 Description: terminalserver for grml to boot via PXE
  These packages provides all what's needed to boot
  grml over the network (PXE). An easy to use interface
