@@ -154,7 +154,7 @@ function runIptables
 
 function startIptables
 {
-  if [ -x /sbin/iptables ] ; then
+  if [ -x $(command -v iptables) ] ; then
     if [[ $NAT_INTERFACE_ != "" ]]; then
        local nat_source_ip_=`netGetIp "$NAT_INTERFACE_" warn`
 
@@ -176,7 +176,7 @@ function startIptables
        fi
     fi
   else
-    warn "iptables executable not avilable"
+    warn "iptables executable not available"
   fi
 }
 
@@ -185,7 +185,7 @@ function stopIptables
   if [[ $IPTABLES_SNAT_ != "true" ]]; then
     return
   fi
-  if [ -x /sbin/iptables ] ; then
+  if [ -x $(command -v iptables) ] ; then
     if [[ $NAT_INTERFACE_ != "" ]]; then
        local nat_source_ip_=`netGetIp "$NAT_INTERFACE_" warn`
 
