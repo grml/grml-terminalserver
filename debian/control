@@ -3,7 +3,7 @@ Section: net
 Priority: optional
 Maintainer: Grml Team <team@grml.org>
 Uploaders: Michael Prokop <mika@grml.org>
-Build-Depends: debhelper (>= 10~)
+Build-Depends: debhelper-compat (= 12),
 Standards-Version: 4.5.0
 Homepage: https://grml.org/terminalserver/
 Vcs-git: git://git.grml.org/grml-terminalserver.git
