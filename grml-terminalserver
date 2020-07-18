@@ -230,7 +230,7 @@ function createTftpConf
 
 function stopTftp
 {
-  start-stop-daemon --stop --quiet -p "$TFTPD_PID_"
+  start-stop-daemon --stop --quiet -p "$TFTPD_PID_" --user nobody
 }
 function startTftp
 {
