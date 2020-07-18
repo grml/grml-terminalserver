@@ -69,7 +69,7 @@ case "$1" in
 		then
 		    printf " svcgssd"
 		    start-stop-daemon --start --quiet \
-			    --make-pidfile --pidfile /var/run/rpc.svcgssd.pid \
+			    --make-pidfile --pidfile /run/rpc.svcgssd.pid \
 			    --exec $PREFIX/sbin/rpc.svcgssd -- $RPCSVCGSSDOPTS
 		fi
 
@@ -119,7 +119,7 @@ case "$1" in
 	    printf " svcgssd"
 	    start-stop-daemon --stop --oknodo --quiet \
 		    --name rpc.svcgssd --user 0
-	    rm -f /var/run/rpc.svcgssd.pid
+	    rm -f /run/rpc.svcgssd.pid
 	fi
 	printf " nfsd"
 	start-stop-daemon --stop --oknodo --quiet \
