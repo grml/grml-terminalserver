@@ -45,6 +45,16 @@ else
   return "$ret_"
 fi
 
+if [ -r "${TFTPD_DATA_DIR_}"/grub/fonts/unicode.pf2 ] ; then
+  echo "${TFTPD_DATA_DIR_}/grub/fonts/unicode.pf2 exists already, nothing to do."
+elif [ -r /usr/share/grub/unicode.pf2 ] ; then
+  echo "Installing /usr/share/grub/unicode.pf2 for TFTP usage"
+  mkdir -p "${TFTPD_DATA_DIR_}"/grub/fonts/
+  cp /usr/share/grub/unicode.pf2 "${TFTPD_DATA_DIR_}"/grub/fonts/
+else
+  echo "WARN: No unicode.pf2 for usage with PXE boot found."
+fi
+
 echo "Setting up GRUB configuration for PXE/UEFI usage"
 mkdir -p "${TFTPD_DATA_DIR_}/grub/"
 cat > "${TFTPD_DATA_DIR_}/grub/grub.cfg" << EOT
@@ -57,6 +67,8 @@ insmod png
 set gfxmode=auto
 insmod gfxterm
 terminal_output gfxterm
+
+loadfont unicode
 
 set menu_color_normal=white/black
 set menu_color_highlight=black/yellow
