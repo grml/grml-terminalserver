@@ -38,8 +38,8 @@ function printUsage
   cat <<EOT
 Usage: "$PROG_NAME__" [OPTIONS] <command>
 
-$PROG_NAME__ is the config program for the terminalserver
-comming with grml.
+$PROG_NAME__ is the configuration program for the terminalserver
+provided by Grml.
 
 COMMANDS:
    help             This help text
@@ -438,7 +438,7 @@ if [ "$1" == 'start' ]; then
   esac
 fi
 if [ $check_necessary_files_ == 'yes' ]; then
-  # test for files absolutly necessary for grml-terminalserver and created from -config
+  # test for files absolutely necessary for grml-terminalserver and created from -config
   problem_=0
   for i in $PATH_/initrd.img; do
     isExistent $i warn || problem_=1

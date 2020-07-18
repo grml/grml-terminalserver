@@ -220,7 +220,7 @@ the internet?"
   fi
 
   echo -n "" >"$TMP_"
-  local OPTIONS_BOOTARG_MESSAGE_="Here you can add additional boot arguments for the clients seperated by spaces:
+  local OPTIONS_BOOTARG_MESSAGE_="Here you can add additional boot arguments for the clients separated by spaces:
 
 Quite useful examples:
 
