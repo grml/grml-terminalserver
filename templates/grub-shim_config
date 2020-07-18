@@ -1,0 +1,89 @@
+# the following variables are available in the template:
+#
+# $INTERFACE_     (interface for the terminalserver)
+# $IP_            (ip for the terminalserver to bind)
+# $NETMASK_       (network mask)
+# $GW_            (gateway)
+# $NAMESERVERS_   (nameservers for the nodes)
+# $IPRANGE_FROM_  (user configured iprange, first ip)
+# $IPRANGE_TO_    (user configured iprange, last ip)
+# $NETWORK_       (first ip in this subnet)
+# $OPTIONS_       (options for grml-terminalserver)
+# $BOOT_ARGS_     (boot arguments for the nodes)
+#
+# NOTE:
+# templates are shellscript fragments and will be sourced from the
+# terminalserver
+#
+# GLOBAL_README_END
+
+if [ -r "${TFTPD_DATA_DIR_}"/shim.efi ] ; then
+  echo "${TFTPD_DATA_DIR_}/shim.efi exists already, nothing to do."
+elif [ -r /usr/lib/shim/shimx64.efi.signed ] ; then
+  echo "Installing /usr/lib/shim/shimx64.efi.signed as shim.efi for TFTP usage"
+  cp /usr/lib/shim/shimx64.efi.signed "${TFTPD_DATA_DIR_}"/shim.efi
+elif [ -r /usr/lib/shim/shimx64.efi ] ; then
+  echo "Installing /usr/lib/shim/shimx64.efi as shim.efi for TFTP usage"
+  cp /usr/lib/shim/shimx64.efi "${TFTPD_DATA_DIR_}"/shim.efi
+else
+  echo "WARN: No shimx64.efi for usage with PXE boot found, not setting up UEFI boot via GRUB."
+  (( ret_=ret_+ $? ))
+  return "$ret_"
+fi
+
+if [ -r "${TFTPD_DATA_DIR_}"/grubx64.efi ] ; then
+  echo "${TFTPD_DATA_DIR_}/grubx64.efi exists already, nothing to do."
+elif [ -r /usr/lib/grub/x86_64-efi-signed/grubnetx64.efi.signed ] ; then
+  echo "Installing /usr/lib/grub/x86_64-efi-signed/grubnetx64.efi.signed as grubx64.efi for TFTP usage"
+  cp /usr/lib/grub/x86_64-efi-signed/grubnetx64.efi.signed "${TFTPD_DATA_DIR_}"/grubx64.efi
+elif [ -r /usr/lib/grub/x86_64-efi/monolithic/grubnetx64.efi ] ; then
+  echo "Installing /usr/lib/grub/x86_64-efi/monolithic/grubnetx64.efi as grubx64.efi for TFTP usage"
+  cp /usr/lib/grub/x86_64-efi/monolithic/grubnetx64.efi "${TFTPD_DATA_DIR_}"/grubx64.efi
+else
+  echo "WARN: No grubnetx64.efi for usage with PXE boot found, not setting up UEFI boot via GRUB."
+  (( ret_=ret_+ $? ))
+  return "$ret_"
+fi
+
+echo "Setting up GRUB configuration for PXE/UEFI usage"
+mkdir -p "${TFTPD_DATA_DIR_}/grub/"
+cat > "${TFTPD_DATA_DIR_}/grub/grub.cfg" << EOT
+# GRUB PXE configuration file
+
+# adjust according to your needs
+#set timeout=300
+
+insmod png
+set gfxmode=auto
+insmod gfxterm
+terminal_output gfxterm
+
+set menu_color_normal=white/black
+set menu_color_highlight=black/yellow
+
+# this needs some tuning, so not enabled by default
+# set theme=/boot/grub/grml-theme/theme.txt
+# export theme
+
+EOT
+
+# theme support requires e.g. icons/submenu.png within the theme directory,
+# which we don't ship though, so not enabled by default
+#mkdir -p "${TFTPD_DATA_DIR_}"/grub/themes/boot/grub
+#ln -s "${TFTPD_DATA_DIR_}"/boot/grub/grml-theme "${TFTPD_DATA_DIR_}"/grub/themes/boot/grub/
+
+for file in "${TFTPD_DATA_DIR_}"/boot/grub/*_default.cfg "${TFTPD_DATA_DIR_}"/boot/grub/*_options.cfg ; do
+  filename="$(basename "${file}")"
+  echo "source boot/grub/${filename}" >> "${TFTPD_DATA_DIR_}/grub/grub.cfg"
+done
+
+cat >> "${TFTPD_DATA_DIR_}/grub/grub.cfg" << EOT
+
+menuentry "Boot OS of first partition on first disk" {
+    set root=(hd0,1)
+    chainloader +1
+}
+EOT
+
+(( ret_=ret_+ $? ))
+return "$ret_"

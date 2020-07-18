@@ -221,7 +221,11 @@ function createTftpConf
   execute "install -m 644 $PXE_BOOT_MSG_ $TFTPD_DATA_DIR_" die
   [ -f "$PXE_BOOT_LOGO_" ] && execute "install -m 644 $PXE_BOOT_LOGO_ $TFTPD_DATA_DIR_" die
 
+  # PXE / BIOS boot (pxelinux)
   execute "source $TEMPLATE_CONFIG_DIR_/grub-pxelinux_config" die
+
+  # PXE / EFI boot (GRUB)
+  execute "source $TEMPLATE_CONFIG_DIR_/grub-shim_config" die
 }
 
 function stopTftp
