@@ -1,3 +1,11 @@
+grml-terminalserver (0.103.0) grml-testing; urgency=medium
+
+  * [48e9b4c] Drop unused debian/conffiles
+  * [d661dac] Bump Standards-Version to 4.5.0
+  * [3154dcc] Support UEFI PXE boot with DHCPv4
+
+ -- Michael Prokop <mika@grml.org>  Sat, 18 Jul 2020 13:03:20 +0200
+
 grml-terminalserver (0.102.2) grml-testing; urgency=medium
 
   * [ac0dc03] addon_*_bsd.cfg: don't try to modify if file doesn't exist
