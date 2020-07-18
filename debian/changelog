@@ -1,3 +1,16 @@
+grml-terminalserver (0.103.1) grml-testing; urgency=medium
+
+  * [6190e4b] Drop support for deprecated dhcpd3
+  * [5d0e708] Adjust check for iptables binary
+  * [fb1d226] Misc typo and wording fixes
+  * [ac3936c] debian: switch to debhelper-compat approach
+  * [eac090b] Fix tftp service restarts
+  * [39ada23] Switch from /var/run to /run
+  * [742301f] grub/efi boot: load unicode font for nice looking boot
+    splash
+
+ -- Michael Prokop <mika@grml.org>  Sat, 18 Jul 2020 22:00:10 +0200
+
 grml-terminalserver (0.103.0) grml-testing; urgency=medium
 
   * [48e9b4c] Drop unused debian/conffiles
