@@ -168,10 +168,10 @@ for addresses from 192.168.0.101 to (and including) 192.168.0.200.
 
   IPRANGE_FROM_=`execute "ipcalc -nb $IP_/$NETMASK_" warn |awk '/HostMin/{print $2}'`
   # if we have x.x.x.1 as starting range address provide
-  # x.x.x.10 instead so we avoid possible conflicts with
+  # x.x.x.100 instead so we avoid possible conflicts with
   # default gateway
-  if echo $IPFROM | grep -c '\.1$' ; then
-    IPFROM="${IPFROM%%\.1}.10"
+  if echo "$IPRANGE_FROM_" | grep -q '\.1$' ; then
+    IPRANGE_FROM_="${IPRANGE_FROM_%%\.1}.100"
   fi
   IPRANGE_TO_=`execute "ipcalc -nb $IP_/$NETMASK_" warn |awk '/HostMax/{print $2}'`
   NETWORK_=`execute "ipcalc -nb $IP_/$NETMASK_" warn |awk '/Network:/{print $2}'`
