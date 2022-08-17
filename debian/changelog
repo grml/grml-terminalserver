@@ -1,3 +1,10 @@
+grml-terminalserver (0.104.0) grml-testing; urgency=medium
+
+  * [5334d11] Depend on iptables as used for NAT feature
+  * [bc3bf20] Fix iprange usage when configuring DHCP clients
+
+ -- Michael Prokop <mika@grml.org>  Wed, 17 Aug 2022 16:50:41 +0200
+
 grml-terminalserver (0.103.1) grml-testing; urgency=medium
 
   * [6190e4b] Drop support for deprecated dhcpd3
