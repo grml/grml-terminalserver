@@ -6,8 +6,8 @@ Uploaders: Michael Prokop <mika@grml.org>
 Build-Depends: debhelper-compat (= 12),
 Standards-Version: 4.5.0
 Homepage: https://grml.org/terminalserver/
-Vcs-git: git://git.grml.org/grml-terminalserver.git
-Vcs-Browser: https://git.grml.org/?p=grml-terminalserver.git
+Vcs-Git: https://github.com/grml/grml-terminalserver.git
+Vcs-Browser: https://github.com/grml/grml-terminalserver
 Origin: Grml
 Bugs: mailto:bugs@grml.org
 
