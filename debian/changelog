@@ -1,3 +1,14 @@
+grml-terminalserver (0.105.2) grml-testing; urgency=medium
+
+  [ Chris Hofstaedtler ]
+  * [244d537] debian: update Vcs-Git and Vcs-Browser
+
+  [ Michael Prokop ]
+  * [5a28904] Ship debian/gbp.conf for gbp usage
+  * [bad2b2f] debian: Bump Standards-Version to 4.7.0
+
+ -- Michael Prokop <mika@grml.org>  Fri, 22 Nov 2024 17:09:56 +0100
+
 grml-terminalserver (0.105.1) grml-testing; urgency=medium
 
   * [3dfbe4a] Avoid full path usage for invocation of ip(8)
