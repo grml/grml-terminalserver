@@ -38,8 +38,6 @@ unsetVerbose()   { VERBOSE_TMP__=$VERBOSE__; VERBOSE__=0; }
 restoreVerbose() { VERBOSE__=$VERBOSE_TMP__; }
 getVerbose()     { echo "$VERBOSE__"; }
 
-setDebug()       { setVerbose "$DPRINT__"; }
-unsetDebug()     { restoreVerbose; }
 # }}}
 
 # ERROR REPORTING FUNCTIONS  {{{
