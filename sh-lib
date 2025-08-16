@@ -276,17 +276,6 @@ runsFromHd()
   fi
 }
 
-runsFromCd()
-{
-  if [ -e "/etc/grml_cd" ]; then
-    dprint "runsFromCd(): grml is on CD"
-    return 0
-  else
-    dprint "runsFromCd(): grml is on HD"
-    return 1
-  fi
-}
-
 
 # secure input from console
 secureInput()
