@@ -186,25 +186,6 @@ isExistent()
   return 0
 }
 
-isNotExistent()
-{
-  local file_to_test_="$1"    # file to test
-  local error_function_=${2:-"eprint"}    # function to call on error
-  local message_="$3"    # user supplied error message
-
-  if [ -e "$file_to_test_" ]; then
-    if [ -z "$message_" ]; then
-      $error_function_ "file does already exist \"$file_to_test_\"" 67
-    else
-      $error_function_ "$message_"
-    fi
-    return 1
-  fi
-  dprint "isNotExistent(): file \"$1\" does not exist => ready to go"
-  return 0
-}
-
-
 checkUser()
 {
   local to_check_="$1"    # username to check against running process
