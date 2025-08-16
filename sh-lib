@@ -8,7 +8,6 @@
 
 # VARIABLES {{{
 VERBOSE__=0
-VERBOSE_TMP__=0
 
 # FIXME maybe PROG_PATH__ for better error reporting?
 PROG_NAME__=""    # initialised within init section
@@ -32,12 +31,7 @@ setCLang() { saveLang; LANG="C"; LC_ALL="C"; LANGUAGE="C"; }
 # }}}
 
 # DEBUG FRAMEWORK  {{{
-
 setVerbose()     { VERBOSE__=${1:-1}; }
-unsetVerbose()   { VERBOSE_TMP__=$VERBOSE__; VERBOSE__=0; }
-restoreVerbose() { VERBOSE__=$VERBOSE_TMP__; }
-getVerbose()     { echo "$VERBOSE__"; }
-
 # }}}
 
 # ERROR REPORTING FUNCTIONS  {{{
