@@ -116,15 +116,6 @@ syslog()
     logger -p user.alert -t "$PROG_NAME__" -i "$message_" >&2
   fi
 }
-
-warnLog()
-{
-  local error_message_="$1"   # print this error message
-  local exit_code_="$2"  # command exits with this exit code
-
-  warn "$error_message_" "$exit_code_"
-  syslog "$error_message_" "$exit_code_"
-}
 # }}}
 
 # CORE FUNCTIONS {{{
