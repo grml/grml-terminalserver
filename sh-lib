@@ -21,10 +21,6 @@ EPRINT__=1    # eprint (error print)
 EEPRINT__=2   # 2print (intern error print)
 DPRINT__=3    # dprint (debug print)
 
-EXIT_FUNCTION__="_syslog"    # function to call upon die (can be set by user)
-
-SYSLOG__="YES"
-
 CMD_LINE__=""   # /proc/cmdline
 
 LANG__="$LANG"
@@ -35,11 +31,6 @@ LANGUAGE__="$LANGUAGE"
 # CONFIG FUNCTIONS  {{{
 
 setProgName() { PROG_NAME__="$1"; }
-
-setExitFunction() { EXIT_FUNCTION__="$1"; }
-
-disableSyslog() { SYSLOG__="NO";  }
-enableSyslog() { SYSLOG__="YES"; }
 
 saveLang() { LANG__="$LANG"; LC_ALL__="$LC_ALL"; LANGUAGE__="$LANGUAGE"; }
 restoreLang() { LANG="$LANG__"; LC_ALL="$LC_ALL__"; LANGUAGE="$LANGUAGE__"; }
@@ -55,9 +46,6 @@ getVerbose()     { echo "$VERBOSE__"; }
 
 setDebug()       { setVerbose "$DPRINT__"; }
 unsetDebug()     { restoreVerbose; }
-
-setExitFunction()    { EXIT_FUNCTION__="$1"; }
-resetExitFunction()  { EXIT_FUNCTION__="_syslog"; }
 # }}}
 
 # ERROR REPORTING FUNCTIONS  {{{
@@ -113,9 +101,6 @@ die()
     echo >&2
   fi
 
-  if [ -n "$EXIT_FUNCTION__" ]; then
-    $EXIT_FUNCTION__ "$error_message_" "$exit_code_" >&2
-  fi
   kill $$
 }
 
@@ -129,20 +114,6 @@ warn()
     echo "; ret($exit_code_)" >&2
   else
     echo >&2
-  fi
-}
-
-_syslog()
-{
-  local message_="$1"   # error message
-  local exit_code_="$2"
-
-  if [ "$SYSLOG__" = "YES" ]; then
-    if [ -n "$exit_code_" ]; then
-      logger -p user.alert -t "$PROG_NAME__" -i "$message_ ret($exit_code_)" >&2
-    else
-      logger -p user.alert -t "$PROG_NAME__" -i "$message_" >&2
-    fi
   fi
 }
 

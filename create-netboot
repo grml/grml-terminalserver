@@ -36,6 +36,5 @@ function actionPkg
 }
 
 checkRoot die "You have to be root to use this program"
-disableSyslog
 
 actionPkg
