@@ -13,9 +13,6 @@ VERBOSE_TMP__=0
 # FIXME maybe PROG_PATH__ for better error reporting?
 PROG_NAME__=""    # initialised within init section
 
-# directory for init scripts
-INITD_DIR__="/etc/init.d/"
-
 # >= level and the function will print the message
 EPRINT__=1    # eprint (error print)
 EEPRINT__=2   # 2print (intern error print)
@@ -540,60 +537,6 @@ netGetNameservers()
   return 0
 }
 
-# }}}
-
-# SERVICES {{{
-_touchService()
-{
-  local action_="${1:-"start"}"
-  local service_="$2"
-  local error_function_=${3:-"eprint"}    # function to call on error
-  local message_="$4"     # user supplied error message
-
-  local i=""
-  local known_action_='false'
-  for i in "start" "stop" "restart" "reload" "force-reload"; do
-    if [ "$i" = "$action_" ]; then
-      known_action_='true'
-      break
-    fi
-  done
-  $known_action_ || warn "_touchService(): unknown action \"$action_\""
-
-
-  local service_path_=""
-  service_path_="${INITD_DIR__}/$service_"
-  if [ ! -e "$service_path_" ]; then
-    warn "_touchService(): service does not exist: \"$service_\""
-    return 1
-  fi
-  if [ ! -x "$service_path_" ]; then
-    warn "_touchService(): service is not executable: \"$service_\""
-  fi
-
-  local ret_=""
-  "$service_path_" "$action_"
-  ret_=$?
-  if [ "$ret_" != "0" ]; then
-    if [ -z "$message_" ]; then
-      "$error_function_" "Problems ${action_}ing service \"$service_\"" $ret_
-    else
-      "$error_function_" "$message_" $ret_
-    fi
-    return 1
-  fi
-  dprint "_touchService(): successfully started service \"$service_\""
-  return 0
-}
-
-_createServiceFunctions()
-{
-  for i in "start" "stop" "restart" "reload"; do
-    eval "${i}Service() { _touchService ${i} \"\$1\" \"\$2\" \"\$3\"; }"
-  done
-  eval "forceReloadService() { _touchService force-reload \"\$1\" \"\$2\" \"\$3\"; }"
-}
-_createServiceFunctions
 # }}}
 
 # LOSETUP HELPER FUNCTION {{{
