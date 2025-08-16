@@ -299,19 +299,6 @@ secureInput()
   dprint "secureInput(): \"$to_secure_\" => \"$secured_\""
   echo "$secured_"
 }
-
-
-# convert all possible path formats to absolute paths
-relToAbs()
-{
-  local relpath_="$1"
-  local abspath_=''
-
-  abspath_="`readlink -f \"$relpath_\"`" || \
-    warn "relToAbs(): Problems getting absolute path" "$?" || return 1
-  dprint "relToAbs(): \"$relpath_\" => \"$abspath_\""
-  echo "$abspath_"
-}
 # }}}
 
 # NETWORK  {{{
