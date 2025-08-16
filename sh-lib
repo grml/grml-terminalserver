@@ -21,8 +21,6 @@ EPRINT__=1    # eprint (error print)
 EEPRINT__=2   # 2print (intern error print)
 DPRINT__=3    # dprint (debug print)
 
-CMD_LINE__=""   # /proc/cmdline
-
 LANG__="$LANG"
 LC_ALL__="$LC_ALL"
 LANGUAGE__="$LANGUAGE"
@@ -378,26 +376,6 @@ stringInString()
   case "$source_" in *$to_test_*) return 0;; esac
   return 1
 }
-
-# get value for bootparam given as first param
-getBootParam()
-{
-  local param_to_search_="$1"
-  local result_=''
-
-  stringInString " $param_to_search_=" "$CMD_LINE__" || return 1
-  result_="${CMD_LINE__##*$param_to_search_=}"
-  result_="${result_%%[   ]*}"
-  echo "$result_"
-  return 0
-}
-
-# Check boot commandline for specified option
-checkBootParam()
-{
-  stringInString " $1" "$CMD_LINE__"
-  return "$?"
-}
 # }}}
 
 # NETWORK  {{{
@@ -688,18 +666,6 @@ _checkExecutables()
 }
 _checkExecutables
 
-
-_checkBootParam()
-{
-  local path_="/proc/cmdline"
-  if [ -e "$path_" ]; then
-    CMD_LINE__=`execute "cat $path_" warnLog`
-    return 0
-  fi
-  warnLog "$path_ does not exist, thus sh-lib may not work reliable!"
-  return 1
-}
-_checkBootParam
 
 _setDebugLevel()
 {
