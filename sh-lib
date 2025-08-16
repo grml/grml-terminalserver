@@ -347,16 +347,6 @@ stringInFile()
   case "$(cat $source_)" in *$to_test_*) return 0;; esac
   return 1
 }
-
-# same for strings
-stringInString()
-{
-  local to_test_="$1"   # matching pattern
-  local source_="$2"    # string to search in
-
-  case "$source_" in *$to_test_*) return 0;; esac
-  return 1
-}
 # }}}
 
 # NETWORK  {{{
