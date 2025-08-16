@@ -539,49 +539,6 @@ netGetNameservers()
 
 # }}}
 
-# LOSETUP HELPER FUNCTION {{{
-# print next free /dev/loop* to stdout
-findNextFreeLoop()
-{
-  local error_function_=${1:-"eprint"}    # function to call on error
-  local message_="$2"    # user supplied error message
-
-  local tmp_=''   # tmp
-  local i=''      # counter
-  local ret_=''   # saved return value
-
-  for i in 'losetup' 'losetup.orig'; do
-    tmp_=`$i -f 2>/dev/null`
-    if [ $? -eq 0 ]; then
-      echo $tmp_
-      return 0
-    fi
-  done
-
-  # we have to search
-  dprint 'findNextFreeLoop(): losetup does not recognice option -f, searching next free loop device'
-  for i in `seq 0 100`; do
-    test -e /dev/loop$i || continue
-    losetup /dev/loop$i >/dev/null 2>&1
-    ret_=$?
-    case "$ret_" in
-      2) continue ;;  # losetup could not get status of loopdevice (EPERM)
-      0) continue ;;  # device exist
-      1) echo "/dev/loop$i"; return 0 ;;  # device does not exist and no error
-      ?) continue ;;  # return value not available in 'man losetup'
-    esac
-  done
-
-  # hmm... could not find a loopdevice
-  if [ -z "$message_" ]; then
-    $error_function_ "could not find a free loop device"
-  else
-    $error_function_ "$message_"
-  fi
-  return 1
-}
-# }}}
-
 # INIT {{{
 
 _initProgName()
