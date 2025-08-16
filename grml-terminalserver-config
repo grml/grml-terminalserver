@@ -10,9 +10,7 @@
 ###
 ### __INCLUDES
 ###
-. /etc/grml/sh-lib
-#. /etc/grml/sysexits-sh
-
+. /usr/share/grml-terminalserver/sh-lib
 
 
 ###

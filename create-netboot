@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. /etc/grml/sh-lib
+. /usr/share/grml-terminalserver/sh-lib
 SHARED_PROG_VARS_="/usr/share/grml-terminalserver/shared_prog_vars"
 isExistent $SHARED_PROG_VARS_ die
 . $SHARED_PROG_VARS_
