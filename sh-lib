@@ -332,21 +332,6 @@ stringTrim()
   dprint "stringTrim(): \"$str_\" => \"$result_\""
   echo "$result_"
 }
-
-# Simple shell grep
-stringInFile()
-{
-  local to_test_="$1"   # matching pattern
-  local source_="$2"    # source-file to grep
-
-  if [ ! -e "$source_" ]; then
-    eprint "stringInFile(): \"$source_\" does not exist"
-    return 1
-  fi
-
-  case "$(cat $source_)" in *$to_test_*) return 0;; esac
-  return 1
-}
 # }}}
 
 # NETWORK  {{{
