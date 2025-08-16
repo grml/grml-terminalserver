@@ -15,7 +15,6 @@ PROG_NAME__=""    # initialised within init section
 
 # >= level and the function will print the message
 EPRINT__=1    # eprint (error print)
-EEPRINT__=2   # 2print (intern error print)
 DPRINT__=3    # dprint (debug print)
 
 LANG__="$LANG"
@@ -64,12 +63,6 @@ eprint()
   # FIXME vprint should be a var, because we want to call user-defined functions
   # global var (there should be a syslog, and vprint + syslog function)
   vprint $EPRINT__ "Error - " "$1"
-}
-
-# should be used for intern silentExecutes
-eeprint()
-{
-  vprint $EEPRINT__ "  Error2 - " "$1"
 }
 
 # print debug output (function intern errors)
@@ -164,15 +157,6 @@ execute()
     fi
   fi
   dprint "exec-$error_function_: ( $to_exec_ ) ret($ret_)"
-  return $ret_
-}
-
-silentExecute()
-{
-  unsetVerbose
-  execute "$@"
-  local ret_=$?
-  restoreVerbose
   return $ret_
 }
 
