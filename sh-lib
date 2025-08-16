@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Filename:      sh-lib
 # Purpose:       Shellscript library
 # Authors:       grml-team (grml.org), (c) Michael Gebetsroither <gebi@grml.org>
