@@ -1,3 +1,28 @@
+grml-terminalserver (0.105.3) grml-testing; urgency=medium
+
+  * [a01fe9c] Import sh-lib from grml-shlib
+  * [15a5bb7] sh-lib: remove disabled syslog code
+  * [eea6506] Whitespace cleanup
+  * [ac933b2] sh-lib: do not claim POSIX sh compatibility
+  * [cff2e63] sh-lib: drop /proc/cmdline support
+  * [3dcb57a] sh-lib: remove unused services functions
+  * [86106a8] sh-lib: remove unused findNextFreeLoop
+  * [bc2a793] sh-lib: remove unused silentExecute
+  * [7ee55c6] sh-lib: remove unused stringInString
+  * [38abba8] sh-lib: remove unused stringInFile
+  * [61dc244] sh-lib: remove unused stringTrim
+  * [980f9cf] sh-lib: remove unused relToAbs
+  * [1ab80c9] sh-lib: remove unused runsFromCd
+  * [956a86a] sh-lib: remove unused runsFromHd
+  * [f029022] sh-lib: remove unused isGrml
+  * [92a4c43] sh-lib: remove unused isNotExistent
+  * [203ddad] sh-lib: remove unused warnLog
+  * [396c5ba] sh-lib: remove unused (un)setDebug
+  * [5c9d2a8] sh-lib: remove unused unsetVerbose, restoreVerbose, getVerbose
+  * [eea354c] Add GitHub workflow to build .debs
+
+ -- Chris Hofstaedtler <ch@grml.org>  Sun, 17 Aug 2025 12:33:27 +0200
+
 grml-terminalserver (0.105.2) grml-testing; urgency=medium
 
   [ Chris Hofstaedtler ]
