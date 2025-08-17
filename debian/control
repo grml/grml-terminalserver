@@ -15,7 +15,6 @@ Package: grml-terminalserver
 Architecture: all
 Depends: atftpd (>=0.7.dfsg-1.2),
          dialog,
-         grml-shlib (>=1.02.03),
          grml2usb (>=0.9.14),
          grub-efi-amd64-signed | grub-efi-amd64-bin | pxelinux,
          ipcalc,

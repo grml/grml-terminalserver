@@ -15,6 +15,7 @@ install:
 	$(install_) -d -m 755 $(usrshare)
 	$(install_) -m 644 default_config $(usrshare)
 	$(install_) -m 644 shared_prog_vars $(usrshare)
+	$(install_) -m 644 sh-lib $(usrshare)
 	$(install_) -m 755 nfs-kernel-server $(usrshare)
 	$(install_) -m 644 terminalserver_netboot_package.conf $(usrshare)
 	cp -r templates $(usrshare)

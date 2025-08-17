@@ -10,9 +10,7 @@
 ###
 ### __INCLUDES
 ###
-. /etc/grml/sh-lib
-#. /etc/grml/sysexits-sh
-
+. /usr/share/grml-terminalserver/sh-lib
 
 
 ###
@@ -279,7 +277,6 @@ case "$1" in
 esac
 
 checkRoot die 'You have to be root to use this program'
-disableSyslog
 
 execute "mkdir -p $PATH_" die
 

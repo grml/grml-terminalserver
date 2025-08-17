@@ -1,0 +1,442 @@
+#!/bin/bash
+# Filename:      sh-lib
+# Purpose:       Shellscript library
+# Authors:       grml-team (grml.org), (c) Michael Gebetsroither <gebi@grml.org>
+# Bug-Reports:   see http://grml.org/bugs/
+# License:       This file is licensed under the GPL v2.
+################################################################################
+
+# VARIABLES {{{
+VERBOSE__=0
+
+# FIXME maybe PROG_PATH__ for better error reporting?
+PROG_NAME__=""    # initialised within init section
+
+# >= level and the function will print the message
+EPRINT__=1    # eprint (error print)
+DPRINT__=3    # dprint (debug print)
+
+LANG__="$LANG"
+LC_ALL__="$LC_ALL"
+LANGUAGE__="$LANGUAGE"
+# }}}
+
+# CONFIG FUNCTIONS  {{{
+
+setProgName() { PROG_NAME__="$1"; }
+
+saveLang() { LANG__="$LANG"; LC_ALL__="$LC_ALL"; LANGUAGE__="$LANGUAGE"; }
+restoreLang() { LANG="$LANG__"; LC_ALL="$LC_ALL__"; LANGUAGE="$LANGUAGE__"; }
+setCLang() { saveLang; LANG="C"; LC_ALL="C"; LANGUAGE="C"; }
+# }}}
+
+# DEBUG FRAMEWORK  {{{
+setVerbose()     { VERBOSE__=${1:-1}; }
+# }}}
+
+# ERROR REPORTING FUNCTIONS  {{{
+
+# default print backend (there may be other functions)
+vprint()
+{
+  local level_="$1"
+  local type_="$2"
+  local message_="$3"
+
+  if [ "$VERBOSE__" -ge "$level_" -a -n "$message_" ]; then
+    echo -n "$type_" >&2
+    echo "$message_" >&2
+  fi
+}
+
+# print error output
+eprint()
+{
+  # FIXME vprint should be a var, because we want to call user-defined functions
+  # global var (there should be a syslog, and vprint + syslog function)
+  vprint $EPRINT__ "Error - " "$1"
+}
+
+# print debug output (function intern errors)
+dprint()
+{
+  vprint $DPRINT__ "Debug - " "$1"
+}
+
+# for program notice messages
+notice()
+{
+  vprint $EPRINT__ "Notice - " "$1"
+}
+
+die()
+{
+  local error_message_="$1"   # print this error message
+  local exit_code_="$2"  # command exited with this exit code
+
+  echo -n "PANIC: $error_message_" >&2
+  if [ -n "$2" ]; then
+    echo "; ret($exit_code_)" >&2
+  else
+    echo >&2
+  fi
+
+  kill $$
+}
+
+warn()
+{
+  local error_message_="$1"   # print this error message
+  local exit_code_="$2"  # command exits with this exit code
+
+  echo -n "WARN: $error_message_" >&2
+  if [ -n "$exit_code_" ]; then
+    echo "; ret($exit_code_)" >&2
+  else
+    echo >&2
+  fi
+}
+
+syslog()
+{
+  local message_="$1"   # error message
+  local exit_code_="$2"
+
+  if [ -n "$exit_code_" ]; then
+    logger -p user.alert -t "$PROG_NAME__" -i "$message_ ret($exit_code_)" >&2
+  else
+    logger -p user.alert -t "$PROG_NAME__" -i "$message_" >&2
+  fi
+}
+# }}}
+
+# CORE FUNCTIONS {{{
+
+##
+# ATTENTION... THIS FUNCTION IS A BIG SECURITY HOLE
+# this function will be changed in future release
+##
+# I don't want to write exit status control stuff every time
+execute()
+{
+  local to_exec_="$1"   # command to execute
+  local error_function_=${2:-"eprint"}    # function to call on error
+  local message_="$3"   # user supplied error message
+
+  local ret_=''
+
+  # NOT A GOOD IDEA
+  eval "$to_exec_"
+  ret_=$?
+
+  if [ $ret_ -eq 127 ]; then
+    syslog "problems executing ( $to_exec_ )" $ret_
+  fi
+  if [ $ret_ -ne 0 ]; then
+    if [ -z "$message_" ]; then
+      $error_function_ "problems executing ( $to_exec_ )" "$ret_"
+    else
+      $error_function_ "$message_" "$ret_"
+    fi
+  fi
+  dprint "exec-$error_function_: ( $to_exec_ ) ret($ret_)"
+  return $ret_
+}
+
+
+###
+#
+# TEST FUNCTIONS
+#
+###
+
+# if the file DOES exist, everything is fine
+isExistent()
+{
+  local file_to_test_="$1"    # file to test
+  local error_function_=${2:-"eprint"}    # function to call on error
+  local message_="$3"    # user supplied error message
+
+  if [ ! -e "$file_to_test_" ]; then
+    if [ -z "$message_" ]; then
+      $error_function_ "file does not exist \"$file_to_test_\"" 66
+    else
+      $error_function_ "$message_"
+    fi
+    return 1
+  fi
+  dprint "isExistent(): file \"$1\" does exist => ready to go"
+  return 0
+}
+
+checkUser()
+{
+  local to_check_="$1"    # username to check against running process
+  local error_function_=${2:-"eprint"}    # function to call on error
+  local message_="$3"    # user supplied error message
+
+  local user_=''
+
+  user_=`id -un`
+  if [ $user_ != "$to_check_" ]; then
+    if [ -z "$message_" ]; then
+      $error_function_ "username \"$user_\" is not \"$to_check_\"" 77 $exit_function_
+    else
+      $error_function_ "$message_"
+    fi
+    return 1
+  else
+    dprint "checkUser(): accepted, username matches \"$to_check_\""
+    return 0
+  fi
+}
+
+checkId()
+{
+  local to_check_="$1"    # user-id to check against running process
+  local error_function_=${2:-"eprint"}    # function to call on error
+  local message_="$3"    # user supplied error message
+
+  local user_id_=''
+
+  user_id_=$(id -u)
+  if [ "$user_id_" != "$to_check_" ]; then
+    if [ -z "$message_" ]; then
+      $error_function_ "UID \"$user_id_\" is not \"$to_check_\"" 77
+    else
+      $error_function_ "$message_"
+    fi
+    return 1
+  else
+    dprint "checkId(): accepted, UID matches \"$to_check_\""
+    return 0
+  fi
+}
+
+checkRoot()
+{
+  checkId 0 "$1" "$2"
+}
+
+
+# secure input from console
+secureInput()
+{
+  local to_secure_="$1"
+
+  local secured_=''
+
+  secured_=`echo -n "$to_secure_" |tr -c '[:alnum:]/.\-,\(\)' '_'`
+  dprint "secureInput(): \"$to_secure_\" => \"$secured_\""
+  echo "$secured_"
+}
+# }}}
+
+# NETWORK  {{{
+
+# validates an IP FIXME
+netValidIp()
+{
+  local ip_="$1"    # ip address to validate
+  local error_function_=${2:-"eprint"}    # function to call on error
+  local message_="$3"    # user supplied error message
+
+  local ret_=''
+
+  echo "$ip_" | grep -E -q -e '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}.[0-9]{1,3}' \
+    1>/dev/null 2>&1
+  ret_=$?
+  if [ $ret_ -ne 0 ]; then
+    if [ -z "$message_" ]; then
+      "$error_function_" "ip-address \"$ip_\" is NOT valid" $ret_
+    else
+      "$error_function_" "$message_" $ret_
+    fi
+    return 1
+  fi
+
+  dprint "ip-address \"$ip_\" is valid" $ret_
+  return $ret_
+}
+
+netGetIfaces()
+{
+  local error_function_=${1:-"eprint"}    # function to call on error
+  local message_="$2"    # user supplied error message
+  local if_=''
+  local ret_=''
+
+  #ip a|grep 'inet ' |awk '$NF !~ /lo/{print $NF}'
+  if_="`ip a|grep 'inet ' |awk '{print $NF}'`"
+  ret_=$?
+  if [ -z "$if_" ]; then
+    if [ -z "$message_" ]; then
+      "$error_function_" "no interfaces found" $ret_
+    else
+      "$error_function_" "$message_" $ret_
+    fi
+    return 1
+  fi
+  dprint "interfaces found" $ret_
+  echo "$if_"
+}
+
+# FIXME
+netGetDefaultGateway()
+{
+  local error_function_=${1:-"eprint"}    # function to call on error
+  local message_="$2"    # user supplied error message
+
+  local ip_=''
+  local ret_=''
+
+  setCLang
+  ip_=`route -n | awk '/^0\.0\.0\.0/{print $2; exit}'`
+  ret_=$?
+  restoreLang
+  if [ -z "$ip_" ]; then
+    if [ -z "$message_" ]; then
+      "$error_function_" "no default gateway found" $ret_
+    else
+      "$error_function_" "$message_" $ret_
+    fi
+    return 1
+  fi
+  dprint "default gateway is \"$ip_\"" $ret_
+  echo "$ip_"
+  return 0
+}
+
+# FIXME
+netGetNetmask()
+{
+  local iface_="$1"
+  local error_function_=${2:-"eprint"}    # function to call on error
+  local message_="$3"    # user supplied error message
+
+  local nm_=''
+  local ret_=''
+
+  setCLang
+  if ifconfig "$iface_" | grep -qi 'Mask:' ; then # old ifconfig output:
+    nm_=$(ifconfig "$iface_" | awk '/[Mm]ask/{FS="[:   ]*"; $0=$0; print $8; exit}')
+  else # new ifconfig output (net-tools >1.60-27):
+    nm_=$(ifconfig "$iface_" | awk '/netmask/{print $4}')
+  fi
+  ret_=$?
+  restoreLang
+  if [ -z "$nm_" ]; then
+    if [ -z "$message_" ]; then
+      "$error_function_" "could not find a netmask for \"$iface_\"" $ret_
+    else
+      "$error_function_" "$message_" $ret_
+    fi
+    return 1
+  fi
+  dprint "netmask on \"$iface_\" is \"$nm_\"" $ret_
+  echo "$nm_"
+  return 0
+}
+
+# FIXME
+netGetIp()
+{
+  local iface_="$1"
+  local error_function_=${2:-"eprint"}    # function to call on error
+  local message_="$3"    # user supplied error message
+
+  local ip_=""
+  local ret_=""
+
+  setCLang
+  ip_=$(ip addr show dev "$iface_" | awk '/inet /{split($2,a,"/"); print a[1]}')
+  ret_=$?
+  restoreLang
+  if [ -z "$ip_" ]; then
+    if [ -z "$message_" ]; then
+      "$error_function_" "no ip for \"$iface_\" found" $ret_
+    else
+      "$error_function_" "$message_" $ret_
+    fi
+    return 1
+  fi
+  dprint "address for \"$iface_\" is \"$ip_\"" $ret_
+  echo "$ip_"
+  return 0
+}
+
+netGetNameservers()
+{
+  local error_function_=${1:-"eprint"}    # function to call on error
+  local message_="$2"    # user supplied error message
+
+  local file_="/etc/resolv.conf"
+  local ns_=""
+
+  if [ ! -e $file_ ]; then
+    warn "file \"$file_\" does not exist, could not get nameservers"
+    return 1
+  fi
+
+  setCLang
+  ns_=`awk '/^nameserver/{printf "%s ",$2}' $file_ |xargs echo`
+  restoreLang
+  if [ -z "$ns_" ]; then
+    if [ -z "$message_" ]; then
+      "$error_function_" "no nameservers found" $ret_
+    else
+      "$error_function_" "$message_" $ret_
+    fi
+    return 1
+  fi
+  dprint "nameservers: \"$ns_\"" $ret_
+  echo "$ns_"
+  return 0
+}
+
+# }}}
+
+# INIT {{{
+
+_initProgName()
+{
+  local name_="$1"    # program name
+
+  local tmp_name_=`basename "$name_"` || \
+    logger -p user.alert -i "Init-initProgName: problems executing ( basename \"$name_\" ) ret($?)" >/dev/null
+
+  secureInput "$tmp_name_"
+}
+PROG_NAME__=`_initProgName "$0"`
+
+
+_checkExecutables()
+{
+  local tmp_=""
+  for i in tr dirname basename id logger kill cat grep route awk ifconfig; do
+    which $i >/dev/null 2>&1 || tmp_="${tmp_}$i "
+  done
+  if [ -n "$tmp_" ]; then
+    eprint "Init-checkExecutables: following executables not found or not executable:\n$tmp_"
+    #syslog "Init-checkExecutables: following executables not found or not executable: $tmp_"
+  fi
+}
+_checkExecutables
+
+
+_setDebugLevel()
+{
+  # accept only integer as arguments
+  if echo "$DEBUG" | grep -E -q '^[0-9]+$' ; then
+    local debug_="${DEBUG:-0}"
+  else
+    local debug_="0"
+  fi
+  VERBOSE__="$debug_"
+}
+_setDebugLevel
+# }}}
+
+# END OF FILE
+################################################################################
+# vim:foldmethod=marker expandtab shiftwidth=2 tabstop=2

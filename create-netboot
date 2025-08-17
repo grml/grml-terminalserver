@@ -1,12 +1,12 @@
 #!/bin/bash
 
-. /etc/grml/sh-lib
+. /usr/share/grml-terminalserver/sh-lib
 SHARED_PROG_VARS_="/usr/share/grml-terminalserver/shared_prog_vars"
 isExistent $SHARED_PROG_VARS_ die
 . $SHARED_PROG_VARS_
 
 function actionPkg
-{ 
+{
     local pwd_="$(pwd)"
     local tmp_="$(mktemp -td terminalserver.XXXXXX)" || die "could not create tmpfile"
 
@@ -17,7 +17,7 @@ function actionPkg
          [0-9]*) version_="${version_%% *}"_${version_number_} ;;
          *)      version_="${version_%% *}" ;;
     esac
-    
+
     local path_="$tmp_/grml_netboot_package_$version_"
     mkdir "$path_"
 
@@ -36,6 +36,5 @@ function actionPkg
 }
 
 checkRoot die "You have to be root to use this program"
-disableSyslog
 
 actionPkg
