@@ -281,7 +281,7 @@ checkRoot die 'You have to be root to use this program'
 execute "mkdir -p $PATH_" die
 
 TMP_=`mktemp -t grml-terminalserver-config.XXXXXX` || die "Could not create tmpfile" $?
-setExitFunction 'removeTmpFiles'
+trap removeTmpFiles EXIT
 
 
 . $DEFAULT_CONFIG_
