@@ -1,3 +1,9 @@
+grml-terminalserver (0.105.4) grml-testing; urgency=medium
+
+  * [a40d461] grml-terminalserver-config: properly cleanup temporary file
+
+ -- Michael Prokop <mika@grml.org>  Sat, 29 Nov 2025 12:17:07 +0100
+
 grml-terminalserver (0.105.3) grml-testing; urgency=medium
 
   * [a01fe9c] Import sh-lib from grml-shlib
