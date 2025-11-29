@@ -13,15 +13,15 @@ Bugs: mailto:bugs@grml.org
 
 Package: grml-terminalserver
 Architecture: all
-Depends: atftpd (>=0.7.dfsg-1.2),
+Depends: atftpd,
          dialog,
-         grml2usb (>=0.9.14),
+         grml2usb,
          grub-efi-amd64-signed | grub-efi-amd64-bin | pxelinux,
          ipcalc,
          iptables,
-         isc-dhcp-server | dhcp3-server,
+         isc-dhcp-server,
          nfs-kernel-server,
-         pxelinux | syslinux-common (<= 2:4.05+dfsg-6+deb7u1),
+         pxelinux,
          shim-signed:amd64 | pxelinux,
          ${misc:Depends},
 Description: terminalserver for grml to boot via PXE
