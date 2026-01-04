@@ -401,10 +401,13 @@ isExistent $DEFAULT_CONFIG_ die
 # MEMTEST_IMAGE_
 # PXE_BOOT_MSG_
 # PXE_BOOT_LOGO_
-if [[ $MOUNT_POINT_ == "" || $MEMTEST_IMAGE_ == "" || \
+if [[ $MEMTEST_IMAGE_ == "" ]]; then
+  warn "MEMTEST_IMAGE_=\"$MEMTEST_IMAGE_\""
+fi
+
+if [[ $MOUNT_POINT_ == "" || \
   $PXE_BOOT_MSG_ == "" || $PXE_BOOT_MSG_ == "" ]]; then
   warn "MOUNT_POINT_=\"$MOUNT_POINT_\" \
-MEMTEST_IMAGE_=\"$MEMTEST_IMAGE_\"
 PXE_BOOT_MSG_=\"$PXE_BOOT_MSG_\"
 PXE_BOOT_LOGO_=\"$PXE_BOOT_LOGO_\""
   die "False configuration, please update $CONFIG_"
