@@ -410,7 +410,7 @@ if [[ $MOUNT_POINT_ == "" || \
   warn "MOUNT_POINT_=\"$MOUNT_POINT_\" \
 PXE_BOOT_MSG_=\"$PXE_BOOT_MSG_\"
 PXE_BOOT_LOGO_=\"$PXE_BOOT_LOGO_\""
-  die "False configuration, please update $CONFIG_"
+  die "Wrong configuration, please update $CONFIG_"
 fi
 
 case "$1" in
