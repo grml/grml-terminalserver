@@ -40,10 +40,29 @@ DIALOG_="dialog"
 # program to create $CONF_FILE_
 CONFIG_PROG_="/usr/sbin/grml-terminalserver-config"
 
-# vars for dhcpd
-DHCPD_BIN_="/usr/sbin/dhcpd"
-DHCPD_CONFIG_FILE_="$PATH_/dhcpd.conf"
-DHCPD_PID_="/run/dhcpd.pid"
+# vars for dhcpd - detect which DHCP server is available
+if [ -x /usr/sbin/dhcpd ]; then
+  DHCP_SERVER_TYPE_="isc-dhcp-server"
+  DHCPD_BIN_="/usr/sbin/dhcpd"
+  DHCPD_CONFIG_FILE_="$PATH_/dhcpd.conf"
+  DHCPD_PID_="/run/dhcpd.pid"
+  DHCP_TEMPLATE_="dhcpd_config"
+  DHCPD_USER_="root"
+elif [ -x /usr/sbin/dnsmasq ]; then
+  DHCP_SERVER_TYPE_="dnsmasq"
+  DHCPD_BIN_="/usr/sbin/dnsmasq"
+  DHCPD_CONFIG_FILE_="$PATH_/dnsmasq.conf"
+  DHCPD_PID_="/run/dnsmasq/grml-dnsmasq.pid"
+  DHCP_TEMPLATE_="dnsmasq_config"
+  DHCPD_USER_="dnsmasq"
+else
+  DHCP_SERVER_TYPE_="none"
+  DHCPD_BIN_=""
+  DHCPD_CONFIG_FILE_=""
+  DHCPD_PID_=""
+  DHCP_TEMPLATE_=""
+  DHCPD_USER_=""
+fi
 
 # vars for tftpd
 TFTPD_BIN_="/usr/sbin/atftpd"

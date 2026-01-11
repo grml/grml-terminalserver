@@ -246,7 +246,7 @@ function removeTmpFiles
 
 function actionClean
 {
-  for i in dhcpd.conf initrd.img; do
+  for i in dhcpd.conf dnsmasq.conf initrd.img; do
     execute "rm -f $PATH_/$i*"
   done
 

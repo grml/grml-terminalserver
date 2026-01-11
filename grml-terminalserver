@@ -76,20 +76,24 @@ function killPortmapper
 # DHCP SERVICE {{{
 function createDhcpConf
 {
+  if [ "$DHCP_SERVER_TYPE_" = "none" ]; then
+    die "No DHCP server found. Please install either isc-dhcp-server or dnsmasq."
+  fi
+
   if [ -e "$DHCPD_CONFIG_FILE_" ]; then
     if grep $CONFIG_PATTERN_ $DHCPD_CONFIG_FILE_ &>/dev/null; then
       execute "mv -fb \"$DHCPD_CONFIG_FILE_\" \"$DHCPD_CONFIG_FILE_.old\"" eprint &>/dev/null
-      execute "source $TEMPLATE_CONFIG_DIR_/dhcpd_config" die
+      execute "source $TEMPLATE_CONFIG_DIR_/$DHCP_TEMPLATE_" die
     else
       if [[ $FORCE_ == "true" ]]; then
         execute "mv -fb \"$DHCPD_CONFIG_FILE_\" \"$DHCPD_CONFIG_FILE_.old\"" eprint &>/dev/null
-        execute "source $TEMPLATE_CONFIG_DIR_/dhcpd_config" die
+        execute "source $TEMPLATE_CONFIG_DIR_/$DHCP_TEMPLATE_" die
       else
         warn "Not updating user edited configfile $DHCPD_CONFIG_FILE_, user -f to override"
       fi
     fi
   else
-    execute "source $TEMPLATE_CONFIG_DIR_/dhcpd_config" die
+    execute "source $TEMPLATE_CONFIG_DIR_/$DHCP_TEMPLATE_" die
   fi
 }
 
@@ -111,23 +115,42 @@ function removeDhcpConf
 
 function stopDhcp
 {
-  start-stop-daemon --stop --quiet --pidfile "$DHCPD_PID_"
+  start-stop-daemon --stop --quiet --pidfile "$DHCPD_PID_" --user "$DHCPD_USER_"
   rm -f $DHCPD_PID_
-  # ugly but necessary :-/
-  find  /var/lib/dhcp* -type f -name dhcpd.leases -delete
-  local dhcpdir
-  for dhcpdir in /var/lib/dhcp* ; do
-    touch ${dhcpdir}/dhcpd.leases
-  done
+
+  # Clean up lease files
+  if [ "$DHCP_SERVER_TYPE_" = "isc-dhcp-server" ]; then
+    # ugly but necessary :-/
+    find /var/lib/dhcp* -type f -name dhcpd.leases -delete
+    local dhcpdir
+    for dhcpdir in /var/lib/dhcp* ; do
+      touch ${dhcpdir}/dhcpd.leases
+    done
+  elif [ "$DHCP_SERVER_TYPE_" = "dnsmasq" ]; then
+    rm -f /var/lib/misc/dnsmasq.leases
+    rm -f /var/lib/misc/dnsmasq-*.leases
+  fi
 }
 
 function startDhcp
 {
   local conf_file_="$DHCPD_CONFIG_FILE_"
 
-  test -f $DHCPD_BIN_ || die "could not find dhcpd \"$DHCPD_BIN_\""
-  start-stop-daemon --start --quiet --pidfile "$DHCPD_PID_" \
-    --exec "$DHCPD_BIN_" -- -cf "$conf_file_" -q "$INTERFACE_" || warn "problems starting dhcpd"
+  if [ "$DHCP_SERVER_TYPE_" = "none" ]; then
+    die "No DHCP server found. Please install either isc-dhcp-server or dnsmasq."
+  fi
+
+  test -f $DHCPD_BIN_ || die "could not find DHCP server binary \"$DHCPD_BIN_\""
+
+  if [ "$DHCP_SERVER_TYPE_" = "isc-dhcp-server" ]; then
+    start-stop-daemon --start --quiet --pidfile "$DHCPD_PID_" --user "$DHCPD_USER_" \
+      --exec "$DHCPD_BIN_" -- -cf "$conf_file_" -q "$INTERFACE_" || warn "problems starting dhcpd"
+  elif [ "$DHCP_SERVER_TYPE_" = "dnsmasq" ]; then
+    mkdir -p /run/dnsmasq
+    chown dnsmasq:nogroup /run/dnsmasq
+    start-stop-daemon --start --quiet --pidfile "$DHCPD_PID_" --user "$DHCPD_USER_" \
+      --exec "$DHCPD_BIN_" -- -C "$conf_file_" -x "$DHCPD_PID_" -u "$DHCPD_USER_" || warn "problems starting dnsmasq"
+  fi
 }
 
 function runDhcp
@@ -303,7 +326,7 @@ function actionStart
   echo -n "Starting tftpd: "
   runTftp && echo done || echo failed
 
-  echo -n "Starting dhcpd: "
+  echo -n "Starting $DHCP_SERVER_TYPE_: "
   runDhcp && echo done || echo failed
 
   runIptables
