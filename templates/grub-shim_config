@@ -17,14 +17,14 @@
 #
 # GLOBAL_README_END
 
-if [ -r "${TFTPD_DATA_DIR_}"/shim.efi ] ; then
-  echo "${TFTPD_DATA_DIR_}/shim.efi exists already, nothing to do."
+if [ -r "${TFTPD_DATA_DIR_}"/bootx64.efi ] ; then
+  echo "${TFTPD_DATA_DIR_}/bootx64.efi exists already, nothing to do."
 elif [ -r /usr/lib/shim/shimx64.efi.signed ] ; then
-  echo "Installing /usr/lib/shim/shimx64.efi.signed as shim.efi for TFTP usage"
-  cp /usr/lib/shim/shimx64.efi.signed "${TFTPD_DATA_DIR_}"/shim.efi
+  echo "Installing /usr/lib/shim/shimx64.efi.signed as bootx64.efi for TFTP usage"
+  cp /usr/lib/shim/shimx64.efi.signed "${TFTPD_DATA_DIR_}"/bootx64.efi
 elif [ -r /usr/lib/shim/shimx64.efi ] ; then
-  echo "Installing /usr/lib/shim/shimx64.efi as shim.efi for TFTP usage"
-  cp /usr/lib/shim/shimx64.efi "${TFTPD_DATA_DIR_}"/shim.efi
+  echo "Installing /usr/lib/shim/shimx64.efi as bootx64.efi for TFTP usage"
+  cp /usr/lib/shim/shimx64.efi "${TFTPD_DATA_DIR_}"/bootx64.efi
 else
   echo "WARN: No shimx64.efi for usage with PXE boot found, not setting up UEFI boot via GRUB."
   (( ret_=ret_+ $? ))
