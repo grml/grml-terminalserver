@@ -1,3 +1,15 @@
+grml-terminalserver (0.105.5) grml-testing; urgency=medium
+
+  [ Chris Hofstaedtler ]
+  * [c082f7e] d/control: drop old version constraints
+
+  [ Michael Prokop ]
+  * [5fb1a9d] Do not fail hard if memtest image isn't present
+  * [1971563] Reword error message regarding invalid configuration file.
+    Thanks to Evgeni Golov
+
+ -- Chris Hofstaedtler <ch@grml.org>  Mon, 12 Jan 2026 20:39:06 +0100
+
 grml-terminalserver (0.105.4) grml-testing; urgency=medium
 
   * [a40d461] grml-terminalserver-config: properly cleanup temporary file
