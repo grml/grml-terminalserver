@@ -190,7 +190,14 @@ for addresses from 192.168.0.101 to (and including) 192.168.0.200.
     done
   done
 
-  NAMESERVERS_=`netGetNameservers warn`
+  NAMESERVERS_=''
+  local nameserver
+  for nameserver in $(netGetNameservers warn); do
+    # Drop IPv6 nameservers
+    if [[ $nameserver != *:* ]]; then
+      NAMESERVERS_+="$nameserver "
+    fi
+  done
   GW_=`netGetDefaultGateway warn`
   GW_DEV_=`ip route get "$GW_" | sed 's/^local //' | awk '{ print $3; exit; }'`
   if [ "$GW_DEV_" != "$INTERFACE_" ] && [ "$GW_DEV_" != "" ] && [ "$GW_DEV_" != "lo" ]; then
