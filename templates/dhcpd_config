@@ -62,6 +62,8 @@ subnet $NETWORK_ netmask $NETMASK_ {
     match if substring (option vendor-class-identifier, 0 ,9) = "PXEClient";
     if option architecture-type = 00:07 {
       filename "bootx64.efi";
+    } elsif option architecture-type = 00:0b {
+      filename "bootaa64.efi";
     } else {
       filename "pxelinux.0";
     }

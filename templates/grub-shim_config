@@ -17,31 +17,61 @@
 #
 # GLOBAL_README_END
 
-if [ -r "${TFTPD_DATA_DIR_}"/grubx64.efi ] ; then
-  echo "${TFTPD_DATA_DIR_}/grubx64.efi exists already, nothing to do."
-elif [ -r /usr/lib/grub/x86_64-efi-signed/grubnetx64.efi.signed ] ; then
-  echo "Installing /usr/lib/grub/x86_64-efi-signed/grubnetx64.efi.signed as grubx64.efi for TFTP usage"
-  cp /usr/lib/grub/x86_64-efi-signed/grubnetx64.efi.signed "${TFTPD_DATA_DIR_}"/grubx64.efi
-elif [ -r /usr/lib/grub/x86_64-efi/monolithic/grubnetx64.efi ] ; then
-  echo "Installing /usr/lib/grub/x86_64-efi/monolithic/grubnetx64.efi as grubx64.efi for TFTP usage"
-  cp /usr/lib/grub/x86_64-efi/monolithic/grubnetx64.efi "${TFTPD_DATA_DIR_}"/grubx64.efi
-else
-  echo "WARN: No grubnetx64.efi for usage with PXE boot found, not setting up UEFI boot via GRUB."
-  (( ret_=ret_+ $? ))
-  return "$ret_"
-fi
+if [ "$(uname -m)" = "x86_64" ]; then
+  if [ -r "${TFTPD_DATA_DIR_}"/grubx64.efi ] ; then
+    echo "${TFTPD_DATA_DIR_}/grubx64.efi exists already, nothing to do."
+  elif [ -r /usr/lib/grub/x86_64-efi-signed/grubnetx64.efi.signed ] ; then
+    echo "Installing /usr/lib/grub/x86_64-efi-signed/grubnetx64.efi.signed as grubx64.efi for TFTP usage"
+    cp /usr/lib/grub/x86_64-efi-signed/grubnetx64.efi.signed "${TFTPD_DATA_DIR_}"/grubx64.efi
+  elif [ -r /usr/lib/grub/x86_64-efi/monolithic/grubnetx64.efi ] ; then
+    echo "Installing /usr/lib/grub/x86_64-efi/monolithic/grubnetx64.efi as grubx64.efi for TFTP usage"
+    cp /usr/lib/grub/x86_64-efi/monolithic/grubnetx64.efi "${TFTPD_DATA_DIR_}"/grubx64.efi
+  else
+    echo "WARN: No grubnetx64.efi for usage with PXE boot found, not setting up UEFI boot via GRUB."
+    (( ret_=ret_+ $? ))
+    return "$ret_"
+  fi
 
-if [ -r "${TFTPD_DATA_DIR_}"/bootx64.efi ] ; then
-  echo "${TFTPD_DATA_DIR_}/bootx64.efi exists already, nothing to do."
-elif [ -r /usr/lib/shim/shimx64.efi.signed ] ; then
-  echo "Installing /usr/lib/shim/shimx64.efi.signed as bootx64.efi for TFTP usage"
-  cp /usr/lib/shim/shimx64.efi.signed "${TFTPD_DATA_DIR_}"/bootx64.efi
-elif [ -r /usr/lib/shim/shimx64.efi ] ; then
-  echo "Installing /usr/lib/shim/shimx64.efi as bootx64.efi for TFTP usage"
-  cp /usr/lib/shim/shimx64.efi "${TFTPD_DATA_DIR_}"/bootx64.efi
-else
-  echo "WARN: No shimx64.efi for usage with PXE boot found. Using GRUB directly as bootx64.efi."
-  cp "${TFTPD_DATA_DIR_}"/grubx64.efi "${TFTPD_DATA_DIR_}"/bootx64.efi
+  if [ -r "${TFTPD_DATA_DIR_}"/bootx64.efi ] ; then
+    echo "${TFTPD_DATA_DIR_}/bootx64.efi exists already, nothing to do."
+  elif [ -r /usr/lib/shim/shimx64.efi.signed ] ; then
+    echo "Installing /usr/lib/shim/shimx64.efi.signed as bootx64.efi for TFTP usage"
+    cp /usr/lib/shim/shimx64.efi.signed "${TFTPD_DATA_DIR_}"/bootx64.efi
+  elif [ -r /usr/lib/shim/shimx64.efi ] ; then
+    echo "Installing /usr/lib/shim/shimx64.efi as bootx64.efi for TFTP usage"
+    cp /usr/lib/shim/shimx64.efi "${TFTPD_DATA_DIR_}"/bootx64.efi
+  else
+    echo "WARN: No shimx64.efi for usage with PXE boot found. Using GRUB directly as bootx64.efi."
+    cp "${TFTPD_DATA_DIR_}"/grubx64.efi "${TFTPD_DATA_DIR_}"/bootx64.efi
+  fi
+fi
+if [ "$(uname -m)" = "aarch64" ]; then
+  if [ -r "${TFTPD_DATA_DIR_}"/grubaa64.efi ] ; then
+    echo "${TFTPD_DATA_DIR_}/grubaa64.efi exists already, nothing to do."
+  elif [ -r /usr/lib/grub/arm64-efi-signed/grubnetaa64.efi.signed ] ; then
+    echo "Installing /usr/lib/grub/arm64-efi-signed/grubnetaa64.efi.signed as grubaa64.efi for TFTP usage"
+    cp /usr/lib/grub/arm64-efi-signed/grubnetaa64.efi.signed "${TFTPD_DATA_DIR_}"/grubaa64.efi
+  elif [ -r /usr/lib/grub/arm64-efi/monolithic/grubnetaa64.efi ] ; then
+    echo "Installing /usr/lib/grub/arm64-efi/monolithic/grubnetaa64.efi as grubaa64.efi for TFTP usage"
+    cp /usr/lib/grub/arm64-efi/monolithic/grubnetaa64.efi "${TFTPD_DATA_DIR_}"/grubaa64.efi
+  else
+    echo "WARN: No grubnetaa64.efi for usage with PXE boot found, not setting up UEFI boot via GRUB."
+    (( ret_=ret_+ $? ))
+    return "$ret_"
+  fi
+
+  if [ -r "${TFTPD_DATA_DIR_}"/bootaa64.efi ] ; then
+    echo "${TFTPD_DATA_DIR_}/bootaa64.efi exists already, nothing to do."
+  elif [ -r /usr/lib/shim/shimaa64.efi.signed ] ; then
+    echo "Installing /usr/lib/shim/shimaa64.efi.signed as bootaa64.efi for TFTP usage"
+    cp /usr/lib/shim/shimaa64.efi.signed "${TFTPD_DATA_DIR_}"/bootaa64.efi
+  elif [ -r /usr/lib/shim/shimaa64.efi ] ; then
+    echo "Installing /usr/lib/shim/shimaa64.efi as bootaa64.efi for TFTP usage"
+    cp /usr/lib/shim/shimaa64.efi "${TFTPD_DATA_DIR_}"/bootaa64.efi
+  else
+    echo "WARN: No shimaa64.efi for usage with PXE boot found. Using GRUB directly as bootaa64.efi."
+    cp "${TFTPD_DATA_DIR_}"/grubaa64.efi "${TFTPD_DATA_DIR_}"/bootaa64.efi
+  fi
 fi
 
 if [ -r "${TFTPD_DATA_DIR_}"/grub/fonts/unicode.pf2 ] ; then
