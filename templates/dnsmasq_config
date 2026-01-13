@@ -1,0 +1,73 @@
+# the following variables are available in the template:
+#
+# $INTERFACE_     (interface for the terminalserver)
+# $IP_            (ip for the terminalserver to bind)
+# $NETMASK_       (network mask)
+# $GW_            (gateway)
+# $NAMESERVERS_   (nameservers for the nodes)
+# $IPRANGE_FROM_  (user configured iprange, first ip)
+# $IPRANGE_TO_    (user configured iprange, last ip)
+# $NETWORK_       (first ip in this subnet)
+# $OPTIONS_       (options for grml-terminalserver)
+# $BOOT_ARGS_     (boot arguments for the nodes)
+#
+# NOTE:
+# templates are shellscript fragments and will be sourced from the
+# terminalserver
+#
+# GLOBAL_README_END
+
+#
+# this is the template to create the config file for dnsmasq
+#
+
+date_=`execute date warn`
+
+# insert commas when having multiple nameservers
+if [ -n "$NAMESERVERS_" ]; then
+	DNS_LINE_="dhcp-option=6,$(echo "$NAMESERVERS_" | sed -e 's/\([0-9]\) \([0-9]\)/\1,\2/g')"
+fi
+
+# note: we don't support multiple routers options
+if [ -n "$GW_" ]; then
+	ROUTERS_LINE_="dhcp-option=3,$GW_"
+fi
+
+cat >"$DHCPD_CONFIG_FILE_" <<EOT
+# ${DHCPD_CONFIG_FILE_##/*/} for GRML terminalserver
+# created on $date_
+# THIS IS A GENERATED CONFIG FROM GRML-TERMINALSERVER, DO NOT EDIT!!!
+# better adapt $TEMPLATE_CONFIG_DIR_/dnsmasq_config to your needs and update config
+# with grml-terminalserver config dhcp
+#
+# If you really want to edit _this_ file remove the next line
+# __PLEASE_UPDATE_THIS_FILE__
+
+interface=$INTERFACE_
+bind-interfaces
+
+listen-address=$IP_
+
+dhcp-range=$IPRANGE_FROM_,$IPRANGE_TO_,10m
+
+$ROUTERS_LINE_
+$DNS_LINE_
+
+dhcp-option=option:tftp-server,$IP_
+
+# x86_64 UEFI
+dhcp-match=set:efi-x86_64,option:client-arch,7
+dhcp-boot=tag:efi-x86_64,bootx64.efi
+
+# ARM64 UEFI
+dhcp-match=set:efi-aa64,option:client-arch,11
+dhcp-boot=tag:efi-aa64,bootaa64.efi
+
+# BIOS/Legacy boot
+dhcp-boot=pxelinux.0
+
+no-resolv
+no-hosts
+log-dhcp
+EOT
+
