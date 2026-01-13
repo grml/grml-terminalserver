@@ -16,13 +16,13 @@ Architecture: all
 Depends: atftpd,
          dialog,
          grml2usb,
-         grub-efi-amd64-signed | grub-efi-amd64-bin | pxelinux,
+         grub-efi-amd64-signed | grub-efi-amd64-bin | grub-efi-arm64-signed | grub-efi-arm64-bin | pxelinux,
          ipcalc,
          iptables,
          isc-dhcp-server,
          nfs-kernel-server,
          pxelinux,
-         shim-signed:amd64 | pxelinux,
+         shim-signed:amd64 | shim-signed:arm64 | pxelinux,
          ${misc:Depends},
 Description: terminalserver for grml to boot via PXE
  These packages provides all what's needed to boot
