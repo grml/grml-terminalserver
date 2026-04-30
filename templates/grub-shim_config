@@ -90,7 +90,7 @@ cat > "${TFTPD_DATA_DIR_}/grub/grub.cfg" << EOT
 # GRUB PXE configuration file
 
 # adjust according to your needs
-#set timeout=300
+set timeout=20
 
 insmod png
 set gfxmode=auto
