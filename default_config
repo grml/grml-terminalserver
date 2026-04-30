@@ -15,15 +15,6 @@ else # no grml2usb but running from CD
   DATA_PATH_="$MOUNT_POINT_/boot"
 fi
 
-# new grml2usb layout
-if [ -d "$MOUNT_POINT_"/boot/syslinux ] ; then
-  ISOLIN_PATH_="$MOUNT_POINT_/boot/syslinux"
-  test -d $ISOLIN_PATH_ || ISOLIN_PATH_="$MOUNT_POINT_"
-else # old layout
-  ISOLIN_PATH_="$DATA_PATH_/isolinux"
-  test -d $ISOLIN_PATH_ || ISOLIN_PATH_="$MOUNT_POINT_"
-fi
-
 # addons
 if [[ "$(find $MOUNT_POINT_ -maxdepth 3 -name memtest |head -n1)" != "" ]] ; then
   ADDONS_PATH_="$(dirname $(find $MOUNT_POINT_ -maxdepth 3 -name memtest |head -n1))"
@@ -47,20 +38,6 @@ MEMTEST_IMAGE_="$ADDONS_PATH_/memtest"
 if [ ! -f "$MEMTEST_IMAGE_" ] ; then
   MEMTEST_IMAGE_=$(find /boot -name memtest*.bin | head -n1)
 fi
-
-PXE_BOOT_MSG_="$ISOLIN_PATH_/boot.msg"
-# grml2usb with grub doesn't provide boot.msg, so generate a default one
-if ! [ -f "$PXE_BOOT_MSG_" ] ; then
-  PXE_BOOT_MSG_="$(mktemp)"
-  cat > $PXE_BOOT_MSG_ << EOF
-17logo.16
-
-Some information and boot options available via keys F2 - F10. http://grml.org/
-
-EOF
-fi
-
-PXE_BOOT_LOGO_="$ISOLIN_PATH_/logo.16"
 
 IPTABLES_SNAT_="true"
 

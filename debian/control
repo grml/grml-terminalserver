@@ -21,13 +21,14 @@ Depends:
  dialog,
  dnsmasq-base | isc-dhcp-server,
  grml2usb,
- grub-efi-amd64-signed | grub-efi-amd64-bin | grub-efi-arm64-signed | grub-efi-arm64-bin | pxelinux,
+ grub-efi-amd64-signed | grub-efi-amd64-bin | grub-efi-arm64-signed | grub-efi-arm64-bin,
  ipcalc,
  iptables,
  nfs-kernel-server,
- pxelinux,
- shim-signed:amd64 | shim-signed:arm64 | pxelinux,
+ shim-signed:amd64 | shim-signed:arm64,
  ${misc:Depends},
+Recommends:
+ grub-pc-bin,
 Description: terminalserver for grml to boot via PXE
  These packages provides all what's needed to boot
  grml over the network (PXE). An easy to use interface

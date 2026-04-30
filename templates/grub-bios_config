@@ -17,7 +17,6 @@
 #
 # GLOBAL_README_END
 
-# default boot arguments used for both grub and pxelinux
 if [ -e "$MOUNT_POINT_" ]; then
     default_boot_args_="root=/dev/nfs rw nfsroot=$IP_:$MOUNT_POINT_ \
 noprompt noeject"
@@ -27,12 +26,6 @@ init=/etc/init nfsdir=$IP_:$MOUNT_POINT_ nodhcp noprompt noeject \
 apm=power-off nomce"
 fi
 
-# special boot arguments required by pxelinux
-pxe_def_boot_args_="$default_boot_args_"
-
-###
-## create pxelinux config
-###
 if ! [ -d /run/live/medium ] ; then
   echo "Error: couldn't access /run/live/medium for executing grml2usb with it." >&2
   exit 2
@@ -40,15 +33,9 @@ fi
 
 DEST_DIR=$(mktemp -d)
 grml2usb --bootloader-only \
-    --bootoptions="$pxe_def_boot_args_ $BOOT_ARGS_" \
+    --bootoptions="$default_boot_args_ $BOOT_ARGS_" \
     --remove-bootoption=nodhcp \
     /run/live/medium "$DEST_DIR"
-
-# since Grml 2026.04 we no longer use isolinux/syslinux for BIOS boot
-if [ -d "$DEST_DIR"/boot/syslinux ] ; then
-  mv "$DEST_DIR"/boot/syslinux/* "$TFTPD_DATA_DIR_/"
-  rmdir "$DEST_DIR"/boot/syslinux
-fi
 
 mv "$DEST_DIR"/boot/ "$TFTPD_DATA_DIR_"
 
@@ -67,31 +54,23 @@ if [ -d "$MOUNT_POINT_"/boot/release ] ; then
    sed -i -e 's#\(.*\)/boot/\(.*\)#\1\2#' $config_files_
 fi
 
-# adjust ldbsd.com bootline
-if ls "$TFTPD_DATA_DIR_/"addon_*_bsd.cfg >/dev/null 2>&1; then
-  sed -i -e 's#\(.*kernel .*/ldbsd.com\)#\1 set image /boot/addons/bsd4grml/bsd.rd`echo Type "boot" to load MirOS bsd4grml via keeppxe#' "$TFTPD_DATA_DIR_/"addon_*_bsd.cfg
-fi
-
 # remove grub entries
 rm -f "$TFTPD_DATA_DIR_/"addon_*grub*.cfg
-
-# since Grml 2026.04 we no longer use isolinux/syslinux for BIOS boot
-if [ -f "$TFTPD_DATA_DIR_/syslinux.cfg" ] ; then
-  mv "$TFTPD_DATA_DIR_/syslinux.cfg" "$TFTPD_DATA_DIR_/pxelinux.cfg/default"
-fi
 
 rm -rf "$DEST_DIR"
 
 # BIOS/Legacy GRUB netboot setup
-if [ -r "${TFTPD_DATA_DIR_}/pxelinux.0" ] ; then
-  if [ -r "${TFTPD_DATA_DIR_}/grub/i386-pc/core.0" ] ; then
-    echo "${TFTPD_DATA_DIR_}/grub/i386-pc/core.0 exists already, nothing to do."
-  elif [ -d /usr/lib/grub/i386-pc ] && command -v grub-mknetdir >/dev/null 2>&1 ; then
-    echo "Generating GRUB i386-pc netboot image for BIOS PXE boot"
-    grub-mknetdir --net-directory="${TFTPD_DATA_DIR_}" --subdir=grub
-  else
+if [ -d /usr/lib/grub/i386-pc ] ; then
+  if ! command -v grub-mknetdir >/dev/null 2>&1 ; then
     echo "WARN: grub-pc-bin not found, cannot set up GRUB BIOS boot."
     let ret_=$ret_+1
+  else
+    if [ -r "${TFTPD_DATA_DIR_}/grub/i386-pc/core.0" ] ; then
+      echo "${TFTPD_DATA_DIR_}/grub/i386-pc/core.0 exists already, nothing to do."
+    else
+      echo "Generating GRUB i386-pc netboot image for BIOS PXE boot"
+      grub-mknetdir --net-directory="${TFTPD_DATA_DIR_}" --subdir=grub
+    fi
   fi
 fi
 
