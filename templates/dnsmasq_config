@@ -64,7 +64,7 @@ dhcp-match=set:efi-aa64,option:client-arch,11
 dhcp-boot=tag:efi-aa64,bootaa64.efi
 
 # BIOS/Legacy boot
-dhcp-boot=pxelinux.0
+dhcp-boot=grub/i386-pc/core.0
 
 no-resolv
 no-hosts

@@ -33,63 +33,24 @@ pxe_def_boot_args_="$default_boot_args_"
 ###
 ## create pxelinux config
 ###
-DEST_DIR=$(mktemp -d)
-if [ -d /run/live/medium ] ; then # since December 2018
-  grml2usb --bootloader-only \
-      --bootoptions="$pxe_def_boot_args_ $BOOT_ARGS_" \
-      --remove-bootoption=nodhcp \
-      /run/live/medium "$DEST_DIR"
-
-  mv "$DEST_DIR"/boot/syslinux/* "$TFTPD_DATA_DIR_/"
-  rmdir "$DEST_DIR"/boot/syslinux
-
-  mv "$DEST_DIR"/boot/ "$TFTPD_DATA_DIR_"
-elif [ -d /lib/live/mount/medium ] ; then
-  grml2usb --bootloader-only \
-      --bootoptions="$pxe_def_boot_args_ $BOOT_ARGS_" \
-      --remove-bootoption=nodhcp \
-      /lib/live/mount/medium "$DEST_DIR"
-
-  mv "$DEST_DIR"/boot/syslinux/* "$TFTPD_DATA_DIR_/"
-  rmdir "$DEST_DIR"/boot/syslinux
-
-  mv "$DEST_DIR"/boot/ "$TFTPD_DATA_DIR_"
-else
-  if [ ! -d /usr/share/grml-live/templates/boot/isolinux ] ; then
-    echo "E: Could not find isolinux directory, can not operate without.
-
-Did you boot the system with the toram=... boot option? If so please
-either do not use the toram boot option at all or use boot option toram
-without any arguments (just \"toram\" instead of \"toram=...\")." >&2
-    exit 2
-  fi
-
-  array=( $(cat /etc/grml_version) )
-  grml_name_=${array[0]}
-  grml_version_=${array[1]}
-
-  cp /usr/share/grml-live/templates/boot/isolinux/* "$TFTPD_DATA_DIR_/"
-
-  config_files_=$(find "$TFTPD_DATA_DIR_/" -name "*.cfg" -type f)
-  sed -i "s/%ARCH%/$(uname -m)/" $config_files_
-  sed -i "s/%BOOTID%/$RANDOM/" $config_files_
-  sed -i "s/%SHORT_NAME%/dummy/" $config_files_
-  sed -i "s/%VERSION%/$grml_version_/" $config_files_
-  sed -i "s/%GRML_NAME%/$grml_name_/" $config_files_
-  sed -i "s/%DISTRI_SPLASH%/grml.png/" $config_files_
-  sed -i "s/%DISTRI_INFO%/Grml/" $config_files_
-  sed -i "s#\(^.*append.*initrd.*$\)#\1 $pxe_def_boot_args_ $BOOT_ARGS_#" $config_files_
-  cat > "$TFTPD_DATA_DIR_/grmlmain.cfg"<<EOT
-  include default.cfg
-include menuoptions.cfg
-include grml.cfg
-include options.cfg
-include isoprompt.cfg
-include hd.cfg
-include hidden.cfg
-EOT
-
+if ! [ -d /run/live/medium ] ; then
+  echo "Error: couldn't access /run/live/medium for executing grml2usb with it." >&2
+  exit 2
 fi
+
+DEST_DIR=$(mktemp -d)
+grml2usb --bootloader-only \
+    --bootoptions="$pxe_def_boot_args_ $BOOT_ARGS_" \
+    --remove-bootoption=nodhcp \
+    /run/live/medium "$DEST_DIR"
+
+# since Grml 2026.04 we no longer use isolinux/syslinux for BIOS boot
+if [ -d "$DEST_DIR"/boot/syslinux ] ; then
+  mv "$DEST_DIR"/boot/syslinux/* "$TFTPD_DATA_DIR_/"
+  rmdir "$DEST_DIR"/boot/syslinux
+fi
+
+mv "$DEST_DIR"/boot/ "$TFTPD_DATA_DIR_"
 
 # Copy initrd.img and vmlinuz from all directories which name begins
 # with grml, e.g. grml32full and grml64full
@@ -114,8 +75,25 @@ fi
 # remove grub entries
 rm -f "$TFTPD_DATA_DIR_/"addon_*grub*.cfg
 
-mv "$TFTPD_DATA_DIR_/syslinux.cfg" "$TFTPD_DATA_DIR_/pxelinux.cfg/default"
+# since Grml 2026.04 we no longer use isolinux/syslinux for BIOS boot
+if [ -f "$TFTPD_DATA_DIR_/syslinux.cfg" ] ; then
+  mv "$TFTPD_DATA_DIR_/syslinux.cfg" "$TFTPD_DATA_DIR_/pxelinux.cfg/default"
+fi
+
 rm -rf "$DEST_DIR"
+
+# BIOS/Legacy GRUB netboot setup
+if [ -r "${TFTPD_DATA_DIR_}/pxelinux.0" ] ; then
+  if [ -r "${TFTPD_DATA_DIR_}/grub/i386-pc/core.0" ] ; then
+    echo "${TFTPD_DATA_DIR_}/grub/i386-pc/core.0 exists already, nothing to do."
+  elif [ -d /usr/lib/grub/i386-pc ] && command -v grub-mknetdir >/dev/null 2>&1 ; then
+    echo "Generating GRUB i386-pc netboot image for BIOS PXE boot"
+    grub-mknetdir --net-directory="${TFTPD_DATA_DIR_}" --subdir=grub
+  else
+    echo "WARN: grub-pc-bin not found, cannot set up GRUB BIOS boot."
+    let ret_=$ret_+1
+  fi
+fi
 
 let ret_=$ret_+$?
 return $ret_
