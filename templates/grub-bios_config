@@ -39,20 +39,23 @@ grml2usb --bootloader-only \
 
 mv "$DEST_DIR"/boot/ "$TFTPD_DATA_DIR_"
 
+if [ -d "$DEST_DIR"/grub ] ; then
+  mkdir -p "$TFTPD_DATA_DIR_"/grub
+  cp -r "$DEST_DIR"/grub/. "$TFTPD_DATA_DIR_"/grub/
+fi
+
 # Copy initrd.img and vmlinuz from all directories which name begins
-# with grml, e.g. grml32full and grml64full
-# This way we can boot multiple ISOs
-for filename in "${MULTIBOOT_PATH_}"/grml* ; do
+# with grml, e.g. grml-full and grml-small
+# This way we can boot multiple ISOs.
+# Try MULTIBOOT_PATH_ first; if that yields nothing also search the standard
+# /run/live/medium/boot/ location directly (MULTIBOOT_PATH_ may fall back to
+# MOUNT_POINT_ when the grml2usb release/ layout is absent on newer ISOs).
+for filename in "${MULTIBOOT_PATH_}"/grml* "${MOUNT_POINT_}/boot"/grml* ; do
   [ -d "$filename" ] || continue
+  dest_="${TFTPD_DATA_DIR_}/boot/$(basename "${filename}")"
+  [ -d "$dest_" ] && continue
   cp -r "${filename}" "${TFTPD_DATA_DIR_}/boot/"
 done
-
-config_files_=$(find "$TFTPD_DATA_DIR_/" -name "*.cfg" -type f)
-
-# cd is multi iso, grml2usb got it right ;0
-if [ -d "$MOUNT_POINT_"/boot/release ] ; then
-   sed -i -e 's#\(.*\)/boot/\(.*\)#\1\2#' $config_files_
-fi
 
 # remove grub entries
 rm -f "$TFTPD_DATA_DIR_/"addon_*grub*.cfg
