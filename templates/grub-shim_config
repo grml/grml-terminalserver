@@ -18,6 +18,7 @@
 # GLOBAL_README_END
 
 if [ "$(uname -m)" = "x86_64" ]; then
+  # 64-bit UEFI (grubx64.efi / bootx64.efi)
   if [ -r "${TFTPD_DATA_DIR_}"/grubx64.efi ] ; then
     echo "${TFTPD_DATA_DIR_}/grubx64.efi exists already, nothing to do."
   elif [ -r /usr/lib/grub/x86_64-efi-signed/grubnetx64.efi.signed ] ; then
@@ -43,6 +44,21 @@ if [ "$(uname -m)" = "x86_64" ]; then
   else
     echo "WARN: No shimx64.efi for usage with PXE boot found. Using GRUB directly as bootx64.efi."
     cp "${TFTPD_DATA_DIR_}"/grubx64.efi "${TFTPD_DATA_DIR_}"/bootx64.efi
+  fi
+
+  # 32-bit UEFI (grubia32.efi)
+  # targets 32-bit firmware on 64-bit CPU hardware
+  if [ -r "${TFTPD_DATA_DIR_}"/grubia32.efi ] ; then
+    echo "${TFTPD_DATA_DIR_}/grubia32.efi exists already, nothing to do."
+  elif [ -r /usr/lib/grub/i386-efi-signed/grubnetia32.efi.signed ] ; then
+    echo "Installing /usr/lib/grub/i386-efi-signed/grubnetia32.efi.signed as grubia32.efi for TFTP usage"
+    cp /usr/lib/grub/i386-efi-signed/grubnetia32.efi.signed "${TFTPD_DATA_DIR_}"/grubia32.efi
+  elif [ -r /usr/lib/grub/i386-efi/monolithic/grubnetia32.efi ] ; then
+    echo "Installing /usr/lib/grub/i386-efi/monolithic/grubnetia32.efi as grubia32.efi for TFTP usage"
+    cp /usr/lib/grub/i386-efi/monolithic/grubnetia32.efi "${TFTPD_DATA_DIR_}"/grubia32.efi
+  else
+    echo "WARN: No grubnetia32.efi for usage with PXE boot found, not setting up 32-bit UEFI boot via GRUB."
+    (( ret_=ret_+ $? ))
   fi
 fi
 if [ "$(uname -m)" = "aarch64" ]; then
