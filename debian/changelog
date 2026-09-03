@@ -1,3 +1,15 @@
+grml-terminalserver (0.106.0) grml-testing; urgency=medium
+
+  * [0355525] GRUB boot: set default timeout of 20 seconds
+  * [39d4902] Switch BIOS PXE boot default from pxelinux to GRUB
+  * [3109638] Drop pxelinux support, use GRUB exclusively for BIOS PXE
+    boot
+  * [d4beb69] GRUB: support custom themes + bring configuration closer to
+    grml-live defaults
+  * [d58cabc] GRUB: add support for 32-bit firmware on 64-bit CPU hardware
+
+ -- Michael Prokop <mika@grml.org>  Thu, 03 Sep 2026 17:04:55 +0200
+
 grml-terminalserver (0.105.7) grml-testing; urgency=medium
 
   * [7e618d2] d/copyright: replace FSF address with URL
