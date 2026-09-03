@@ -1,0 +1,81 @@
+# the following variables are available in the template:
+#
+# $INTERFACE_     (interface for the terminalserver)
+# $IP_            (ip for the terminalserver to bind)
+# $NETMASK_       (network mask)
+# $GW_            (gateway)
+# $NAMESERVERS_   (nameservers for the nodes)
+# $IPRANGE_FROM_  (user configured iprange, first ip)
+# $IPRANGE_TO_    (user configured iprange, last ip)
+# $NETWORK_       (first ip in this subnet)
+# $OPTIONS_       (options for grml-terminalserver)
+# $BOOT_ARGS_     (boot arguments for the nodes)
+#
+# NOTE:
+# templates are shellscript fragments and will be sourced from the
+# terminalserver
+#
+# GLOBAL_README_END
+
+if [ -e "$MOUNT_POINT_" ]; then
+    default_boot_args_="root=/dev/nfs rw nfsroot=$IP_:$MOUNT_POINT_ \
+noprompt noeject"
+else
+    default_boot_args_="ramdisk_size=24000 root=/dev/ram0 rw \
+init=/etc/init nfsdir=$IP_:$MOUNT_POINT_ nodhcp noprompt noeject \
+apm=power-off nomce"
+fi
+
+if ! [ -d /run/live/medium ] ; then
+  echo "Error: couldn't access /run/live/medium for executing grml2usb with it." >&2
+  exit 2
+fi
+
+DEST_DIR=$(mktemp -d)
+grml2usb --bootloader-only \
+    --bootoptions="$default_boot_args_ $BOOT_ARGS_" \
+    --remove-bootoption=nodhcp \
+    /run/live/medium "$DEST_DIR"
+
+mv "$DEST_DIR"/boot/ "$TFTPD_DATA_DIR_"
+
+if [ -d "$DEST_DIR"/grub ] ; then
+  mkdir -p "$TFTPD_DATA_DIR_"/grub
+  cp -r "$DEST_DIR"/grub/. "$TFTPD_DATA_DIR_"/grub/
+fi
+
+# Copy initrd.img and vmlinuz from all directories which name begins
+# with grml, e.g. grml-full and grml-small
+# This way we can boot multiple ISOs.
+# Try MULTIBOOT_PATH_ first; if that yields nothing also search the standard
+# /run/live/medium/boot/ location directly (MULTIBOOT_PATH_ may fall back to
+# MOUNT_POINT_ when the grml2usb release/ layout is absent on newer ISOs).
+for filename in "${MULTIBOOT_PATH_}"/grml* "${MOUNT_POINT_}/boot"/grml* ; do
+  [ -d "$filename" ] || continue
+  dest_="${TFTPD_DATA_DIR_}/boot/$(basename "${filename}")"
+  [ -d "$dest_" ] && continue
+  cp -r "${filename}" "${TFTPD_DATA_DIR_}/boot/"
+done
+
+# remove grub entries
+rm -f "$TFTPD_DATA_DIR_/"addon_*grub*.cfg
+
+rm -rf "$DEST_DIR"
+
+# BIOS/Legacy GRUB netboot setup
+if [ -d /usr/lib/grub/i386-pc ] ; then
+  if ! command -v grub-mknetdir >/dev/null 2>&1 ; then
+    echo "WARN: grub-pc-bin not found, cannot set up GRUB BIOS boot."
+    let ret_=$ret_+1
+  else
+    if [ -r "${TFTPD_DATA_DIR_}/grub/i386-pc/core.0" ] ; then
+      echo "${TFTPD_DATA_DIR_}/grub/i386-pc/core.0 exists already, nothing to do."
+    else
+      echo "Generating GRUB i386-pc netboot image for BIOS PXE boot"
+      grub-mknetdir --net-directory="${TFTPD_DATA_DIR_}" --subdir=grub
+    fi
+  fi
+fi
+
+let ret_=$ret_+$?
+return $ret_

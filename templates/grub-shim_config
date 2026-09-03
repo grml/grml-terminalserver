@@ -18,6 +18,7 @@
 # GLOBAL_README_END
 
 if [ "$(uname -m)" = "x86_64" ]; then
+  # 64-bit UEFI (grubx64.efi / bootx64.efi)
   if [ -r "${TFTPD_DATA_DIR_}"/grubx64.efi ] ; then
     echo "${TFTPD_DATA_DIR_}/grubx64.efi exists already, nothing to do."
   elif [ -r /usr/lib/grub/x86_64-efi-signed/grubnetx64.efi.signed ] ; then
@@ -43,6 +44,21 @@ if [ "$(uname -m)" = "x86_64" ]; then
   else
     echo "WARN: No shimx64.efi for usage with PXE boot found. Using GRUB directly as bootx64.efi."
     cp "${TFTPD_DATA_DIR_}"/grubx64.efi "${TFTPD_DATA_DIR_}"/bootx64.efi
+  fi
+
+  # 32-bit UEFI (grubia32.efi)
+  # targets 32-bit firmware on 64-bit CPU hardware
+  if [ -r "${TFTPD_DATA_DIR_}"/grubia32.efi ] ; then
+    echo "${TFTPD_DATA_DIR_}/grubia32.efi exists already, nothing to do."
+  elif [ -r /usr/lib/grub/i386-efi-signed/grubnetia32.efi.signed ] ; then
+    echo "Installing /usr/lib/grub/i386-efi-signed/grubnetia32.efi.signed as grubia32.efi for TFTP usage"
+    cp /usr/lib/grub/i386-efi-signed/grubnetia32.efi.signed "${TFTPD_DATA_DIR_}"/grubia32.efi
+  elif [ -r /usr/lib/grub/i386-efi/monolithic/grubnetia32.efi ] ; then
+    echo "Installing /usr/lib/grub/i386-efi/monolithic/grubnetia32.efi as grubia32.efi for TFTP usage"
+    cp /usr/lib/grub/i386-efi/monolithic/grubnetia32.efi "${TFTPD_DATA_DIR_}"/grubia32.efi
+  else
+    echo "WARN: No grubnetia32.efi for usage with PXE boot found, not setting up 32-bit UEFI boot via GRUB."
+    (( ret_=ret_+ $? ))
   fi
 fi
 if [ "$(uname -m)" = "aarch64" ]; then
@@ -84,46 +100,43 @@ else
   echo "WARN: No unicode.pf2 for usage with PXE boot found."
 fi
 
-echo "Setting up GRUB configuration for PXE/UEFI usage"
+echo "Setting up GRUB configuration for PXE/EFI/BIOS usage"
 mkdir -p "${TFTPD_DATA_DIR_}/grub/"
-cat > "${TFTPD_DATA_DIR_}/grub/grub.cfg" << EOT
+cat > "${TFTPD_DATA_DIR_}/grub/grub.cfg" << "EOT"
 # GRUB PXE configuration file
 
-# adjust according to your needs
-#set timeout=300
-
-insmod png
-set gfxmode=auto
-insmod gfxterm
-terminal_output gfxterm
-
-loadfont unicode
-
-set menu_color_normal=white/black
-set menu_color_highlight=black/yellow
-
-# this needs some tuning, so not enabled by default
-# set theme=/boot/grub/grml-theme/theme.txt
-# export theme
+source "${prefix}/header.cfg"
 
 EOT
 
-# theme support requires e.g. icons/submenu.png within the theme directory,
-# which we don't ship though, so not enabled by default
-#mkdir -p "${TFTPD_DATA_DIR_}"/grub/themes/boot/grub
-#ln -s "${TFTPD_DATA_DIR_}"/boot/grub/grml-theme "${TFTPD_DATA_DIR_}"/grub/themes/boot/grub/
-
-for file in "${TFTPD_DATA_DIR_}"/boot/grub/*_default.cfg "${TFTPD_DATA_DIR_}"/boot/grub/*_options.cfg ; do
+# NOTE: GRUB in netboot doesn't support sourcing files with regexp, so we need to prepare this statically
+for file in "${TFTPD_DATA_DIR_}"/grub/*_default.cfg "${TFTPD_DATA_DIR_}"/grub/*_options.cfg ; do
+  [ -f "$file" ] || continue
   filename="$(basename "${file}")"
-  echo "source boot/grub/${filename}" >> "${TFTPD_DATA_DIR_}/grub/grub.cfg"
+  echo "source \${prefix}/${filename}" >> "${TFTPD_DATA_DIR_}/grub/grub.cfg"
 done
 
-cat >> "${TFTPD_DATA_DIR_}/grub/grub.cfg" << EOT
+cat >> "${TFTPD_DATA_DIR_}/grub/grub.cfg" << "EOT"
+# separator entry, no action
+menuentry "" {
+    true
+}
+
+source "${prefix}/help.cfg"
+
+if [ "${grub_platform}" == "efi" ] ; then
+menuentry "UEFI Firmware Settings" {
+    fwsetup
+}
+fi # efi mode
 
 menuentry "Boot OS of first partition on first disk" {
     set root=(hd0,1)
     chainloader +1
 }
+
+source "${prefix}/footer.cfg"
+# EOF
 EOT
 
 (( ret_=ret_+ $? ))
