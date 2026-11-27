@@ -1,3 +1,10 @@
+grml-terminalserver (0.106.1) grml-testing; urgency=medium
+
+  * [be18111] Drop architecture specific dependency on shim-signed
+    package. Thanks to Chris Hofstaedtler
+
+ -- Michael Prokop <mika@grml.org>  Fri, 27 Nov 2026 11:00:17 +0100
+
 grml-terminalserver (0.106.0) grml-testing; urgency=medium
 
   * [0355525] GRUB boot: set default timeout of 20 seconds
