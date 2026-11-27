@@ -25,7 +25,7 @@ Depends:
  ipcalc,
  iptables,
  nfs-kernel-server,
- shim-signed:amd64 | shim-signed:arm64,
+ shim-signed,
  ${misc:Depends},
 Recommends:
  grub-pc-bin,
